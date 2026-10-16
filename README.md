@@ -33,7 +33,7 @@ Get-FileHash <downloaded file> -Algorithm SHA256
 
 Open the `.dmg` (`aarch64` for Apple silicon, `x64` for Intel) and drag **Mr. Usage** to Applications.
 
-The build is not signed with an Apple Developer ID. The first time you open it, Gatekeeper says it "cannot be opened because the developer cannot be verified" (on recent macOS: "Apple could not verify 'Mr. Usage' is free of malware"). After checking the SHA-256 sum, remove the quarantine flag and open it:
+The build is not signed or notarized with an Apple Developer ID, so the first time you open it Gatekeeper warns that it cannot verify the developer or that the app is free of malware ([Apple: Safely open apps on your Mac](https://support.apple.com/en-us/102445)). After checking the SHA-256 sum, remove the quarantine flag and open it:
 
 ```sh
 xattr -dr com.apple.quarantine "/Applications/Mr. Usage.app"
@@ -48,10 +48,12 @@ Run the `*-setup.exe` (installs for your user only) or the `.msi` (installs for 
 ### Linux
 
 ```sh
-sudo apt install ./mr-usage_*_amd64.deb      # Debian, Ubuntu
-sudo dnf install ./mr-usage-*.x86_64.rpm     # Fedora, RHEL
-chmod +x Mr.\ Usage_*_amd64.AppImage && ./Mr.\ Usage_*_amd64.AppImage   # anything else
+sudo apt install "./Mr. Usage_0.1.0_amd64.deb"         # Debian, Ubuntu
+sudo dnf install "./Mr. Usage-0.1.0-1.x86_64.rpm"      # Fedora, RHEL
+chmod +x "Mr. Usage_0.1.0_amd64.AppImage" && "./Mr. Usage_0.1.0_amd64.AppImage"   # anything else
 ```
+
+The AppImage needs FUSE 3 (the `fuse3` package). Without it you can run it with `APPIMAGE_EXTRACT_AND_RUN=1`, but the AppImage runtime then leaves its extracted copy in `/tmp/appimage_extracted_*` after the app exits (behaviour of the runtime Tauri embeds, not of Mr. Usage). Delete that folder, or use the `.deb` or `.rpm`.
 
 You need a running Secret Service provider: GNOME Keyring (default on GNOME), KWallet (KDE) or KeePassXC with its Secret Service integration turned on. Without one, Mr. Usage shows an error and stores nothing. It will never fall back to a file.
 

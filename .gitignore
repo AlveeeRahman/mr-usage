@@ -6,3 +6,4 @@
 *.dmp
 core.*
 .DS_Store
+/.claude

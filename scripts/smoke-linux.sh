@@ -59,9 +59,6 @@ case "$KIND" in
     chmod +x "$PKG"
     FILES=("$PKG")
     BIN="$PKG"
-    # No FUSE in containers and CI: run from a temporary extraction, which
-    # the AppImage runtime must clean up on exit.
-    export APPIMAGE_EXTRACT_AND_RUN=1
     ;;
   *) echo "unknown kind $KIND"; exit 2 ;;
 esac
@@ -73,12 +70,21 @@ if [ "$KIND" != appimage ]; then
 fi
 
 helpers() { pgrep -c -f 'WebKit(Web|Network)Process' || true; }
+app_procs() { pgrep -c -x mr-usage || true; }
+# AppImage mode for this cycle: "fuse" (how desktops run it; the launched PID
+# becomes the app) or "extract" (APPIMAGE_EXTRACT_AND_RUN, for systems without
+# FUSE; the AppImage runtime stays as the app's parent).
+MODE=direct
 leftover_webview() { find "$XDG_RUNTIME_DIR" -maxdepth 1 -name 'mr-usage-webview-*' | wc -l; }
 
 # One start/stop cycle. $1 = close | term | int
 cycle() {
   local how="$1" pid win code start elapsed
-  "$BIN" >"$SANDBOX/app-$how.log" 2>&1 &
+  if [ "$MODE" = extract ]; then
+    APPIMAGE_EXTRACT_AND_RUN=1 "$BIN" >"$SANDBOX/app-$how.log" 2>&1 &
+  else
+    "$BIN" >"$SANDBOX/app-$how.log" 2>&1 &
+  fi
   pid=$!
   win=""
   for _ in $(seq 1 60); do
@@ -99,7 +105,15 @@ cycle() {
   case "$how" in
     close) wmctrl -c 'Mr. Usage' ;;
     term) kill -TERM "$pid" ;;
-    int) kill -INT "$pid" ;;
+    int)
+      if [ "$MODE" = extract ]; then
+        # Ctrl-C in a terminal signals the whole foreground group: the
+        # runtime and the app. (Non-interactive bash starts background jobs
+        # with SIGINT ignored, so the runtime alone would never react.)
+        pkill -INT -P "$pid" || true
+      fi
+      kill -INT "$pid"
+      ;;
   esac
   code=0
   for _ in $(seq 1 100); do
@@ -112,14 +126,29 @@ cycle() {
   fi
   wait "$pid" || code=$?
   elapsed=$(($(date +%s) - start))
-  [ "$code" = "0" ] && pass "[$how] exited with code 0 in ${elapsed}s" || fail "[$how] exit code $code"
+  if [ "$MODE" = extract ] && [ "$how" != close ]; then
+    # The signal kills the runtime itself (no handler); the app must follow
+    # through PR_SET_PDEATHSIG and exit on its own clean path.
+    for _ in $(seq 1 100); do [ "$(app_procs)" = "0" ] && break; sleep 0.1; done
+    [ "$(app_procs)" = "0" ] && pass "[$how] runtime exited ($code); app followed it and exited" || fail "[$how] app still running after the runtime was killed"
+  else
+    [ "$code" = "0" ] && pass "[$how] exited with code 0 in ${elapsed}s" || fail "[$how] exit code $code"
+  fi
   sleep 1
   [ "$(helpers)" = "0" ] && pass "[$how] no WebKit helpers left" || fail "[$how] $(helpers) WebKit helper(s) left running"
   [ "$(leftover_webview)" = "0" ] && pass "[$how] webview folder removed" || fail "[$how] webview folder left behind"
-  if [ "$KIND" = appimage ]; then
+  if [ "$MODE" = fuse ]; then
+    grep -q "/.mount_$(basename "$BIN" | cut -c1-6)" /proc/mounts && fail "[$how] AppImage FUSE mount still present" || pass "[$how] AppImage FUSE mount gone"
+  elif [ "$MODE" = extract ]; then
+    # type2-runtime 8f39b89 (embedded by Tauri's bundler) does not delete its
+    # extraction folder in this mode. That is the runtime's behaviour, not the
+    # app's; report it and clear it so the next cycle starts clean.
     local extracted
-    extracted="$(find /tmp "$SANDBOX" -maxdepth 1 -name 'appimage_extracted_*' 2>/dev/null | wc -l)"
-    [ "$extracted" = "0" ] && pass "[$how] AppImage extraction cleaned up" || fail "[$how] AppImage extraction left in /tmp"
+    extracted="$(find "${TMPDIR:-/tmp}" -maxdepth 1 -name 'appimage_extracted_*' 2>/dev/null)"
+    if [ -n "$extracted" ]; then
+      echo "INFO [$how] AppImage runtime left its extraction folder (known runtime behaviour, see README): $extracted"
+      rm -rf $extracted
+    fi
   fi
   if grep -i -E 'panic|error' "$SANDBOX/app-$how.log" | grep -v -i -E 'AT-SPI|dbind|libEGL|portal|pw\.conf|pipewire|dri3|mesa' >/dev/null; then
     fail "[$how] errors in the app log:"
@@ -132,16 +161,25 @@ cycle() {
 # One D-Bus session with an unlocked throwaway keyring for all cycles.
 eval "$(dbus-launch --sh-syntax)"
 echo -n "smoke-only-password" | gnome-keyring-daemon --unlock --components=secrets >/dev/null
-for how in close term int; do
-  cycle "$how"
-done
+if [ "$KIND" = appimage ]; then
+  if [ -e /dev/fuse ] && command -v fusermount3 >/dev/null; then
+    MODE=fuse
+    for how in close term int; do cycle "$how"; done
+  else
+    fail "FUSE not available (need /dev/fuse and fusermount3), so the normal AppImage mode was not tested"
+  fi
+  MODE=extract
+  for how in close term int; do cycle "$how"; done
+else
+  for how in close term int; do cycle "$how"; done
+fi
 kill "$DBUS_SESSION_BUS_PID" 2>/dev/null || true
 
 # The app may write only its settings file; WebKit, GTK and Mesa caches are
 # not the app's (and are absent on a real desktop where they already exist).
 OWN="$(find "$HOME" -type f \
   -not -path '*/mesa_shader_cache*' -not -path '*/dconf/*' -not -path '*/keyrings/*' \
-  -not -path '*/.cache/doc/*' -not -path '*/openbox/*' 2>/dev/null || true)"
+  -not -path '*/.cache/doc/*' -not -path '*/openbox/*' -not -path '*/.dbus/*' 2>/dev/null || true)"
 if [ "$OWN" = "$XDG_CONFIG_HOME/io.github.alveeerahman.mr-usage/settings.json" ] || [ -z "$OWN" ]; then
   pass "app wrote nothing to disk except its settings file"
 else

@@ -1,8 +1,8 @@
 //! Midnight and exit purge of in-memory usage history.
 //!
-//! Local time comes from `jiff`, which reads the system time zone database.
-//! (`time::OffsetDateTime::now_local` refuses to work in multi-threaded
-//! processes on Linux, which a Tauri app always is.)
+//! Local time comes from `jiff`, which reads the system's IANA time zone
+//! database itself, so the date change is correct across DST transitions
+//! (see the tests below).
 
 use std::sync::Mutex;
 

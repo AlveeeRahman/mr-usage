@@ -51,8 +51,8 @@ deny = [
   { crate = "openssl", reason = "TLS is rustls with ring; no OpenSSL anywhere" },
   { crate = "openssl-sys", reason = "TLS is rustls with ring; no OpenSSL anywhere" },
   { crate = "native-tls", reason = "TLS is rustls with ring" },
-  { crate = "aws-lc-rs", reason = "license includes OpenSSL terms, outside the allowlist; ring is the provider" },
-  { crate = "aws-lc-sys", reason = "license includes OpenSSL terms, outside the allowlist; ring is the provider" },
+  { crate = "aws-lc-rs", reason = "second crypto provider; ring is the one in use" },
+  { crate = "aws-lc-sys", reason = "second crypto provider; ring is the one in use" },
 ]
 
 [[bans.features]]
