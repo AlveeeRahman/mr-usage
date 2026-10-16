@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Mr. Usage</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Mr. Usage</h1>
+      <p class="subtitle">What you have left on each paid API</p>
+    </header>
+
+    <main>
+      <p id="banner" class="banner" role="alert" hidden></p>
+      <section id="cards" aria-label="Providers" aria-live="polite"></section>
+      <p id="empty" class="empty" hidden>No providers yet. Add a key below to start.</p>
+
+      <details id="add-panel" class="panel">
+        <summary>Add provider</summary>
+        <form id="add-form" autocomplete="off">
+          <label for="add-provider">Provider</label>
+          <select id="add-provider" name="provider"></select>
+
+          <dl class="endpoint">
+            <dt>Calls</dt>
+            <dd><code id="add-endpoint"></code></dd>
+            <dt>Verified against</dt>
+            <dd><code id="add-docs"></code></dd>
+          </dl>
+
+          <label for="add-key">API key</label>
+          <input
+            id="add-key"
+            name="key"
+            type="password"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            required
+          />
+          <p class="hint">The key goes straight to <span class="store-label"></span>. This window never sees it again.</p>
+          <div class="actions">
+            <button type="submit" id="add-save">Save key</button>
+          </div>
+          <p id="add-status" class="status-line" role="status"></p>
+        </form>
+      </details>
+
+      <details id="settings-panel" class="panel">
+        <summary>Settings</summary>
+        <form id="settings-form">
+          <label for="poll-interval">Check every</label>
+          <select id="poll-interval" name="interval">
+            <option value="60">1 minute</option>
+            <option value="300">5 minutes</option>
+            <option value="900">15 minutes</option>
+            <option value="1800">30 minutes</option>
+            <option value="3600">1 hour</option>
+          </select>
+          <p class="hint">Providers with a slower minimum keep their own floor. It is shown on each card.</p>
+
+          <label for="theme">Theme</label>
+          <select id="theme" name="theme">
+            <option value="system">Match system</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+
+          <div class="actions">
+            <button type="button" id="wipe-now" class="secondary">Wipe history now</button>
+          </div>
+          <p class="hint">History lives in memory only and is wiped at local midnight and when the app quits.</p>
+          <p id="settings-status" class="status-line" role="status"></p>
+        </form>
+      </details>
+    </main>
+
+    <footer id="footer" class="app-footer"></footer>
+  </body>
+</html>

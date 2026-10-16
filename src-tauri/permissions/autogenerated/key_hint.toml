@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-key-hint"
+description = "Enables the key_hint command without any pre-configured scope."
+commands.allow = ["key_hint"]
+
+[[permission]]
+identifier = "deny-key-hint"
+description = "Denies the key_hint command without any pre-configured scope."
+commands.deny = ["key_hint"]
