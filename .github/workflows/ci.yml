@@ -35,7 +35,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - run: sudo apt-get update && sudo apt-get install -y $LINUX_DEPS
+      - run: |
+          read -ra deps <<< "$LINUX_DEPS"
+          sudo apt-get update && sudo apt-get install -y "${deps[@]}"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
@@ -58,7 +60,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y $LINUX_DEPS
+        run: |
+          read -ra deps <<< "$LINUX_DEPS"
+          sudo apt-get update && sudo apt-get install -y "${deps[@]}"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
@@ -75,7 +79,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - run: sudo apt-get update && sudo apt-get install -y $LINUX_DEPS gnome-keyring dbus-x11 gdb binutils
+      - run: |
+          read -ra deps <<< "$LINUX_DEPS"
+          sudo apt-get update && sudo apt-get install -y "${deps[@]}" gnome-keyring dbus-x11 gdb binutils
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
@@ -101,7 +107,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - run: sudo apt-get update && sudo apt-get install -y $LINUX_DEPS xvfb gnome-keyring dbus-x11 libsecret-tools webkit2gtk-driver
+      - run: |
+          read -ra deps <<< "$LINUX_DEPS"
+          sudo apt-get update && sudo apt-get install -y "${deps[@]}" xvfb gnome-keyring dbus-x11 libsecret-tools webkit2gtk-driver
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
