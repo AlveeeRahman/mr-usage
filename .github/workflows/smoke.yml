@@ -48,15 +48,15 @@ jobs:
       - name: User-facing installer (install.sh --from, then --uninstall)
         run: |
           (cd target/release/bundle/deb && sha256sum -- *.deb > SHA256SUMS.txt)
-          sh install.sh --from target/release/bundle/deb
+          sh installers/install.sh --from target/release/bundle/deb
           test -x /usr/bin/mr-usage
           dpkg -s mr-usage | grep -q '^Recommends: .*gnome-keyring'
-          sh install.sh --uninstall
+          sh installers/install.sh --uninstall
           ! test -e /usr/bin/mr-usage
           (cd target/release/bundle/appimage && sha256sum -- *.AppImage > SHA256SUMS.txt)
-          sh install.sh --appimage --from target/release/bundle/appimage
+          sh installers/install.sh --appimage --from target/release/bundle/appimage
           test -x "$HOME/.local/bin/mr-usage"
-          sh install.sh --uninstall
+          sh installers/install.sh --uninstall
           ! test -e "$HOME/.local/bin/mr-usage"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -98,10 +98,10 @@ jobs:
       - name: User-facing installer (install.sh --from, then --uninstall)
         run: |
           (cd target/release/bundle/dmg && shasum -a 256 -- *.dmg > SHA256SUMS.txt)
-          sh install.sh --from target/release/bundle/dmg
+          sh installers/install.sh --from target/release/bundle/dmg
           test -x "/Applications/Mr. Usage.app/Contents/MacOS/mr-usage"
           xattr -p com.apple.quarantine "/Applications/Mr. Usage.app" 2>/dev/null && exit 1
-          sh install.sh --uninstall
+          sh installers/install.sh --uninstall
           ! test -e "/Applications/Mr. Usage.app"
 
   windows:
@@ -131,7 +131,7 @@ jobs:
         run: |
           $dir = 'target/release/bundle/nsis'
           Get-ChildItem "$dir/*.exe" | ForEach-Object { "$((Get-FileHash $_ -Algorithm SHA256).Hash.ToLower())  $($_.Name)" } | Set-Content "$dir/SHA256SUMS.txt"
-          ./install.ps1 -From $dir
+          ./installers/install.ps1 -From $dir
           if (-not (Get-ChildItem -Path $env:LOCALAPPDATA -Filter mr-usage.exe -Recurse -Depth 2)) { throw 'not installed' }
-          ./install.ps1 -Uninstall
+          ./installers/install.ps1 -Uninstall
           if (Get-ChildItem -Path $env:LOCALAPPDATA -Filter mr-usage.exe -Recurse -Depth 2 -ErrorAction SilentlyContinue) { throw 'still installed' }

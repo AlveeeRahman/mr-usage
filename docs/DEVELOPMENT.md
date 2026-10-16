@@ -21,10 +21,9 @@ cargo tauri build                                   # installers land in target/
 ```
 crates/core/       providers, keystore, redaction, HTTP, poller, midnight wipe, settings. Plain cargo, no Tauri.
 src-tauri/         the Tauri shell: command line, commands, capabilities, CSP, window, signal handling
-src/               the window (TypeScript, no framework)
-install.sh         user-facing installer for macOS and Linux (also the uninstaller)
-install.ps1        the same for Windows
-docs/              threat model, sources, review, follow-ups, the GitHub Pages site
+frontend/          the window: index.html, TypeScript with no framework, the Vite and TypeScript configs
+installers/        install.sh for macOS and Linux, install.ps1 for Windows. Each is also the uninstaller
+docs/              threat model, sources, follow-ups, the GitHub Pages site
 .github/           workflows, the installer smoke tests, the end-to-end test, the leak test, build helpers
 ```
 
@@ -55,13 +54,13 @@ bash .github/scripts/smoke-macos.sh target/release/bundle/dmg/*.dmg
 pwsh .github/scripts/smoke-windows.ps1 -Kind nsis -Installer <setup.exe>
 ```
 
-The same jobs run the user-facing installer against the fresh packages (`install.sh --from <dir>`, `install.ps1 -From <dir>`) and then uninstall with it, so the path a user takes is the path that is tested.
+The same jobs run the user-facing installer against the fresh packages (`installers/install.sh --from <dir>`, `installers/install.ps1 -From <dir>`) and then uninstall with it, so the path a user takes is the path that is tested.
 
 All of this runs on every push through the workflows in `.github/workflows/`. A tag `v*` builds the installers for all platforms, uploads them as a draft release with `SHA256SUMS.txt`, and the install scripts read that list.
 
 ## Command line
 
-The binary answers `--help`, `--version` and `--forget-keys` before it initialises logging, hardening or the webview, and refuses anything else with exit status 2 and a usage line on stderr. The grammar lives in `src-tauri/src/cli.rs`; `src-tauri/tests/cli.rs` runs the built binary and checks streams and exit status for every path that does not open a window. `--forget-keys` is kept out of that test on purpose: on a developer's machine it would delete real keys. The install scripts and the release workflow exercise it.
+The binary answers `--help`, `--version` and `--forget-keys` before it initialises logging, hardening or the webview, and refuses anything else with exit status 2 and a usage line on stderr. The grammar lives in `src-tauri/src/cli.rs`. `src-tauri/tests/cli.rs` runs the built binary and checks streams and exit status for every path that does not open a window. `--forget-keys` is kept out of that test on purpose: on a developer's machine it would delete real keys. The install scripts and the release workflow exercise it.
 
 ## Adding a provider
 
@@ -78,7 +77,7 @@ The binary answers `--help`, `--version` and `--forget-keys` before it initialis
 git tag v0.2.0 && git push origin v0.2.0
 ```
 
-The release workflow builds macOS (Apple silicon and Intel), Windows and Linux, uploads everything to a draft release, appends `SHA256SUMS.txt`, and then installs that draft on a fresh runner of each OS through `install.sh --version v0.2.0` and `install.ps1 -Version v0.2.0`, and uninstalls it again. Review the draft on GitHub and publish it. The install scripts fetch the latest published release, so a draft is invisible to users until you publish.
+The release workflow builds macOS (Apple silicon and Intel), Windows and Linux, uploads everything to a draft release, appends `SHA256SUMS.txt`, and then installs that draft on a fresh runner of each OS through `installers/install.sh --version v0.2.0` and `installers/install.ps1 -Version v0.2.0`, and uninstalls it again. Review the draft on GitHub and publish it. The install scripts fetch the latest published release, so a draft is invisible to users until you publish.
 
 ### Delivery rehearsal
 

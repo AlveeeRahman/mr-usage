@@ -1,7 +1,7 @@
 //! The command-line contract of the built binary: streams and exit status
 //! for the paths that never open a window. `--forget-keys` is deliberately
 //! not run here, because on a developer's machine it would delete their real
-//! keys; `install.sh --uninstall` and the release workflow exercise it.
+//! keys; `installers/install.sh --uninstall` and the release workflow exercise it.
 
 #![allow(clippy::expect_used, clippy::panic)]
 

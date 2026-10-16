@@ -65,7 +65,7 @@ network_surfaces:
   - component: crates/core/src/providers/runway.rs
     hosts: [api.dev.runwayml.com]
     purpose: GET /v1/organization with the user's key and the X-Runway-Version header.
-  - component: install.sh, install.ps1 (run by the user, not by the app)
+  - component: installers/install.sh, installers/install.ps1 (run by the user, not by the app)
     hosts: [api.github.com, github.com, objects.githubusercontent.com]
     purpose: read the latest release and download the package and SHA256SUMS.txt.
 

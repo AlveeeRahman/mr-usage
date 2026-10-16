@@ -26,9 +26,9 @@
   "type": "module",
   "license": "MIT OR Apache-2.0",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "typecheck": "tsc --noEmit",
+    "dev": "vite --config frontend/vite.config.ts",
+    "build": "tsc -p frontend --noEmit && vite build --config frontend/vite.config.ts",
+    "typecheck": "tsc -p frontend --noEmit",
     "tauri": "tauri"
   },
   "dependencies": {

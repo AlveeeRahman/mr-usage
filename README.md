@@ -1,28 +1,45 @@
-# Mr. Usage
+# Mr. Usage: a desktop API credit monitor
 
-One window that shows how much of each paid API you have left. Paste a key once. After that the app keeps the number current on its own.
+[![CI](https://github.com/AlveeeRahman/mr-usage/actions/workflows/ci.yml/badge.svg)](https://github.com/AlveeeRahman/mr-usage/actions/workflows/ci.yml)
+[![Installers](https://github.com/AlveeeRahman/mr-usage/actions/workflows/smoke.yml/badge.svg)](https://github.com/AlveeeRahman/mr-usage/actions/workflows/smoke.yml)
+[![License: MIT or Apache-2.0](https://img.shields.io/badge/license-MIT%20or%20Apache--2.0-blue.svg)](#license)
+[![Rust 1.90+](https://img.shields.io/badge/rust-1.90%2B-orange.svg)](https://www.rust-lang.org/tools/install)
+[![Tauri 2](https://img.shields.io/badge/Tauri-2-24C8D8.svg)](https://v2.tauri.app/)
+[![macOS, Windows, Linux](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg)](#install)
 
-It works with Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway, on macOS, Windows and Linux.
+**Documentation**: [alveeerahman.github.io/mr-usage](https://alveeerahman.github.io/mr-usage/) ·
+by the author of [LLM Dogfight](https://alveeerahman.github.io/llm-dogfight/),
+[Skill Vision](https://alveeerahman.github.io/skill-vision/),
+[Agent Oracle](https://alveeerahman.github.io/agent-oracle/) and
+[Research Hound](https://alveeerahman.github.io/research-hound/).
+
+**mr-usage** is one window that shows how much of each paid API you have left: Firecrawl,
+SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway. Paste a key once.
+It goes into the credential store your operating system already has (Keychain on macOS,
+Credential Manager on Windows, GNOME Keyring or KWallet on Linux) and never comes back to
+the window. The app has no account, no server and no analytics. The only thing it talks to
+is the usage page of each vendor you gave it a key for.
 
 ![Mr. Usage showing remaining credits for several providers in dark mode](docs/assets/social-preview.png)
-
-Your API keys go into the credential store your operating system already has (Keychain on macOS, Credential Manager on Windows, GNOME Keyring or KWallet on Linux). The app has no account, no server and no analytics. The only thing it talks to is the usage page of each vendor you gave it a key for.
 
 ## Install
 
 macOS or Linux, in a terminal:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/installers/install.sh | sh
 ```
 
 Windows, in PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/installers/install.ps1 | iex
 ```
 
-The command downloads the right package for your machine, checks it against the release's checksum list, installs it, and clears the "downloaded from the internet" flag so the app opens without a detour through security settings. Then open Mr. Usage from Launchpad, the Start menu or your application menu.
+The command downloads the right package for your machine, checks it against the release's
+checksum list, installs it, and clears the "downloaded from the internet" flag so the app
+opens without a detour through security settings. Then open Mr. Usage from Launchpad, the
+Start menu or your application menu.
 
 <details>
 <summary>Install by hand instead</summary>
@@ -46,6 +63,17 @@ The builds are not yet signed with an Apple or Microsoft certificate, so each sy
 
 </details>
 
+## How it works
+
+```mermaid
+flowchart LR
+    paste["You paste a key once"] --> store[("OS credential store<br/>Keychain · Credential Manager · Secret Service")]
+    store -- "read at poll time,<br/>zeroized after" --> poller["Poller<br/>one request per provider,<br/>host allowlist, TLS 1.2+"]
+    poller --> vendor["Vendor usage endpoint<br/>the documented one, nothing else"]
+    vendor --> card["Card in the window<br/>remaining · limit · renewal · today's line"]
+    card -. "memory only,<br/>wiped at midnight and on quit" .-> card
+```
+
 ## First run
 
 1. Open Mr. Usage. The "Add provider" panel is open on first run.
@@ -66,7 +94,7 @@ Repeat for each provider you use. A card gets a yellow "Low" badge under 20% lef
 | Hunter | Searches left, plus verifications and the credit pool where the plan has one |
 | Runway | The organization's credit balance |
 
-Each card is refreshed every 5 minutes, and Settings lets you pick anything from 1 minute to 24 hours. Every one of these calls reads your account's own usage page. SerpApi, Context7 and Hunter document the call as free, Firecrawl's open-source server shows it bills nothing, and none of the other vendors list it as a billable call.
+Each card is refreshed every 5 minutes, and Settings lets you pick anything from 1 minute to 24 hours. Changing the interval takes effect from the last poll, so dropping from an hour to a minute does not wait an hour. Every one of these calls reads your account's own usage page. SerpApi, Context7 and Hunter document the call as free, Firecrawl's open-source server shows it bills nothing, and none of the other vendors list it as a billable call.
 
 ## What it keeps, and where
 
@@ -77,22 +105,6 @@ Each card is refreshed every 5 minutes, and Settings lets you pick anything from
 | Usage numbers and today's history | Memory only | Midnight, Wipe history now, or quitting the app |
 
 Nothing else is written. The settings file never contains a key, an email address or a usage number.
-
-## Uninstall
-
-macOS or Linux:
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/install.sh | sh -s -- --uninstall
-```
-
-Windows:
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/install.ps1))) -Uninstall
-```
-
-This removes the keys from your credential store, then the app, then its settings. Uninstalling through the system's own "Remove program" leaves the keys in place (operating systems treat them as your data, not the app's), so press Forget key on each card first if you go that way.
 
 ## Command line
 
@@ -105,7 +117,23 @@ mr-usage --help          options, exit codes and the MR_USAGE_LOG variable
 mr-usage --version
 ```
 
-Anything else is refused with exit status 2. On Windows the release build has no console, so `--help` prints nothing there; the exit code still applies.
+Anything else is refused with exit status 2. On Windows the release build has no console, so `--help` prints nothing there. The exit code still applies.
+
+## Uninstall
+
+macOS or Linux:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/installers/install.sh | sh -s -- --uninstall
+```
+
+Windows:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/installers/install.ps1))) -Uninstall
+```
+
+This removes the keys from your credential store, then the app, then its settings. Uninstalling through the system's own "Remove program" leaves the keys in place (operating systems treat them as your data, not the app's), so press Forget key on each card first if you go that way.
 
 ## If something looks wrong
 
@@ -115,13 +143,34 @@ Anything else is refused with exit status 2. On Windows the release build has no
 - Elicit needs a Pro plan or above for API access. Below that, the card says so.
 - The AppImage does nothing when double-clicked: install FUSE (`fuse3` on most distributions), or use the `.deb` or `.rpm`.
 
+## What is checked on every push
+
+| Gate | What runs |
+| --- | --- |
+| Lints | `cargo fmt --check` and `cargo clippy -D warnings`, with `unwrap`, `expect`, `panic!` and print macros denied outside tests |
+| Tests on three operating systems | 109 tests: provider parsers against the vendors' own documented responses, log redaction, settings, an allocator that scans every freed block for the key, a source audit, and the binary's command line |
+| Minimum Rust version | The core crate on Rust 1.90 with the locked dependency graph |
+| Real keystore | Round trip and a core-dump leak scan against GNOME Keyring |
+| End to end | The real Linux build driven through WebDriver: save a key, see it land in the Secret Service, watch the first poll |
+| Supply chain | `cargo deny`, `cargo audit`, `npm audit`, lockfiles committed, actions pinned to commit SHAs |
+| Installers | Build the `.deb`, `.rpm`, AppImage, `.dmg`, NSIS and MSI packages, then install, start, stop three ways and uninstall each |
+
+## Layout
+
+| Folder | Holds |
+| --- | --- |
+| `crates/core/` | Providers, keystore, redaction, HTTP, poller, midnight wipe, settings. Plain Cargo, no Tauri, so it can be audited and tested without a webview |
+| `src-tauri/` | The Tauri shell: command line, the eight commands the window may call, capabilities, CSP, window, signal handling |
+| `frontend/` | The window: one HTML file and three TypeScript files, no framework |
+| `installers/` | `install.sh` for macOS and Linux, `install.ps1` for Windows. Each is also the uninstaller |
+| `docs/` | Threat model, sources for every vendor fact, follow-ups, and the GitHub Pages site |
+| `.github/` | Workflows, installer smoke tests, the end-to-end test, the leak test |
+
 ## More
 
 - How the app protects keys, and what it cannot protect you from: [SECURITY.md](SECURITY.md) and [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 - Building from source, running the tests, adding a provider: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 - Where every vendor fact in the app came from: [docs/SOURCES.md](docs/SOURCES.md).
-
-By the author of [LLM Dogfight](https://alveeerahman.github.io/llm-dogfight/), [Skill Vision](https://alveeerahman.github.io/skill-vision/), [Agent Oracle](https://alveeerahman.github.io/agent-oracle/) and [Research Hound](https://alveeerahman.github.io/research-hound/).
 
 ## License
 

@@ -5,8 +5,8 @@ name: release
 # 1. Push a tag such as v0.1.0. Installers for macOS (Apple silicon and Intel),
 #    Linux and Windows are built and attached, with SHA-256 sums, to a DRAFT
 #    release. Then `verify-install` installs that draft on a fresh runner of
-#    each OS through the user-facing scripts (`install.sh --version`,
-#    `install.ps1 -Version`) and uninstalls it again. Review the draft and
+#    each OS through the user-facing scripts (`installers/install.sh --version`,
+#    `installers/install.ps1 -Version`) and uninstalls it again. Review the draft and
 #    publish it by hand; nothing is public until you do.
 #
 # 2. Run the workflow by hand (workflow_dispatch) from any branch. The same
@@ -117,28 +117,28 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           sudo apt-get update && sudo apt-get install -y gnome-keyring
-          sh install.sh --version "$TAG"
+          sh installers/install.sh --version "$TAG"
           test -x /usr/bin/mr-usage
           /usr/bin/mr-usage --forget-keys || true
-          sh install.sh --uninstall
+          sh installers/install.sh --uninstall
           ! test -e /usr/bin/mr-usage
       - if: runner.os == 'macOS'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          sh install.sh --version "$TAG"
+          sh installers/install.sh --version "$TAG"
           test -x "/Applications/Mr. Usage.app/Contents/MacOS/mr-usage"
           if xattr -p com.apple.quarantine "/Applications/Mr. Usage.app" 2>/dev/null; then echo "quarantine flag still set"; exit 1; fi
-          sh install.sh --uninstall
+          sh installers/install.sh --uninstall
           ! test -e "/Applications/Mr. Usage.app"
       - if: runner.os == 'Windows'
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./install.ps1 -Version $env:TAG
+          ./installers/install.ps1 -Version $env:TAG
           if (-not (Get-ChildItem -Path $env:LOCALAPPDATA -Filter mr-usage.exe -Recurse -Depth 2)) { throw 'not installed' }
-          ./install.ps1 -Uninstall
+          ./installers/install.ps1 -Uninstall
           if (Get-ChildItem -Path $env:LOCALAPPDATA -Filter mr-usage.exe -Recurse -Depth 2 -ErrorAction SilentlyContinue) { throw 'still installed' }
 
   # A rehearsal leaves nothing behind. (A draft has no git tag, so there is

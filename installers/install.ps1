@@ -1,8 +1,8 @@
 <#
 Installs Mr. Usage on Windows, or removes it.
 
-  irm https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/install.ps1 | iex
-  & ([scriptblock]::Create((irm https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/install.ps1))) -Uninstall
+  irm https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/installers/install.ps1 | iex
+  & ([scriptblock]::Create((irm https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/installers/install.ps1))) -Uninstall
 
 What it does: downloads the per-user installer from GitHub Releases together
 with the release's SHA256SUMS.txt, refuses to run anything whose checksum is

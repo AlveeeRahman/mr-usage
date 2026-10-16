@@ -1,8 +1,8 @@
 #!/bin/sh
 # Installs Mr. Usage on macOS or Linux, or removes it.
 #
-#   curl -fsSL https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/install.sh | sh
-#   curl -fsSL https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/install.sh | sh -s -- --uninstall
+#   curl -fsSL https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/installers/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/installers/install.sh | sh -s -- --uninstall
 #
 # What it does: picks the right package for this machine, downloads it from
 # GitHub Releases together with the release's SHA256SUMS.txt, refuses to
