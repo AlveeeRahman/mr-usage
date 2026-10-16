@@ -1,0 +1,66 @@
+# cargo-deny configuration. Format: https://embarkstudios.github.io/cargo-deny/ (v2 config).
+
+[graph]
+all-features = false
+targets = [
+  "x86_64-unknown-linux-gnu",
+  "aarch64-apple-darwin",
+  "x86_64-apple-darwin",
+  "x86_64-pc-windows-msvc",
+]
+
+[advisories]
+version = 2
+yanked = "deny"
+ignore = [
+  # Compile-time proc-macro helper pulled in by gtk-rs 0.18 (glib-macros, gtk3-macros), which
+  # Tauri 2's Linux webview stack depends on. It never runs in the shipped binary and no safe
+  # upgrade exists. Revisit when Tauri moves off GTK3; tracked in docs/FOLLOWUPS.md.
+  { id = "RUSTSEC-2024-0370", reason = "build-time only, via Tauri's GTK3 stack; no upgrade available" },
+]
+
+[licenses]
+version = 2
+confidence-threshold = 0.9
+# The owner's allowlist. Anything else needs a per-crate exception below with a reason.
+allow = [
+  "MIT",
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "MPL-2.0",
+  "Unicode-3.0",
+  "Zlib",
+]
+unused-allowed-license = "allow"
+exceptions = [
+  # Build-time only (system-deps -> cfg-expr, Linux GTK build scripts). The LLVM exception adds
+  # permissions to Apache-2.0 and removes none.
+  { crate = "target-lexicon", allow = ["Apache-2.0 WITH LLVM-exception"] },
+]
+
+[bans]
+multiple-versions = "allow"
+wildcards = "deny"
+# Path dependencies between this workspace's own unpublished crates.
+allow-wildcard-paths = true
+# One implementation of each crypto primitive. Two copies of a TLS or crypto
+# crate mean two code paths to audit and patch.
+deny = [
+  { crate = "openssl", reason = "TLS is rustls with ring; no OpenSSL anywhere" },
+  { crate = "openssl-sys", reason = "TLS is rustls with ring; no OpenSSL anywhere" },
+  { crate = "native-tls", reason = "TLS is rustls with ring" },
+  { crate = "aws-lc-rs", reason = "license includes OpenSSL terms, outside the allowlist; ring is the provider" },
+  { crate = "aws-lc-sys", reason = "license includes OpenSSL terms, outside the allowlist; ring is the provider" },
+]
+
+[[bans.features]]
+crate = "reqwest"
+deny = ["default-tls", "native-tls", "rustls"]
+reason = "reqwest must use rustls-no-provider with ring installed by net.rs"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
