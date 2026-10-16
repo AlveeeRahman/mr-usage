@@ -261,21 +261,34 @@ impl Poller {
             let mut state = self.lock();
             state.interval = settings.poll_interval();
             state.enabled = settings.enabled.clone();
-            let enabled = state.enabled.clone();
-            for (id, rt) in state.runtime.iter_mut() {
-                if enabled.iter().any(|e| e == id) {
-                    // Newly enabled providers poll on the next tick.
-                    if rt.next_due.is_none()
-                        && rt.has_key
-                        && !matches!(
-                            rt.last_error,
-                            Some(LastError::Provider(ProviderError::Unauthorized | ProviderError::Unsupported(_)))
-                        )
-                    {
-                        rt.next_due = Some(now);
-                    }
-                } else {
+            let State {
+                runtime,
+                interval,
+                enabled,
+                ..
+            } = &mut *state;
+            for provider in &self.providers {
+                let id = provider.id();
+                let Some(rt) = runtime.get_mut(id) else { continue };
+                if !enabled.iter().any(|e| e == id) {
                     rt.next_due = None;
+                    continue;
+                }
+                let stopped = matches!(
+                    rt.last_error,
+                    Some(LastError::Provider(ProviderError::Unauthorized | ProviderError::Unsupported(_)))
+                );
+                match (rt.next_due, rt.last_attempt) {
+                    // Newly enabled providers poll on the next tick.
+                    (None, _) if rt.has_key && !stopped => rt.next_due = Some(now),
+                    // The next poll is one interval after the last one, under
+                    // the new interval: moving from an hour to a minute does
+                    // not wait up to an hour, and moving the other way stops
+                    // polling fast at once. Backoff after failures stays.
+                    (Some(_), Some(last)) if rt.failures == 0 => {
+                        rt.next_due = Some(after(last, Self::interval_for(provider.as_ref(), *interval)));
+                    }
+                    _ => {}
                 }
             }
         }
@@ -331,7 +344,12 @@ impl Poller {
     }
 
     /// One scheduler step: wipe at a date change, then poll whatever is due.
-    pub async fn tick(&self) {
+    /// Due providers are polled at the same time, so one slow vendor cannot
+    /// hold up the others or delay the next tick by more than its own
+    /// timeout. Each poll owns its provider's `in_flight` flag, so a manual
+    /// refresh of the same provider meanwhile is refused as `Busy`. The step
+    /// returns once every poll it started has finished.
+    pub async fn tick(self: &Arc<Self>) {
         let now_zoned = self.clock.now();
         let now = now_zoned.timestamp();
         let wipe = self.lock().wiper.should_wipe(&now_zoned);
@@ -353,8 +371,18 @@ impl Poller {
                 })
                 .collect()
         };
+        let mut polls = tokio::task::JoinSet::new();
         for id in due {
-            let _ = self.poll_one(id).await;
+            let poller = Arc::clone(self);
+            polls.spawn(async move { poller.poll_one(id).await });
+        }
+        while let Some(joined) = polls.join_next().await {
+            // Each poll records its own outcome in the provider's runtime. A
+            // join error means the task panicked, which the lints keep out of
+            // this crate's own code; it is logged rather than dropped.
+            if let Err(e) = joined {
+                tracing::warn!(error = %e, "poll task failed");
+            }
         }
     }
 
@@ -681,6 +709,157 @@ mod tests {
         let start = "2026-10-16T12:00:00Z".parse::<Timestamp>().unwrap().as_millisecond();
         assert_eq!(first - start, 300_000);
         assert_eq!(second - (start + 300_000), 600_000);
+    }
+
+    #[tokio::test]
+    async fn a_shorter_interval_takes_effect_from_the_last_poll() {
+        let h = harness(Ok(1000), true, true).await;
+        h.poller.apply_settings(&Settings {
+            poll_interval_secs: 3600,
+            enabled: vec!["mock".into()],
+            ..Settings::default()
+        });
+        h.poller.tick().await;
+        assert_eq!(h.mock.calls.load(Ordering::SeqCst), 1);
+        // Two minutes in, the user drops the interval to one minute.
+        advance(&h.clock, 120);
+        h.poller.apply_settings(&Settings {
+            poll_interval_secs: 60,
+            enabled: vec!["mock".into()],
+            ..Settings::default()
+        });
+        let due = h.poller.view_of("mock").unwrap().next_poll_ms.unwrap();
+        let start = "2026-10-16T12:00:00Z".parse::<Timestamp>().unwrap().as_millisecond();
+        assert_eq!(due - start, 60_000, "due one minute after the last poll, not an hour");
+        h.poller.tick().await;
+        assert_eq!(h.mock.calls.load(Ordering::SeqCst), 2);
+        // A longer interval pushes the next poll out from the last one.
+        h.poller.apply_settings(&Settings {
+            poll_interval_secs: 3600,
+            enabled: vec!["mock".into()],
+            ..Settings::default()
+        });
+        advance(&h.clock, 120);
+        h.poller.tick().await;
+        assert_eq!(h.mock.calls.load(Ordering::SeqCst), 2);
+        advance(&h.clock, 3600);
+        h.poller.tick().await;
+        assert_eq!(h.mock.calls.load(Ordering::SeqCst), 3);
+    }
+
+    #[tokio::test]
+    async fn a_shorter_interval_does_not_cut_backoff_short() {
+        let h = harness(Err(ProviderError::Transport("timed out".into())), true, true).await;
+        h.poller.tick().await;
+        advance(&h.clock, 300);
+        h.poller.tick().await;
+        // Two failures: the next attempt is 600 s out. Shortening the interval leaves it.
+        let before = h.poller.view_of("mock").unwrap().next_poll_ms;
+        h.poller.apply_settings(&Settings {
+            poll_interval_secs: 60,
+            enabled: vec!["mock".into()],
+            ..Settings::default()
+        });
+        assert_eq!(h.poller.view_of("mock").unwrap().next_poll_ms, before);
+    }
+
+    /// Two providers that each block until released. If `tick` polled them
+    /// one after the other, the first would have to finish before the second
+    /// started, and the test would deadlock waiting for both to enter.
+    #[tokio::test]
+    async fn due_providers_are_polled_at_the_same_time() {
+        struct Slow {
+            id: &'static str,
+            entered: tokio::sync::Notify,
+            release: tokio::sync::Notify,
+        }
+
+        #[async_trait]
+        impl Provider for Slow {
+            fn id(&self) -> &'static str {
+                self.id
+            }
+            fn display_name(&self) -> &'static str {
+                "Slow"
+            }
+            fn docs_url(&self) -> &'static str {
+                "https://example.com/docs"
+            }
+            fn endpoint(&self) -> &'static str {
+                "https://example.com/usage"
+            }
+            fn allowed_host(&self) -> &'static str {
+                "example.com"
+            }
+            fn unit(&self) -> Unit {
+                Unit::Credits
+            }
+            fn min_poll_interval(&self) -> Duration {
+                Duration::from_secs(60)
+            }
+            async fn fetch(&self, _key: &SecretString, _http: &Http) -> Result<Snapshot, ProviderError> {
+                self.entered.notify_one();
+                self.release.notified().await;
+                Ok(Snapshot {
+                    taken_at: Timestamp::UNIX_EPOCH,
+                    remaining: Some(1),
+                    limit: None,
+                    period_end: None,
+                    extra: vec![],
+                })
+            }
+        }
+
+        let slow = |id| {
+            Arc::new(Slow {
+                id,
+                entered: tokio::sync::Notify::new(),
+                release: tokio::sync::Notify::new(),
+            })
+        };
+        let (a, b) = (slow("a"), slow("b"));
+        let store = Arc::new(MemoryKeyStore::default());
+        for id in ["a", "b"] {
+            store.set(id, &SecretString::from("k".to_owned())).unwrap();
+        }
+        let settings = Settings {
+            enabled: vec!["a".into(), "b".into()],
+            ..Settings::default()
+        };
+        let poller = Poller::new(
+            vec![a.clone() as Arc<dyn Provider>, b.clone() as Arc<dyn Provider>],
+            store,
+            Http::new().unwrap(),
+            Arc::new(FakeClock::new("2026-10-16T12:00:00+00:00[UTC]".parse::<Zoned>().unwrap())),
+            Arc::new(|_: &ProviderView| {}),
+            &settings,
+        );
+        poller.load_key_presence().await;
+        poller.apply_settings(&settings);
+
+        let ticking = tokio::spawn({
+            let poller = Arc::clone(&poller);
+            async move { poller.tick().await }
+        });
+        let both_entered = async {
+            a.entered.notified().await;
+            b.entered.notified().await;
+        };
+        tokio::time::timeout(Duration::from_secs(5), both_entered)
+            .await
+            .expect("both providers should be in flight before either is released");
+        assert_eq!(poller.refresh("a").await, Err(PollerError::Busy));
+        a.release.notify_one();
+        b.release.notify_one();
+        tokio::time::timeout(Duration::from_secs(5), ticking)
+            .await
+            .expect("tick finishes")
+            .unwrap();
+        for id in ["a", "b"] {
+            let v = poller.view_of(id).unwrap();
+            assert_eq!(v.latest.as_ref().map(|s| s.remaining), Some(Some(1)), "{id}");
+            assert!(v.next_poll_ms.is_some(), "{id} is scheduled again");
+        }
     }
 
     #[tokio::test]

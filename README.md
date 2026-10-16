@@ -94,6 +94,19 @@ Windows:
 
 This removes the keys from your credential store, then the app, then its settings. Uninstalling through the system's own "Remove program" leaves the keys in place (operating systems treat them as your data, not the app's), so press Forget key on each card first if you go that way.
 
+## Command line
+
+The app takes three options and nothing else:
+
+```
+mr-usage                 open the window
+mr-usage --forget-keys   delete every key it stored, then exit (the uninstallers run this)
+mr-usage --help          options, exit codes and the MR_USAGE_LOG variable
+mr-usage --version
+```
+
+Anything else is refused with exit status 2. On Windows the release build has no console, so `--help` prints nothing there; the exit code still applies.
+
 ## If something looks wrong
 
 - "No Secret Service is running" (Linux): the app needs GNOME Keyring, KWallet or KeePassXC. The `.deb` and `.rpm` pull in GNOME Keyring on install. On other setups, install one and log out and in again.

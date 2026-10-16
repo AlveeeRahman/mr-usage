@@ -72,14 +72,42 @@ impl Settings {
         }
     }
 
-    /// Write atomically: a temp file in the same directory, then rename.
+    /// Replace the file without ever leaving a half-written one in its place.
+    ///
+    /// The new contents go into a temp file next to the target, created
+    /// exclusively (so a symlink or leftover planted at that name is refused
+    /// rather than followed) and flushed to disk before the rename, so a
+    /// crash leaves either the old file or the complete new one. The name
+    /// carries the process id and a counter, so two processes cannot stage
+    /// onto the same path. On any failure the temp file is removed and the
+    /// old file stays as it was.
     pub fn save(&self, path: &Path) -> std::io::Result<()> {
+        use std::io::Write;
+        use std::sync::atomic::{AtomicU32, Ordering};
+
+        static STAGED: AtomicU32 = AtomicU32::new(0);
+
         let dir = path.parent().ok_or_else(|| std::io::Error::other("settings path has no parent"))?;
+        let name = path
+            .file_name()
+            .ok_or_else(|| std::io::Error::other("settings path has no file name"))?;
         std::fs::create_dir_all(dir)?;
         let json = serde_json::to_vec_pretty(self).map_err(std::io::Error::other)?;
-        let tmp = path.with_extension("json.tmp");
-        std::fs::write(&tmp, json)?;
-        std::fs::rename(&tmp, path)
+
+        let mut staged = name.to_os_string();
+        staged.push(format!(".{}.{}.tmp", std::process::id(), STAGED.fetch_add(1, Ordering::Relaxed)));
+        let tmp = dir.join(staged);
+        let written = (|| {
+            let mut file = std::fs::OpenOptions::new().write(true).create_new(true).open(&tmp)?;
+            file.write_all(&json)?;
+            file.sync_all()?;
+            std::fs::rename(&tmp, path)
+        })();
+        if written.is_err() {
+            // Best effort: the error being reported is the one that matters.
+            let _ = std::fs::remove_file(&tmp);
+        }
+        written
     }
 }
 
@@ -133,10 +161,37 @@ mod tests {
         assert_eq!(s.enabled, vec!["serpapi".to_owned()]);
     }
 
+    /// A fresh directory per test, removed when the guard drops.
+    struct TempDir(std::path::PathBuf);
+
+    impl TempDir {
+        fn new(tag: &str) -> Self {
+            let dir = std::env::temp_dir().join(format!("mr-usage-settings-{tag}-{}", std::process::id()));
+            let _ = std::fs::remove_dir_all(&dir);
+            std::fs::create_dir_all(&dir).unwrap();
+            Self(dir)
+        }
+
+        fn entries(&self) -> Vec<String> {
+            let mut names: Vec<String> = std::fs::read_dir(&self.0)
+                .unwrap()
+                .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+                .collect();
+            names.sort();
+            names
+        }
+    }
+
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
     #[test]
     fn save_and_load_round_trip() {
-        let dir = std::env::temp_dir().join(format!("mr-usage-settings-{}", std::process::id()));
-        let path = dir.join("settings.json");
+        let dir = TempDir::new("round-trip");
+        let path = dir.0.join("settings.json");
         let s = Settings {
             poll_interval_secs: 600,
             enabled: vec!["elicit".into()],
@@ -146,6 +201,64 @@ mod tests {
         assert_eq!(Settings::load(&path, IDS), s);
         std::fs::write(&path, b"not json").unwrap();
         assert_eq!(Settings::load(&path, IDS), Settings::default());
-        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn save_replaces_the_file_and_leaves_no_staging_file_behind() {
+        let dir = TempDir::new("replace");
+        let path = dir.0.join("settings.json");
+        let first = Settings {
+            poll_interval_secs: 600,
+            ..Settings::default()
+        };
+        let second = Settings {
+            poll_interval_secs: 900,
+            ..Settings::default()
+        };
+        first.save(&path).unwrap();
+        second.save(&path).unwrap();
+        assert_eq!(Settings::load(&path, IDS), second);
+        assert_eq!(dir.entries(), vec!["settings.json".to_owned()]);
+    }
+
+    #[test]
+    fn a_failed_save_keeps_the_old_file_and_cleans_up() {
+        let dir = TempDir::new("failed");
+        let path = dir.0.join("settings.json");
+        let kept = Settings {
+            poll_interval_secs: 600,
+            ..Settings::default()
+        };
+        kept.save(&path).unwrap();
+        // A non-empty directory at the target name lets the staging file be
+        // written in full and then makes the final rename fail.
+        let occupied = dir.0.join("occupied.json");
+        std::fs::create_dir(&occupied).unwrap();
+        std::fs::write(occupied.join("child"), b"").unwrap();
+        assert!(Settings::default().save(&occupied).is_err());
+        // The earlier file is untouched and the staging file was removed.
+        assert_eq!(Settings::load(&path, IDS), kept);
+        assert_eq!(dir.entries(), vec!["occupied.json".to_owned(), "settings.json".to_owned()]);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_symlink_planted_at_the_staging_name_is_not_followed() {
+        let dir = TempDir::new("symlink");
+        let path = dir.0.join("settings.json");
+        let victim = dir.0.join("victim");
+        std::fs::write(&victim, b"untouched").unwrap();
+        // The staging name is predictable for a given process and counter, so
+        // plant links at the next few candidates.
+        for n in 0..8 {
+            let link = dir.0.join(format!("settings.json.{}.{n}.tmp", std::process::id()));
+            std::os::unix::fs::symlink(&victim, &link).unwrap();
+        }
+        assert!(
+            Settings::default().save(&path).is_err(),
+            "an exclusive create must refuse an existing link"
+        );
+        assert_eq!(std::fs::read(&victim).unwrap(), b"untouched");
+        assert!(!path.exists());
     }
 }

@@ -13,7 +13,7 @@ Please report privately through GitHub: open the repository's Security tab and c
 - Contacts only `api.firecrawl.dev`, `serpapi.com`, `elicit.com`, `context7.com`, `api.tavily.com`, `openrouter.ai`, `api.apify.com`, `api.hunter.io` and `api.dev.runwayml.com`, each only for the provider you added a key for, over TLS 1.2 or newer, HTTPS only, with redirects disabled and a host allowlist checked before every request. No telemetry, no update check. (The install scripts, which run outside the app, read GitHub Releases.)
 - Writes one file of its own, `settings.json` (poll interval, enabled providers, theme). On Linux the webview's scratch folder lives in `$XDG_RUNTIME_DIR` and is deleted on exit. On macOS and Windows the system webview keeps its own folder, and the README lists the paths.
 - Runs its window under a strict Content Security Policy, with no network access from the page, devtools compiled out of release builds, and exactly eight commands the page may call.
-- Deletes its own keystore entries when asked (`mr-usage --forget-keys`), which the install scripts do before uninstalling.
+- Deletes its own keystore entries when asked (`mr-usage --forget-keys`), which the install scripts do before uninstalling. `--help` and `--version` are the only other options; an unrecognised argument stops the app with exit status 2 before anything is initialised.
 - Cannot protect keys from someone who can run programs as you. The OS keystore hands keys to processes running under your account.
 
 The full design, including the copies of a key the app cannot zeroize because they live in libraries it does not own, is in [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
@@ -24,7 +24,8 @@ The full design, including the copies of a key the app cannot zeroize because th
 | --- | --- |
 | Formatting | `cargo fmt --all -- --check` |
 | Lints, every warning an error | `cargo clippy --workspace --all-targets -- -D warnings` (no `unwrap`, `expect`, `panic!` or print macros outside tests) |
-| Tests on macOS, Windows and Linux | `cargo test --workspace`, including the log-redaction, settings and allocator leak tests |
+| Tests on macOS, Windows and Linux | `cargo test --workspace`, including the log-redaction, settings, allocator leak and command-line tests |
+| Minimum Rust version | `cargo +1.90 check -p mr-usage-core --locked --all-targets` |
 | Real keystore and leak tests | `cargo test -p mr-usage-core -- --ignored` and `.github/scripts/leak-test-linux.sh` against GNOME Keyring |
 | End-to-end | `.github/e2e/run-linux.sh` drives the real app through WebDriver |
 | Licenses, bans, advisories | `cargo deny check`, `cargo audit -D warnings`, `npm audit --audit-level=low` |

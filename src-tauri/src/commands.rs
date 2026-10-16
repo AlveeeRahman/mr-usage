@@ -35,22 +35,27 @@ impl AppState {
             .ok_or_else(|| "Unknown provider.".to_owned())
     }
 
-    /// Change settings, persist them, and tell the poller. The poller is
+    /// Change settings, tell the poller, then persist them. The poller is
     /// updated while the settings lock is held, so two concurrent updates
     /// (for example two `save_key` calls) cannot reach it in the opposite
     /// order from the one they were saved in.
+    ///
+    /// The change is applied to this session before the file is written, so
+    /// a disk that refuses the write (full, read-only, permissions) does not
+    /// leave the window, the poller and the saved key disagreeing with each
+    /// other. The error says that only the persistence failed.
     fn update(&self, change: impl FnOnce(&mut Settings)) -> Result<Settings, String> {
         let ids = self.poller.provider_ids();
         let mut guard = self.settings();
         let mut next = guard.clone();
         change(&mut next);
         let next = next.sanitized(&ids);
-        next.save(&self.settings_path).map_err(|e| {
-            tracing::warn!(error = %e, "could not save settings");
-            "Could not save settings.".to_owned()
-        })?;
         *guard = next.clone();
         self.poller.apply_settings(&next);
+        next.save(&self.settings_path).map_err(|e| {
+            tracing::warn!(error = %e, "could not save settings");
+            "Applied for this session, but the settings file could not be written.".to_owned()
+        })?;
         Ok(next)
     }
 }

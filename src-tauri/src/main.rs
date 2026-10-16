@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod cli;
 mod commands;
 mod hardening;
 mod logging;
@@ -22,8 +23,27 @@ use crate::commands::AppState;
 pub const UPDATE_EVENT: &str = "usage:update";
 
 fn main() -> ExitCode {
-    if std::env::args().skip(1).any(|a| a == "--forget-keys") {
-        return forget_keys();
+    use std::io::Write;
+
+    match cli::parse(std::env::args_os().skip(1)) {
+        Ok(cli::Command::Help) => {
+            let _ = std::io::stdout().write_all(cli::help_text().as_bytes());
+            return ExitCode::SUCCESS;
+        }
+        Ok(cli::Command::Version) => {
+            let _ = std::io::stdout().write_all(cli::version_text().as_bytes());
+            return ExitCode::SUCCESS;
+        }
+        Ok(cli::Command::ForgetKeys) => return forget_keys(),
+        Ok(cli::Command::Gui) => {}
+        Err(e) => {
+            let _ = writeln!(
+                std::io::stderr(),
+                "mr-usage: {e}\n{}\nTry 'mr-usage --help' for more information.",
+                cli::USAGE
+            );
+            return ExitCode::from(2);
+        }
     }
     logging::init();
     hardening::apply();
@@ -38,10 +58,9 @@ fn main() -> ExitCode {
 
 /// `mr-usage --forget-keys`: delete every key this app stored in the OS
 /// credential store, then exit without opening a window. The install scripts
-/// run it before removing the app. Exit code 0 means every entry is gone or
-/// was never there; 1 means the store could not be reached or refused, and
-/// one line per provider on stderr says so (the messages are built by
-/// `keystore::map_error` and never contain key bytes).
+/// run it before removing the app. Exit codes are documented in `cli.rs`;
+/// the failure lines on stderr are built by `keystore::map_error` and never
+/// contain key bytes.
 fn forget_keys() -> ExitCode {
     use mr_usage_core::keystore::KeyStore;
     use std::io::Write;

@@ -20,7 +20,7 @@ cargo tauri build                                   # installers land in target/
 
 ```
 crates/core/       providers, keystore, redaction, HTTP, poller, midnight wipe, settings. Plain cargo, no Tauri.
-src-tauri/         the Tauri shell: commands, capabilities, CSP, window, signal handling, --forget-keys
+src-tauri/         the Tauri shell: command line, commands, capabilities, CSP, window, signal handling
 src/               the window (TypeScript, no framework)
 install.sh         user-facing installer for macOS and Linux (also the uninstaller)
 install.ps1        the same for Windows
@@ -33,7 +33,8 @@ docs/              threat model, sources, review, follow-ups, the GitHub Pages s
 ```sh
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets -- -D warnings   # no unwrap, expect, panic! or print macros outside tests
-cargo test --workspace                                   # unit tests, redaction, settings, allocator leak scan, source audit
+cargo test --workspace                                   # unit tests, redaction, settings, allocator leak scan, source audit, the binary's command line
+cargo +1.90 check -p mr-usage-core --locked --all-targets # the declared minimum Rust version, for the crate that does not need Tauri's system packages
 cargo deny check && cargo audit -D warnings
 npm run typecheck && npm audit --audit-level=low
 ```
@@ -57,6 +58,10 @@ pwsh .github/scripts/smoke-windows.ps1 -Kind nsis -Installer <setup.exe>
 The same jobs run the user-facing installer against the fresh packages (`install.sh --from <dir>`, `install.ps1 -From <dir>`) and then uninstall with it, so the path a user takes is the path that is tested.
 
 All of this runs on every push through the workflows in `.github/workflows/`. A tag `v*` builds the installers for all platforms, uploads them as a draft release with `SHA256SUMS.txt`, and the install scripts read that list.
+
+## Command line
+
+The binary answers `--help`, `--version` and `--forget-keys` before it initialises logging, hardening or the webview, and refuses anything else with exit status 2 and a usage line on stderr. The grammar lives in `src-tauri/src/cli.rs`; `src-tauri/tests/cli.rs` runs the built binary and checks streams and exit status for every path that does not open a window. `--forget-keys` is kept out of that test on purpose: on a developer's machine it would delete real keys. The install scripts and the release workflow exercise it.
 
 ## Adding a provider
 
