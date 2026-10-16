@@ -1,0 +1,10 @@
+{
+  "hasUsageRemaining": true,
+  "percentUsed": 1,
+  "periodStart": "string",
+  "periodEnd": "string",
+  "extraUsage": {
+    "limitUsdCents": null,
+    "spentUsdCents": 1
+  }
+}

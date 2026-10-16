@@ -1,0 +1,40 @@
+[package]
+name = "mr-usage-core"
+description = "Provider, keystore, redaction and polling logic for Mr. Usage. No Tauri dependency."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+name = "mr_usage_core"
+
+[features]
+# Exposes the in-memory keystore for tests. Never enabled by the app.
+test-util = []
+
+[dependencies]
+async-trait.workspace = true
+jiff.workspace = true
+keyring.workspace = true
+reqwest.workspace = true
+rustls.workspace = true
+secrecy.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+zeroize.workspace = true
+
+[dev-dependencies]
+mr-usage-core = { path = ".", features = ["test-util"] }
+
+[[example]]
+name = "leak_test"
+
+[lints]
+workspace = true
