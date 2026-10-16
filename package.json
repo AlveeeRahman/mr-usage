@@ -2,6 +2,23 @@
   "name": "mr-usage",
   "private": true,
   "version": "0.1.0",
+  "description": "A desktop API credit monitor: see how many Firecrawl, SerpApi and Elicit credits you have left. Keys stay in your OS keychain.",
+  "homepage": "https://alveeerahman.github.io/mr-usage/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlveeeRahman/mr-usage.git"
+  },
+  "keywords": [
+    "api-usage",
+    "usage-monitor",
+    "api-credits",
+    "firecrawl",
+    "serpapi",
+    "elicit",
+    "tauri",
+    "desktop-app",
+    "keychain"
+  ],
   "type": "module",
   "license": "MIT OR Apache-2.0",
   "scripts": {

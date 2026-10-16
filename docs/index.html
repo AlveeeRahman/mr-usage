@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mr. Usage: a desktop API credit monitor</title>
+<meta name="description" content="See how many Firecrawl, SerpApi and Elicit API credits you have left, in one desktop app. Keys stay in your OS keychain. No server, no telemetry.">
+<link rel="canonical" href="https://alveeerahman.github.io/mr-usage/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mr. Usage">
+<meta property="og:title" content="Mr. Usage: a desktop API credit monitor">
+<meta property="og:description" content="See how many Firecrawl, SerpApi and Elicit API credits you have left, in one desktop app. Keys stay in your OS keychain. No server, no telemetry.">
+<meta property="og:url" content="https://alveeerahman.github.io/mr-usage/">
+<meta property="og:image" content="https://alveeerahman.github.io/mr-usage/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Mr. Usage: remaining Firecrawl, SerpApi and Elicit credits in one desktop window">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "Mr. Usage",
+  "description": "See how many Firecrawl, SerpApi and Elicit API credits you have left, in one desktop app. Keys stay in your OS keychain. No server, no telemetry.",
+  "url": "https://alveeerahman.github.io/mr-usage/",
+  "codeRepository": "https://github.com/AlveeeRahman/mr-usage",
+  "programmingLanguage": ["Rust", "TypeScript"],
+  "runtimePlatform": "Tauri 2 desktop app",
+  "operatingSystem": ["macOS", "Windows", "Linux"],
+  "applicationCategory": "UtilitiesApplication",
+  "keywords": "API usage monitor, API credits, Firecrawl, SerpApi, Elicit, Tauri, OS keychain, desktop app",
+  "license": "https://github.com/AlveeeRahman/mr-usage/blob/HEAD/LICENSE-MIT",
+  "version": "0.1.0",
+  "dateModified": "2026-10-16",
+  "downloadUrl": "https://github.com/AlveeeRahman/mr-usage/releases/latest",
+  "author": {
+    "@type": "Person",
+    "name": "Alvee Rahman",
+    "url": "https://github.com/AlveeeRahman"
+  }
+}
+</script>
+<style>
+  :root { --ink:#0b0b0b; --sub:#52514e; --line:#e3e2de; --accent:#256abf; --bg:#fcfcfb; --code:#f0efec; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink:#f0efec; --sub:#c3c2b7; --line:#383835; --accent:#86b6ef; --bg:#1a1a19; --code:#232321; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.65 system-ui, -apple-system, "Segoe UI", "Cantarell", "Noto Sans", sans-serif; }
+  main { max-width: 46rem; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+  h1 { font-size: 2rem; line-height:1.2; margin: 0 0 .5rem; }
+  h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
+  p { margin: .7rem 0; }
+  .sub { color: var(--sub); font-size: 1.05rem; }
+  a { color: var(--accent); }
+  .shots { display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.2rem; }
+  .shots figure { margin:0; flex:1 1 15rem; }
+  .shots img { width:100%; height:auto; display:block; border-radius:8px; border:1px solid var(--line); }
+  figcaption { color:var(--sub); font-size:.85rem; margin-top:.4rem; }
+  pre { background: var(--code); padding: .9rem 1rem; border-radius: 8px; overflow-x:auto; font-size:.85rem; line-height:1.5; }
+  code { background: var(--code); padding:.1rem .3rem; border-radius:4px; font-size:.9em; }
+  pre code { padding:0; background:none; }
+  table { border-collapse: collapse; width:100%; font-size:.92rem; }
+  th, td { text-align:left; padding:.45rem .6rem; border-bottom:1px solid var(--line); vertical-align: top; }
+  .cta { display:inline-block; margin:.8rem .6rem 0 0; padding:.55rem 1rem; border:1px solid var(--accent); border-radius:8px; text-decoration:none; font-weight:600; }
+  ul { padding-left: 1.2rem; }
+  footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--sub); font-size:.9rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Mr. Usage</h1>
+  <p class="sub"><strong>A desktop API credit monitor.</strong> Mr. Usage shows, in one window, how many Firecrawl, SerpApi and Elicit credits you have left, when your plan renews, and how the number moved today. You paste each API key once. It goes into your operating system's own credential store and never comes back to the window.</p>
+
+  <p>
+    <a class="cta" href="https://github.com/AlveeeRahman/mr-usage">GitHub repository</a>
+    <a class="cta" href="https://github.com/AlveeeRahman/mr-usage/releases/latest">Latest release</a>
+  </p>
+
+  <div class="shots">
+    <figure>
+      <img src="assets/screenshot-light.png" alt="Mr. Usage in light mode: Firecrawl nearly out, SerpApi low, Elicit at 99 percent" width="460" height="1479">
+      <figcaption>Light theme. The numbers are each vendor's documented example response, not a real account.</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/screenshot-dark.png" alt="Mr. Usage in dark mode with the same three providers" width="460" height="1479">
+      <figcaption>Dark theme, same example data.</figcaption>
+    </figure>
+  </div>
+
+  <h2>What it does</h2>
+  <ul>
+    <li>Polls each vendor's documented usage endpoint and shows remaining credits out of your plan, the renewal or period-end date, and a line of today's readings.</li>
+    <li>Marks a provider <em>Low</em> under 20% and <em>Nearly out</em> under 5%, with a word next to the colour so the state never depends on colour alone.</li>
+    <li>Keeps usage history in memory only. It is wiped at local midnight, when you press <em>Wipe history now</em>, and when the app quits.</li>
+  </ul>
+
+  <table>
+    <tr><th>Provider</th><th>Endpoint the app calls</th><th>Notes</th></tr>
+    <tr><td>Firecrawl</td><td><code>GET https://api.firecrawl.dev/v2/team/credit-usage</code></td><td>Checked every 30 minutes at most, because Firecrawl does not document whether this call costs a credit.</td></tr>
+    <tr><td>SerpApi</td><td><code>GET https://serpapi.com/account.json</code></td><td>Free, and does not count against your searches.</td></tr>
+    <tr><td>Elicit</td><td><code>GET https://elicit.com/api/v2/usage</code></td><td>Reported as a percentage of your plan. Needs a Pro plan or above.</td></tr>
+  </table>
+
+  <h2>Install</h2>
+  <p>Download the installer for your platform from <a href="https://github.com/AlveeeRahman/mr-usage/releases/latest">GitHub Releases</a> and check it against <code>SHA256SUMS.txt</code> from the same release: a <code>.dmg</code> for macOS (Apple silicon or Intel), a <code>-setup.exe</code> or <code>.msi</code> for Windows, and a <code>.deb</code>, <code>.rpm</code> or AppImage for Linux. The builds are not code-signed, and the <a href="https://github.com/AlveeeRahman/mr-usage#install">README</a> explains what macOS and Windows will say and how to open the app anyway.</p>
+  <pre><code># or build it yourself
+git clone https://github.com/AlveeeRahman/mr-usage.git && cd mr-usage
+cargo install tauri-cli --version 2.12.3 --locked
+cargo tauri build</code></pre>
+
+  <h2>Where your keys live</h2>
+  <p>macOS Keychain, Windows Credential Manager, or the Secret Service on Linux (GNOME Keyring, KWallet, KeePassXC), under the service name <code>mr-usage</code>. The app reads a key at the moment it calls the vendor, wraps it in a zeroizing type, and drops it. There is no server, no account, no analytics and no update check. The only network traffic is the usage call to each vendor you added a key for, over TLS 1.2 or newer to a fixed host list.</p>
+  <p>The full security design is in the <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/THREAT_MODEL.md">threat model</a>, every external fact is sourced in <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/SOURCES.md">SOURCES.md</a>, and an independent review is in <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/REVIEW.md">REVIEW.md</a>.</p>
+
+  <h2>Tested on every change</h2>
+  <p>CI runs the Rust tests on macOS, Windows and Linux, a key-leak test against a real Secret Service, an end-to-end WebDriver run of the real app, and <code>cargo deny</code>, <code>cargo audit</code> and <code>npm audit</code>. A second workflow builds the real installers and checks that each one installs, starts, stops cleanly three ways and uninstalls without leaving files behind.</p>
+
+  <footer>
+    Open source under MIT or Apache-2.0. Also by the same author: <a href="https://alveeerahman.github.io/llm-dogfight/">LLM Dogfight</a>, <a href="https://alveeerahman.github.io/skill-vision/">Skill Vision</a>, <a href="https://alveeerahman.github.io/agent-oracle/">Agent Oracle</a> and <a href="https://alveeerahman.github.io/research-hound/">Research Hound</a>.
+  </footer>
+</main>
+</body>
+</html>

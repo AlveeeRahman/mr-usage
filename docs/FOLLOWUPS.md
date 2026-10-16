@@ -10,6 +10,7 @@ Ideas, known gaps and nearby problems, recorded here instead of implemented. Any
 4. Self-updater (not in v0.1). Tauri's updater plugin needs a signing key pair. The owner has to generate it, keep the private key offline or in a CI secret, and publish the public key in `tauri.conf.json`. Until then users update by downloading a new release and checking its SHA-256 sum.
 5. macOS signing and notarization. The macOS build is unsigned, so Gatekeeper warns. Signing needs an Apple Developer ID, which is a cost and an account decision.
 6. Windows signing. Same, with a code-signing certificate. SmartScreen will warn on unsigned builds.
+7a. Make the repository findable. It is private, so GitHub search, search engines and GitHub Pages (on the free plan) cannot see it. After deciding to make it public: set the description, homepage and 20 topics from `.github/repository-metadata.yml` (the session's proxy does not allow settings writes, so this was not done automatically), turn on Pages from `main` / `docs`, upload `docs/assets/social-preview.png` under Settings > General > Social preview (no API exists for it), and turn on private vulnerability reporting so the link in `SECURITY.md` works.
 
 ## Security hardening worth a design review
 

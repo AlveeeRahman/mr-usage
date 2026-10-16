@@ -1,6 +1,15 @@
-# Mr. Usage
+# Mr. Usage: a desktop API credit monitor
 
-Mr. Usage is a small desktop app that shows, in one window, how much of each paid API you have left. It currently supports Firecrawl, SerpApi and Elicit.
+[![ci](https://github.com/AlveeeRahman/mr-usage/actions/workflows/ci.yml/badge.svg)](https://github.com/AlveeeRahman/mr-usage/actions/workflows/ci.yml)
+[![install-smoke](https://github.com/AlveeeRahman/mr-usage/actions/workflows/smoke.yml/badge.svg)](https://github.com/AlveeeRahman/mr-usage/actions/workflows/smoke.yml)
+[![release](https://img.shields.io/github/v/release/AlveeeRahman/mr-usage?display_name=tag)](https://github.com/AlveeeRahman/mr-usage/releases)
+[![license: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
+
+Documentation: [alveeerahman.github.io/mr-usage](https://alveeerahman.github.io/mr-usage/) · by the author of [LLM Dogfight](https://alveeerahman.github.io/llm-dogfight/), [Skill Vision](https://alveeerahman.github.io/skill-vision/), [Agent Oracle](https://alveeerahman.github.io/agent-oracle/) and [Research Hound](https://alveeerahman.github.io/research-hound/).
+
+![Mr. Usage showing Firecrawl, SerpApi and Elicit credits in dark mode](docs/assets/social-preview.png)
+
+Mr. Usage is a small desktop app that shows, in one window, how much of each paid API you have left. It currently supports Firecrawl, SerpApi and Elicit. The numbers in the picture are each vendor's documented example response, not a real account.
 
 You paste an API key once. The key goes into your operating system's credential store. From then on the app polls each vendor's usage endpoint and shows remaining credits, plan size, the renewal date and today's history.
 

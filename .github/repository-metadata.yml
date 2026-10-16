@@ -1,0 +1,97 @@
+# What this repository says about itself, in one place.
+#
+# This is a record, not a contract: no script reads it and no CI job enforces it.
+# It exists so that the next person, or the next agent, changing the repository
+# description, the topics, the README opening or the Pages <head> has one file to read
+# instead of reverse-engineering the intent from several places that drift apart.
+#
+# When you change a fact here, change it in the places listed under `appears_in` too.
+
+schema_version: 1
+repository: AlveeeRahman/mr-usage
+name: Mr. Usage
+
+canonical_url: https://alveeerahman.github.io/mr-usage/
+sitemap_url: https://alveeerahman.github.io/mr-usage/sitemap.xml
+
+# One precise phrase. It belongs in the title, the opening paragraph, one heading and
+# the repository description, once each, not repeated for its own sake.
+primary_keyword: "desktop API credit monitor"
+
+title: "Mr. Usage: a desktop API credit monitor"
+description: "See how many Firecrawl, SerpApi and Elicit API credits you have left, in one desktop app. Keys stay in your OS keychain. No server, no telemetry."
+
+version: "0.1.0"
+license_spdx: MIT OR Apache-2.0
+programming_language: Rust          # backend and core; the window is TypeScript on Tauri 2
+runtime_platform: macOS, Windows and Linux desktops (Tauri 2 webview)
+author:
+  name: Alvee Rahman
+  url: https://github.com/AlveeeRahman
+
+# Facts that the README, the Pages <head> and the release notes repeat.
+providers: [Firecrawl, SerpApi, Elicit]
+tauri: "2.12.4"
+key_storage: macOS Keychain, Windows Credential Manager, Linux Secret Service (service name "mr-usage")
+history: in memory only, wiped at local midnight and on exit
+
+# Every network connection the software opens. Nothing else is contacted: no update
+# check, no telemetry. reqwest honours HTTPS_PROXY if the user sets it.
+network_surfaces:
+  - component: crates/core/src/providers/firecrawl.rs
+    hosts: [api.firecrawl.dev]
+    purpose: GET /v2/team/credit-usage with the user's key, at most every 30 minutes.
+  - component: crates/core/src/providers/serpapi.rs
+    hosts: [serpapi.com]
+    purpose: GET /account.json with the user's key (free, not counted against searches).
+  - component: crates/core/src/providers/elicit.rs
+    hosts: [elicit.com]
+    purpose: GET /api/v2/usage with the user's key.
+
+# GitHub allows 20. Lowercase words separated by hyphens, describing what the software
+# is rather than how good it is.
+topics:
+  - api-usage
+  - usage-monitor
+  - api-credits
+  - firecrawl
+  - serpapi
+  - elicit
+  - tauri
+  - tauri-app
+  - rust
+  - typescript
+  - desktop-app
+  - cross-platform
+  - macos
+  - windows
+  - linux
+  - keychain
+  - secret-service
+  - credential-manager
+  - privacy
+  - security
+
+# 1280x640, the size GitHub asks for. docs/assets/social-preview.html is the editable
+# source; scripts/render-social-preview.mjs renders it. Upload it by hand in
+# Settings > General > Social preview (GitHub has no API for this).
+social_preview: docs/assets/social-preview.png
+
+suite:
+  - name: LLM Dogfight
+    url: https://alveeerahman.github.io/llm-dogfight/
+  - name: Skill Vision
+    url: https://alveeerahman.github.io/skill-vision/
+  - name: Agent Oracle
+    url: https://alveeerahman.github.io/agent-oracle/
+  - name: Research Hound
+    url: https://alveeerahman.github.io/research-hound/
+
+# The files that repeat the facts above. Keep them in step by hand.
+appears_in:
+  - README.md (H1 and the documentation line)
+  - src-tauri/Cargo.toml (description, homepage, keywords, categories)
+  - package.json (description, homepage, keywords)
+  - docs/index.html
+  - docs/sitemap.xml
+  - github.com repository description, homepage and topics

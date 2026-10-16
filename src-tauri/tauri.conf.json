@@ -7,8 +7,8 @@
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "npm ci && npm run dev",
-    "beforeBuildCommand": "npm ci && npm run build"
+    "beforeDevCommand": "node scripts/ensure-frontend-deps.mjs && npm run dev",
+    "beforeBuildCommand": "node scripts/ensure-frontend-deps.mjs && npm run build"
   },
   "app": {
     "withGlobalTauri": false,
