@@ -16,7 +16,7 @@ Please report privately through GitHub: open the repository's Security tab and c
 - Deletes its own keystore entries when asked (`mr-usage --forget-keys`), which the install scripts do before uninstalling.
 - Cannot protect keys from someone who can run programs as you. The OS keystore hands keys to processes running under your account.
 
-The full design, including the copies of a key the app cannot zeroize because they live in libraries it does not own, is in [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md). An independent review is in [docs/REVIEW.md](docs/REVIEW.md).
+The full design, including the copies of a key the app cannot zeroize because they live in libraries it does not own, is in [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 
 ## What is checked on every change
 

@@ -117,7 +117,7 @@
 
   <h2>Where your keys live</h2>
   <p>macOS Keychain, Windows Credential Manager, or the Secret Service on Linux (GNOME Keyring, KWallet, KeePassXC), under the service name <code>mr-usage</code>. The app reads a key at the moment it calls the vendor, wraps it in a zeroizing type, and drops it. There is no server, no account, no analytics and no update check. The only network traffic is the usage call to each vendor you added a key for, over TLS 1.2 or newer to a fixed host list.</p>
-  <p>The full security design is in the <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/THREAT_MODEL.md">threat model</a>, every external fact is sourced in <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/SOURCES.md">SOURCES.md</a>, and an independent review is in <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/REVIEW.md">REVIEW.md</a>.</p>
+  <p>The full security design is in the <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/THREAT_MODEL.md">threat model</a> and every external fact is sourced in <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/SOURCES.md">SOURCES.md</a>.</p>
 
   <h2>Uninstall</h2>
   <p>Run the same command with <code>--uninstall</code> (macOS, Linux) or <code>-Uninstall</code> (Windows). It removes the keys from your credential store, then the app, then its settings.</p>

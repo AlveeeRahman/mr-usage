@@ -4,9 +4,9 @@ Last reviewed 2026-10-16. Update this file in the same commit as any change that
 
 ## What the app protects
 
-1. API keys for Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway. A leaked key lets someone spend the owner's credits.
+1. API keys for Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway. A leaked key lets someone spend the user's credits.
 2. Account details the vendors echo back. SerpApi's account call returns the key and the account email in its response body. Hunter's returns the owner's name and email. OpenRouter's returns the first and last characters of the key as a label, plus user and workspace identifiers. The parsers leave these fields out of their structs, and `crates/core/tests/source_audit.rs` fails the build if a struct names one of them.
-3. Usage numbers. They are low value, but the owner does not want a record of them to outlive the day.
+3. Usage numbers. They are low value, but no record of them should outlive the day.
 
 ## Trust boundaries
 
@@ -26,7 +26,7 @@ Last reviewed 2026-10-16. Update this file in the same commit as any change that
 
 | Attack | Control | Residual risk |
 | --- | --- | --- |
-| Key leaks into a log line or error message | `redact.rs` strips URL query strings, `api_key=` pairs, bearer tokens and long key-shaped tokens from every log line. Transport errors are built from `reqwest::Error::without_url()`. A test logs a fake SerpApi request and asserts that the key is absent. | A new log call that formats a key in a shape the scrubber does not recognise. Code review and `docs/REVIEW.md` cover this. |
+| Key leaks into a log line or error message | `redact.rs` strips URL query strings, `api_key=` pairs, bearer tokens and long key-shaped tokens from every log line. Transport errors are built from `reqwest::Error::without_url()`. A test logs a fake SerpApi request and asserts that the key is absent. | A new log call that formats a key in a shape the scrubber does not recognise. Code review covers this. |
 | Key leaks into a panic message | No `unwrap`, `expect` or `panic!` outside tests (Clippy denies them). The panic hook prints only a scrubbed message and the source location. | Panics inside dependencies can still carry their own payloads. They pass through the same hook. |
 | Key leaks into freed heap memory | `SecretString` zeroizes on drop. Intermediate buffers (`Bearer ...` header text, response bodies) are `Zeroizing`. Body buffers are allocated once at full size, so they never reallocate and leave old copies behind. `tests/leak.rs` installs a scanning allocator and fails if secret bytes are found in any freed block. | Copies made inside reqwest/hyper (header `Bytes`, the request `Url` for SerpApi, socket buffers), inside serde_json while Tauri decodes the IPC call, and inside the platform credential-store client. See "Known residual risks". |
 | Key leaks to disk | The app writes no key, email or usage number to its own files. There is no cache, database or history file. The webview runs in incognito mode. On Linux, where WebKitGTK still creates `hsts-storage.sqlite` and salt files in its data directory even in incognito mode (observed 2026-10-16), that directory is a per-launch folder in `$XDG_RUNTIME_DIR` deleted on exit. The installer smoke tests fail if the app leaves any file other than `settings.json`. | The OS may page process memory to swap. Use encrypted swap if that matters to you. On Windows, WebView2 keeps a working folder in `%LOCALAPPDATA%\<identifier>` (browser-engine state, no app data). |
@@ -45,7 +45,7 @@ These are copies of a secret that the app cannot zeroize because they live in co
 1. The webview. When you paste a key, the JavaScript engine holds the string. JS strings are immutable and garbage-collected. The app clears the input field, but it cannot wipe the engine's copy.
 2. Tauri IPC decoding. The `save_key` argument arrives as JSON. serde_json builds intermediate values that are freed without zeroizing.
 3. HTTP stack. reqwest copies the `Authorization` header into a `HeaderValue` (marked sensitive, so it is not logged or HPACK-indexed) and hyper copies it into socket buffers. For SerpApi, the key also sits in the request `Url`, because SerpApi only accepts it as a query parameter. SerpApi also echoes the key back in the response body, and hyper's receive buffers hold that copy.
-4. Credential-store client. On Linux, keyring talks to the Secret Service over D-Bus through zbus, using an encrypted session (`crypto-rust`). The plaintext still passes through zbus and the crypto code before encryption. The automated leak test checks the app's own wrapper against an in-memory store. The core-dump leak test in `.github/scripts/leak-test-linux.sh` checks the full path against the real daemon. Its last result is recorded in `docs/SOURCES.md`.
+4. Credential-store client. On Linux, keyring talks to the Secret Service over D-Bus through zbus, using an encrypted session (`crypto-rust`). The plaintext still passes through zbus and the crypto code before encryption. The automated leak test checks the app's own wrapper against an in-memory store. The core-dump leak test in `.github/scripts/leak-test-linux.sh` checks the full path against the real daemon. Results are recorded in `docs/SOURCES.md`.
 5. Same-user attacker. Anyone running code as you can ask the keystore for the keys, read this process's memory (except on Linux, where the non-dumpable flag also blocks `ptrace` attach by processes without `CAP_SYS_PTRACE`), or install a keylogger. This is outside the model by design.
 
 ## Linux without a Secret Service daemon

@@ -82,14 +82,22 @@ try {
     $pkg = $pkg.FullName
     $sums = Join-Path $From 'SHA256SUMS.txt'
   } else {
-    $api = if ($Version) { "https://api.github.com/repos/$Repo/releases/tags/$Version" } else { "https://api.github.com/repos/$Repo/releases/latest" }
     $headers = @{ Accept = 'application/vnd.github+json' }
     # Maintainers and the release workflow set GH_TOKEN so a draft release is
-    # visible; a draft's files must then come through the API asset URL.
+    # visible. A draft has no git tag, so it cannot be fetched by tag; it is
+    # found by listing releases and matching tag_name. Its files must then come
+    # through the API asset URL.
     $token = $env:GH_TOKEN
     if ($token) { $headers.Authorization = "Bearer $token" }
     Write-Host 'Looking up the release...'
-    $release = Invoke-RestMethod -Uri $api -Headers $headers
+    if ($token -and $Version) {
+      $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases?per_page=50" -Headers $headers |
+        Where-Object { $_.tag_name -eq $Version } | Select-Object -First 1
+      if (-not $release) { throw "no release (draft or published) is tagged $Version" }
+    } else {
+      $api = if ($Version) { "https://api.github.com/repos/$Repo/releases/tags/$Version" } else { "https://api.github.com/repos/$Repo/releases/latest" }
+      $release = Invoke-RestMethod -Uri $api -Headers $headers
+    }
     $asset = $release.assets | Where-Object { $_.name -like "*$suffix" } | Select-Object -First 1
     $sumsAsset = $release.assets | Where-Object { $_.name -eq 'SHA256SUMS.txt' } | Select-Object -First 1
     if (-not $asset) { throw "this release has no *$suffix file" }
@@ -131,8 +139,7 @@ try {
   if (-not $exe) { throw 'the installer finished but mr-usage.exe was not found' }
   Write-Host "Installed: $($exe.FullName). Find Mr. Usage in the Start menu."
 } catch {
-  # The release workflow's job log is unreadable from some networks; an
-  # annotation is served by the API, so repeat the failure there.
+  # In GitHub Actions, repeat the failure as an annotation so it shows in the run summary.
   if ($env:GITHUB_ACTIONS) { Write-Host "::error title=install.ps1::$($_.Exception.Message -replace "`r?`n", ' ')" }
   throw
 } finally {

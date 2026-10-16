@@ -13,7 +13,7 @@
 //! logout), removed when the app exits. Incognito is left off there: it adds
 //! nothing on top of a throwaway directory, and wry 0.57 disables WebKit
 //! automation for incognito contexts, which would make the WebDriver
-//! end-to-end test impossible (docs/REVIEW.md, finding 9).
+//! end-to-end test impossible.
 
 use std::path::PathBuf;
 

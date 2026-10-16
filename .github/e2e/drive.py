@@ -29,7 +29,18 @@ def secret_search():
     p = subprocess.run(["secret-tool", "search", "--all", "service", "mr-usage"], capture_output=True, text=True)
     return p.stdout + p.stderr
 
-sid = req("POST", "/session", {"capabilities": {"alwaysMatch": {"tauri:options": {"application": APP}}}})["sessionId"]
+def new_session(attempts=3):
+    """Launch the app under WebDriver. A cold machine can take longer than the
+    driver's own startup wait, so one or two retries are normal."""
+    for i in range(attempts):
+        try:
+            return req("POST", "/session", {"capabilities": {"alwaysMatch": {"tauri:options": {"application": APP}}}})["sessionId"]
+        except Exception as e:
+            print(f"session attempt {i + 1} failed: {e}", flush=True)
+            if i == attempts - 1: raise
+            time.sleep(5)
+
+sid = new_session()
 js = lambda script, *args: req("POST", f"/session/{sid}/execute/sync", {"script": script, "args": list(args)})
 def shot(name):
     png = req("GET", f"/session/{sid}/screenshot")
