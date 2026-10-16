@@ -83,8 +83,13 @@ try {
     $sums = Join-Path $From 'SHA256SUMS.txt'
   } else {
     $api = if ($Version) { "https://api.github.com/repos/$Repo/releases/tags/$Version" } else { "https://api.github.com/repos/$Repo/releases/latest" }
+    $headers = @{ Accept = 'application/vnd.github+json' }
+    # Maintainers and the release workflow set GH_TOKEN so a draft release is
+    # visible; a draft's files must then come through the API asset URL.
+    $token = $env:GH_TOKEN
+    if ($token) { $headers.Authorization = "Bearer $token" }
     Write-Host 'Looking up the release...'
-    $release = Invoke-RestMethod -Uri $api -Headers @{ Accept = 'application/vnd.github+json' }
+    $release = Invoke-RestMethod -Uri $api -Headers $headers
     $asset = $release.assets | Where-Object { $_.name -like "*$suffix" } | Select-Object -First 1
     $sumsAsset = $release.assets | Where-Object { $_.name -eq 'SHA256SUMS.txt' } | Select-Object -First 1
     if (-not $asset) { throw "this release has no *$suffix file" }
@@ -92,8 +97,14 @@ try {
     $pkg = Join-Path $tmp "package$suffix"
     $sums = Join-Path $tmp 'SHA256SUMS.txt'
     Write-Host "Downloading $($asset.name)..."
-    Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $pkg
-    Invoke-WebRequest -Uri $sumsAsset.browser_download_url -OutFile $sums
+    if ($token) {
+      $dl = @{ Accept = 'application/octet-stream'; Authorization = "Bearer $token" }
+      Invoke-WebRequest -Uri $asset.url -Headers $dl -OutFile $pkg
+      Invoke-WebRequest -Uri $sumsAsset.url -Headers $dl -OutFile $sums
+    } else {
+      Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $pkg
+      Invoke-WebRequest -Uri $sumsAsset.browser_download_url -OutFile $sums
+    }
   }
 
   if (Test-Path $sums) {

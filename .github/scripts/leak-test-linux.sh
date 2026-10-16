@@ -11,7 +11,7 @@
 # could not run.
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 DUMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$DUMP_DIR"' EXIT
 

@@ -125,6 +125,16 @@ if [ -n "$FROM" ]; then
   PKG="$(find "$FROM" -maxdepth 1 -name "*$SUFFIX" | head -n 1)"
   [ -n "$PKG" ] || die "no *$SUFFIX in $FROM"
   SUMS="$FROM/SHA256SUMS.txt"
+elif [ -n "${GH_TOKEN:-}" ] && command -v gh >/dev/null 2>&1; then
+  # Maintainers and the release workflow: `gh` can read a draft release,
+  # which the public download URLs cannot. Users never take this branch.
+  [ -n "$VERSION" ] || die "set --version when installing through gh"
+  say "Downloading $VERSION through gh..."
+  gh release download "$VERSION" --repo "$REPO" --dir "$TMP" --pattern "*$SUFFIX" --pattern "SHA256SUMS.txt" || die "gh could not download release $VERSION"
+  PKG="$(find "$TMP" -maxdepth 1 -name "*$SUFFIX" | head -n 1)"
+  [ -n "$PKG" ] || die "release $VERSION has no *$SUFFIX file"
+  SUMS="$TMP/SHA256SUMS.txt"
+  [ -f "$SUMS" ] || die "release $VERSION has no SHA256SUMS.txt, so the download cannot be verified; nothing installed"
 else
   command -v curl >/dev/null 2>&1 || die "curl is required"
   if [ -n "$VERSION" ]; then API="https://api.github.com/repos/$REPO/releases/tags/$VERSION"

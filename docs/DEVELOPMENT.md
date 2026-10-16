@@ -73,4 +73,10 @@ All of this runs on every push through the workflows in `.github/workflows/`. A 
 git tag v0.2.0 && git push origin v0.2.0
 ```
 
-The release workflow builds macOS (Apple silicon and Intel), Windows and Linux, uploads everything to a draft release, and appends `SHA256SUMS.txt`. Review the draft on GitHub and publish it. The install scripts fetch the latest published release, so a draft is invisible to users until you publish.
+The release workflow builds macOS (Apple silicon and Intel), Windows and Linux, uploads everything to a draft release, appends `SHA256SUMS.txt`, and then installs that draft on a fresh runner of each OS through `install.sh --version v0.2.0` and `install.ps1 -Version v0.2.0`, and uninstalls it again. Review the draft on GitHub and publish it. The install scripts fetch the latest published release, so a draft is invisible to users until you publish.
+
+### Delivery rehearsal
+
+Run the same workflow by hand (Actions → release → Run workflow, or `gh workflow run release.yml --ref main`). It builds a throwaway draft named `v0.0.0-ci.<run number>`, runs the checksum and install jobs against it, and deletes the draft at the end. Nothing is published and no git tag is created. Use it after changing the bundler config, the install scripts or the release workflow itself. It costs four build runners, two of them macOS.
+
+The scripts find a draft through `GH_TOKEN`: `install.sh` then downloads with `gh`, and `install.ps1` reads the API asset URLs. Users never set that variable and take the public download path.

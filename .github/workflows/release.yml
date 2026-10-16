@@ -1,8 +1,20 @@
 name: release
 
-# Push a tag such as v0.1.0 to build installers for macOS (Apple silicon and
-# Intel), Linux and Windows and attach them, with SHA-256 sums, to a draft
-# GitHub release. Review the draft, then publish it by hand.
+# Two ways in:
+#
+# 1. Push a tag such as v0.1.0. Installers for macOS (Apple silicon and Intel),
+#    Linux and Windows are built and attached, with SHA-256 sums, to a DRAFT
+#    release. Then `verify-install` installs that draft on a fresh runner of
+#    each OS through the user-facing scripts (`install.sh --version`,
+#    `install.ps1 -Version`) and uninstalls it again. Review the draft and
+#    publish it by hand; nothing is public until you do.
+#
+# 2. Run the workflow by hand (workflow_dispatch) from any branch. The same
+#    pipeline runs against a throwaway draft named v0.0.0-ci.<run number>,
+#    marked pre-release, and the last job deletes that draft. This is the
+#    delivery rehearsal: it proves the build, the checksum list, the download
+#    path and the install scripts end to end without publishing anything.
+#
 # Workflow shape follows https://v2.tauri.app/distribute/pipelines/github/.
 on:
   push:
@@ -12,11 +24,13 @@ on:
 permissions:
   contents: read
 
+env:
+  # A pushed tag is the release; a manual run gets a disposable draft.
+  TAG: ${{ github.event_name == 'push' && github.ref_name || format('v0.0.0-ci.{0}', github.run_number) }}
+
 jobs:
   build:
-    # A manual run from a branch would otherwise create a tag and draft
-    # release named after the branch (tagName is github.ref_name).
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
     strategy:
@@ -54,11 +68,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "Mr. Usage ${{ github.ref_name }}"
+          tagName: ${{ env.TAG }}
+          releaseName: "Mr. Usage ${{ env.TAG }}"
           releaseBody: "Install with the one-line command in the README; it picks the right file and verifies it against SHA256SUMS.txt for you. Builds are not code-signed yet."
           releaseDraft: true
-          prerelease: false
+          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
           uploadUpdaterJson: false
           args: ${{ matrix.args }}
 
@@ -71,10 +85,71 @@ jobs:
       - name: Publish SHA-256 sums for every release asset
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.ref_name }}
         run: |
           mkdir assets && cd assets
           gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*'
           rm -f SHA256SUMS.txt
           sha256sum -- * | tee SHA256SUMS.txt
           gh release upload "$TAG" SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber
+
+  # The path a user takes, on a machine that has never seen the app. The
+  # scripts read the draft through the repository token (a draft is invisible
+  # without one), download the package and SHA256SUMS.txt, verify, install,
+  # then uninstall through the same script.
+  verify-install:
+    needs: checksums
+    permissions:
+      contents: write # reading a draft release needs push rights on the repository
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+          - os: macos-latest
+          - os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - if: runner.os == 'Linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y gnome-keyring
+          sh install.sh --version "$TAG"
+          test -x /usr/bin/mr-usage
+          /usr/bin/mr-usage --forget-keys || true
+          sh install.sh --uninstall
+          ! test -e /usr/bin/mr-usage
+      - if: runner.os == 'macOS'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sh install.sh --version "$TAG"
+          test -x "/Applications/Mr. Usage.app/Contents/MacOS/mr-usage"
+          if xattr -p com.apple.quarantine "/Applications/Mr. Usage.app" 2>/dev/null; then echo "quarantine flag still set"; exit 1; fi
+          sh install.sh --uninstall
+          ! test -e "/Applications/Mr. Usage.app"
+      - if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./install.ps1 -Version $env:TAG
+          if (-not (Get-ChildItem -Path $env:LOCALAPPDATA -Filter mr-usage.exe -Recurse -Depth 2)) { throw 'not installed' }
+          ./install.ps1 -Uninstall
+          if (Get-ChildItem -Path $env:LOCALAPPDATA -Filter mr-usage.exe -Recurse -Depth 2 -ErrorAction SilentlyContinue) { throw 'still installed' }
+
+  # A rehearsal leaves nothing behind. (A draft has no git tag, so there is
+  # nothing else to remove.) A real tag's draft stays for review.
+  cleanup-rehearsal:
+    if: always() && github.event_name == 'workflow_dispatch' && needs.build.result != 'skipped'
+    needs: [build, checksums, verify-install]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes || echo "no draft to delete"
