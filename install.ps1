@@ -130,6 +130,11 @@ try {
   for ($i = 0; $i -lt 30 -and -not $exe; $i++) { $exe = Find-Exe; if (-not $exe) { Start-Sleep 1 } }
   if (-not $exe) { throw 'the installer finished but mr-usage.exe was not found' }
   Write-Host "Installed: $($exe.FullName). Find Mr. Usage in the Start menu."
+} catch {
+  # The release workflow's job log is unreadable from some networks; an
+  # annotation is served by the API, so repeat the failure there.
+  if ($env:GITHUB_ACTIONS) { Write-Host "::error title=install.ps1::$($_.Exception.Message -replace "`r?`n", ' ')" }
+  throw
 } finally {
   Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
 }
