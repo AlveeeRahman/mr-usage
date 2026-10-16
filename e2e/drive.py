@@ -64,7 +64,7 @@ try:
     found = secret_search()
     check("key is in the OS keystore (Secret Service)", "serpapi" in found and "mr-usage" in found)
     hint = wait_for("const d=[...document.querySelectorAll('.facts dt')].find(x=>x.textContent==='Key'); return d?d.nextElementSibling.textContent:null", 10)
-    check("masked key hint shown", hint == "••••e2f0" or (hint or "").startswith("••••"), hint)
+    check("masked key hint shown (last four characters only)", hint == "••••" + KEY[-4:], hint)
     check("full key never in the DOM", KEY not in js("return document.documentElement.outerHTML"))
     err = wait_for("const e=document.querySelector('.card .error'); return e?e.textContent:null", 40)
     check("first poll ran and the card shows an error for the fake key", err, err)

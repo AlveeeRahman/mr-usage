@@ -14,7 +14,7 @@ There is no server, no account, no telemetry and no update check. The only netwo
 | Settings (poll interval, which providers are on, theme) | A small `settings.json` in the app's config folder | Until you delete it |
 | Usage numbers and history | Memory only | Wiped at local midnight, when you press Wipe history now, and when the app quits |
 
-The app writes no other files. On Linux the webview's scratch folder lives in `$XDG_RUNTIME_DIR` (a RAM disk only you can read) and is deleted on exit.
+The app itself writes no other files, but the system webview does. On Linux its scratch folder lives in `$XDG_RUNTIME_DIR` (a RAM disk only you can read. The system temp folder if that variable is unset) and is deleted on exit. On Windows, WebView2 keeps a working folder in `%LOCALAPPDATA%\io.github.alveeerahman.mr-usage`, and on macOS WebKit may create folders under `~/Library/Caches` and `~/Library/WebKit`. Neither is removed on exit yet (see `docs/FOLLOWUPS.md`).
 
 Mr. Usage cannot protect you from anyone who can run programs as you. Your OS credential store hands keys to processes running under your account, and Mr. Usage cannot change that. If your account is compromised, rotate your API keys.
 
@@ -90,7 +90,7 @@ The full version is in [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md).
 - Keys are written only to the OS credential store, read at fetch time, wrapped in `secrecy::SecretString` and zeroized on drop. They are never cached in app state and never sent back to the window.
 - HTTP goes through rustls (ring provider), TLS 1.2 or newer, HTTPS only, redirects off, a 15-second timeout and a per-provider host allowlist checked before each request. Response bodies are capped at 64 KiB and zeroized.
 - Every log line passes through a redaction layer. The default level is `warn`.
-- The window runs a strict Content Security Policy (no inline scripts, no remote origins, `connect-src 'none'`), cannot load any page outside the app, has devtools compiled out of release builds, and can call only the eight commands listed in `src-tauri/capabilities/main.json`. No HTTP, shell, filesystem or opener plugin is included.
+- The window runs a strict Content Security Policy (no inline scripts, no remote origins, `connect-src 'none'`), cannot load any page outside the app, has devtools compiled out of release builds, and can call only the eight commands listed in `src-tauri/capabilities/main.json`, plus listening for the app's update event. No HTTP, shell, filesystem or opener plugin is included.
 - On Linux the process disables core dumps and marks itself non-dumpable at startup.
 - `SIGTERM`, `SIGINT` and closing the window all take the same exit path: history is wiped, the webview scratch folder is deleted, and the exit code is 0.
 - Known residual copies of a key (the webview's input, Tauri's IPC decoding, the HTTP stack) are listed in the threat model rather than hidden.

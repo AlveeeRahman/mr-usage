@@ -2,8 +2,11 @@
 
 /// On Linux, set the core-file limit to zero and mark the process
 /// non-dumpable, so a crash cannot write keys to disk and processes without
-/// `CAP_SYS_PTRACE` cannot `ptrace` attach (see PR_SET_DUMPABLE(2const)).
-/// Other platforms do not write core files by default.
+/// `CAP_SYS_PTRACE` cannot `ptrace` attach (see PR_SET_DUMPABLE(2const),
+/// https://man7.org/linux/man-pages/man2/PR_SET_DUMPABLE.2const.html, read
+/// 2026-10-16). macOS writes no core files unless the core limit is raised.
+/// Windows Error Reporting can still capture dumps (docs/FOLLOWUPS.md).
+/// TODO(verify): source URLs for the macOS and Windows statements.
 #[cfg(target_os = "linux")]
 #[allow(unsafe_code)]
 pub fn apply() {

@@ -42,6 +42,12 @@ sys.exit(1 if failed or not results else 0)
 PY
 
 KEY="e2e0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0"
+# The leak grep is only meaningful if the app's own log reached app.log. The
+# fake key always fails its first poll, which logs "poll failed" at warn.
+if ! grep -q "poll failed" "$OUT/app.log"; then
+  echo "FAIL: app.log holds no log line from the app, so the leak grep below would prove nothing"
+  exit 1
+fi
 for needle in "$KEY" api_key Authorization; do
   if grep -q "$needle" "$OUT/app.log"; then
     echo "FAIL: app log contains $needle"

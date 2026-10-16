@@ -18,7 +18,7 @@ Last reviewed 2026-10-16. Update this file in the same commit as any change that
 | The app's logs | No | Every log line passes through `redact.rs` before it reaches stderr. The default level is `warn`. |
 | Crash dumps | No | On Linux the process marks itself non-dumpable and sets the core-file limit to zero at startup. |
 | The settings file | No | Holds poll interval, enabled providers and theme only. A test fails the build if a secret-like field name ever appears in it. |
-| The webview (HTML/JS) | No | It sees a key once, in the input field, at paste time. It never gets a key back from Rust. It cannot make network requests (`connect-src` allows only Tauri's IPC) and can only call the commands listed in `src-tauri/capabilities/main.json`. |
+| The webview (HTML/JS) | No | It sees a key once, in the input field, at paste time. It never gets a key back from Rust. It cannot make network requests (`connect-src 'none'`. Tauri's IPC falls back from its custom-protocol `fetch` to `postMessage`, which CSP does not govern) and can only call the commands listed in `src-tauri/capabilities/main.json`. |
 | The network | No | TLS 1.2 or newer through rustls with the ring provider. Redirects are disabled. A per-provider host allowlist is checked before every request. |
 | Vendor responses | No | Bodies are capped at 64 KiB, parsed into structs that leave out echoed secrets, and the raw buffer is zeroized. Vendor error strings are stripped of control characters, truncated, scrubbed and shown with `textContent`, never as HTML. |
 

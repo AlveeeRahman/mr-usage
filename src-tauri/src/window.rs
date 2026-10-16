@@ -1,11 +1,19 @@
 //! The main window is created in code, not in `tauri.conf.json`, so its
 //! webview storage can be made ephemeral.
 //!
-//! `incognito(true)` gives every platform a non-persistent website data store.
-//! On Linux, WebKitGTK still creates files in its base data directory
-//! (`hsts-storage.sqlite`, cache and storage salts) even in that mode, so the
-//! base directory is pointed at a per-launch folder in `$XDG_RUNTIME_DIR` (a
-//! user-only tmpfs cleared at logout) and removed when the app exits.
+//! On macOS and Windows the webview runs in incognito mode, which gives it a
+//! non-persistent website data store. TODO(verify): the non-persistent store
+//! on macOS and Windows; WebView2 still creates its user data folder
+//! (docs/FOLLOWUPS.md).
+//!
+//! On Linux, WebKitGTK writes `hsts-storage.sqlite`, cache and storage salts
+//! into its base data directory whether or not incognito is on (observed
+//! 2026-10-16 with WebKitGTK 4.1), so the whole base directory is a
+//! per-launch folder in `$XDG_RUNTIME_DIR` (a user-only tmpfs cleared at
+//! logout), removed when the app exits. Incognito is left off there: it adds
+//! nothing on top of a throwaway directory, and wry 0.57 disables WebKit
+//! automation for incognito contexts, which would make the WebDriver
+//! end-to-end test impossible (docs/REVIEW.md, finding 9).
 
 use std::path::PathBuf;
 
@@ -18,8 +26,7 @@ pub fn create_main(app: &mut App) -> tauri::Result<()> {
     let builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
         .title("Mr. Usage")
         .inner_size(460.0, 760.0)
-        .min_inner_size(360.0, 480.0)
-        .incognito(true);
+        .min_inner_size(360.0, 480.0);
 
     #[cfg(target_os = "linux")]
     let builder = {
@@ -28,7 +35,10 @@ pub fn create_main(app: &mut App) -> tauri::Result<()> {
         builder.data_directory(dir)
     };
     #[cfg(not(target_os = "linux"))]
-    app.manage(EphemeralDir(None));
+    let builder = {
+        app.manage(EphemeralDir(None));
+        builder.incognito(true)
+    };
 
     builder.build()?;
     Ok(())

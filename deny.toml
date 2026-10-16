@@ -12,11 +12,17 @@ targets = [
 [advisories]
 version = 2
 yanked = "deny"
+# cargo-deny's default scope for these is "workspace" (direct dependencies only),
+# which would hide every transitive advisory. Match cargo-audit -D warnings.
+unmaintained = "all"
+unsound = "all"
 ignore = [
   # Compile-time proc-macro helper pulled in by gtk-rs 0.18 (glib-macros, gtk3-macros), which
   # Tauri 2's Linux webview stack depends on. It never runs in the shipped binary and no safe
   # upgrade exists. Revisit when Tauri moves off GTK3; tracked in docs/FOLLOWUPS.md.
   { id = "RUSTSEC-2024-0370", reason = "build-time only, via Tauri's GTK3 stack; no upgrade available" },
+  # glib 0.18 `VariantStrIter` unsoundness, same GTK3 stack. Mr. Usage never calls GVariant APIs.
+  { id = "RUSTSEC-2024-0429", reason = "glib 0.18 via Tauri's GTK3 stack; GVariant APIs unused; no upgrade available" },
 ]
 
 [licenses]
