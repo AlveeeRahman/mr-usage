@@ -28,7 +28,6 @@ const $ = <T extends HTMLElement>(id: string): T => {
 };
 
 const numberFmt = new Intl.NumberFormat();
-const dateFmt = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" });
 const timeFmt = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" });
 const utcDateFmt = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
 
@@ -97,7 +96,9 @@ function renderCard(view: ProviderView): HTMLElement {
 
   const facts = h("dl", "facts");
   const fact = (label: string, value: string) => facts.append(h("dt", undefined, label), h("dd", undefined, value));
-  if (latest?.periodEndMs) fact(view.id === "serpapi" ? "Renews" : "Period ends", dateFmt.format(latest.periodEndMs));
+  // Billing dates are UTC (SerpApi sends a bare date, parsed as UTC midnight).
+  // Formatting them in local time would show the previous day west of UTC.
+  if (latest?.periodEndMs) fact(view.id === "serpapi" ? "Renews" : "Period ends", utcDateFmt.format(latest.periodEndMs));
   for (const [label, value] of latest?.extra ?? []) fact(label, localizeExtra(value));
   fact("Last reading", view.lastSuccessMs ? timeFmt.format(view.lastSuccessMs) : "None yet");
   fact("Checks every", minutes(view.pollIntervalSecs));

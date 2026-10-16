@@ -14,6 +14,9 @@ permissions:
 
 jobs:
   build:
+    # A manual run from a branch would otherwise create a tag and draft
+    # release named after the branch (tagName is github.ref_name).
+    if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
     strategy:
@@ -31,6 +34,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update

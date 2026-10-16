@@ -22,14 +22,22 @@ const MARKERS: &[&str] = &[
     "password",
     "bearer",
     "authorization",
+    "proxy-authorization",
 ];
 
+/// HTTP auth scheme names. After a marker, a scheme word is redacted and the
+/// redaction carries on to the credential that follows it
+/// (`Authorization: Basic <value>`).
+const AUTH_SCHEMES: &[&str] = &["basic", "digest", "negotiate", "ntlm"];
+
 /// Prefixes of vendor key formats. Firecrawl documents `fc-`, Elicit documents
-/// `elk_live_`.
+/// `elk_live_` (docs/SOURCES.md, Elicit row, 2026-10-16). TODO(verify): the
+/// Firecrawl `fc-` prefix and `elk_test_` have no recorded source.
 const KEY_PREFIXES: &[&str] = &["fc-", "elk_live_", "elk_test_"];
 
 /// A bare token at least this long that mixes letters and digits is treated as
-/// a key. SerpApi keys are 64 hex characters.
+/// a key. SerpApi keys are 64 hex characters. TODO(verify): no source is
+/// recorded for that length; the rule does not depend on it.
 const LONG_TOKEN: usize = 32;
 
 /// Remove the userinfo, query string and fragment from a URL-shaped string.
@@ -117,7 +125,7 @@ fn scrub_tokens(text: &str) -> String {
             } else {
                 out.push_str(word);
             }
-            redact_next = is_marker(word);
+            redact_next = is_marker(word) || (redact_next && is_auth_scheme(word));
         } else {
             out.push(c);
             chars.next();
@@ -135,14 +143,24 @@ fn is_marker(word: &str) -> bool {
     MARKERS.iter().any(|m| lower == *m)
 }
 
+fn is_auth_scheme(word: &str) -> bool {
+    let lower = word.to_ascii_lowercase();
+    AUTH_SCHEMES.iter().any(|s| lower == *s)
+}
+
+fn has_key_prefix(word: &str) -> bool {
+    KEY_PREFIXES.iter().any(|p| word.starts_with(p) && word.len() >= p.len() + 8)
+}
+
+/// Each `/`-separated segment is checked on its own, so a key inside a URL
+/// path or after a slash is still caught, while a long file path made of
+/// short segments is left alone.
 fn looks_like_key(word: &str) -> bool {
-    if KEY_PREFIXES.iter().any(|p| word.starts_with(p) && word.len() >= p.len() + 8) {
-        return true;
-    }
-    word.len() >= LONG_TOKEN
-        && word.chars().any(|c| c.is_ascii_digit())
-        && word.chars().any(|c| c.is_ascii_alphabetic())
-        && !word.contains('/')
+    has_key_prefix(word)
+        || word.split('/').any(|seg| {
+            has_key_prefix(seg)
+                || (seg.len() >= LONG_TOKEN && seg.chars().any(|c| c.is_ascii_digit()) && seg.chars().any(|c| c.is_ascii_alphabetic()))
+        })
 }
 
 /// Strip control characters, collapse whitespace, truncate and scrub a string
@@ -162,15 +180,16 @@ pub fn vendor_text(raw: &str, max_chars: usize) -> String {
         }
         cleaned.push(c);
     }
-    let trimmed = cleaned.trim();
-    let truncated: String = if trimmed.chars().count() > max_chars {
-        let mut s: String = trimmed.chars().take(max_chars).collect();
+    // Scrub before truncating: a cut that lands inside a key would leave a
+    // fragment too short for the key-shape rules to recognise.
+    let scrubbed = scrub(cleaned.trim());
+    if scrubbed.chars().count() > max_chars {
+        let mut s: String = scrubbed.chars().take(max_chars).collect();
         s.push('…');
         s
     } else {
-        trimmed.to_owned()
-    };
-    scrub(&truncated)
+        scrubbed
+    }
 }
 
 /// A `MakeWriter` that scrubs each formatted log event before it reaches the
@@ -319,6 +338,38 @@ mod tests {
         assert!(!out.contains(FC_KEY));
         assert!(!out.contains(SERP_KEY));
         assert!(!out.contains("elk_live_abcdefgh1234"));
+    }
+
+    #[test]
+    fn keys_after_a_slash_are_scrubbed() {
+        for text in [
+            format!("https://elicit.com/api/v2/{SERP_KEY}"),
+            format!("path/{SERP_KEY}"),
+            format!("x/{FC_KEY}"),
+        ] {
+            let out = scrub(&text);
+            assert!(!out.contains(SERP_KEY) && !out.contains(FC_KEY), "{out}");
+        }
+        // A file path made of short segments is not mistaken for a key.
+        let path = "/usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0";
+        assert_eq!(scrub(path), path);
+    }
+
+    #[test]
+    fn auth_scheme_does_not_end_redaction() {
+        for text in ["Authorization: Basic dXNlcjpwYXNz", "Proxy-Authorization: Digest abc123"] {
+            let out = scrub(text);
+            assert!(!out.contains("dXNlcjpwYXNz") && !out.contains("abc123"), "{out}");
+        }
+    }
+
+    #[test]
+    fn truncation_cannot_leave_a_key_fragment() {
+        // The key starts 20 characters before the cut, so truncating first
+        // would leave a 20-character fragment that no rule recognises.
+        let text = format!("{} {SERP_KEY}", "a".repeat(179));
+        let out = vendor_text(&text, 200);
+        assert!(!out.contains(&SERP_KEY[..20]), "{out}");
     }
 
     #[test]

@@ -66,6 +66,8 @@ export const updateSettings = (pollIntervalSecs: number, theme: Theme) =>
   invoke<SettingsView>("update_settings", { pollIntervalSecs, theme });
 export const wipeNow = () => invoke<void>("wipe_now");
 
+// The returned UnlistenFn must not be called: `core:event:allow-unlisten` is
+// deliberately not granted, because the app listens for its whole lifetime.
 export const onUpdate = (handler: (view: ProviderView) => void): Promise<UnlistenFn> =>
   listen<ProviderView>(UPDATE_EVENT, (event) => handler(event.payload));
 

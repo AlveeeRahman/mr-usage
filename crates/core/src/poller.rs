@@ -40,6 +40,9 @@ struct Runtime {
     failures: u32,
     in_flight: bool,
     has_key: bool,
+    /// Bumped whenever the key is saved or forgotten. A poll that started
+    /// under an older generation used the old key; its result is discarded.
+    generation: u64,
 }
 
 struct State {
@@ -290,6 +293,7 @@ impl Poller {
                 *rt = Runtime {
                     has_key: true,
                     next_due: Some(now),
+                    generation: rt.generation.wrapping_add(1),
                     ..Runtime::default()
                 };
             }
@@ -301,7 +305,10 @@ impl Poller {
         {
             let mut state = self.lock();
             if let Some(rt) = state.runtime.get_mut(id) {
-                *rt = Runtime::default();
+                *rt = Runtime {
+                    generation: rt.generation.wrapping_add(1),
+                    ..Runtime::default()
+                };
             }
         }
         self.emit(id);
@@ -382,7 +389,7 @@ impl Poller {
         let provider = Arc::clone(self.provider(id).ok_or(PollerError::UnknownProvider)?);
         let id = provider.id();
         let started = self.clock.now().timestamp();
-        {
+        let generation = {
             let mut state = self.lock();
             let rt = state.runtime.get_mut(id).ok_or(PollerError::UnknownProvider)?;
             if rt.in_flight {
@@ -390,7 +397,8 @@ impl Poller {
             }
             rt.in_flight = true;
             rt.last_attempt = Some(started);
-        }
+            rt.generation
+        };
 
         let store = Arc::clone(&self.keystore);
         let key = tokio::task::spawn_blocking(move || store.get(id))
@@ -407,6 +415,13 @@ impl Poller {
         let finished = self.clock.now().timestamp();
         {
             let mut state = self.lock();
+            if state.runtime.get(id).is_some_and(|rt| rt.generation != generation) {
+                // The key was saved or forgotten while this request was out.
+                // The result belongs to the old key, and the reset runtime
+                // owns `in_flight` now, so leave everything as it is.
+                drop(state);
+                return self.view_of(id).ok_or(PollerError::UnknownProvider);
+            }
             let interval = Self::interval_for(provider.as_ref(), state.interval);
             let enabled = state.enabled.iter().any(|e| e == id);
             let rt = state.runtime.get_mut(id).ok_or(PollerError::UnknownProvider)?;
@@ -676,6 +691,75 @@ mod tests {
         advance(&h.clock, 61);
         assert!(h.poller.refresh("mock").await.is_ok());
         assert_eq!(h.poller.refresh("nope").await, Err(PollerError::UnknownProvider));
+    }
+
+    /// Blocks in `fetch` until released, then rejects the key.
+    struct Gated {
+        entered: tokio::sync::Notify,
+        release: tokio::sync::Notify,
+    }
+
+    #[async_trait]
+    impl Provider for Gated {
+        fn id(&self) -> &'static str {
+            "mock"
+        }
+        fn display_name(&self) -> &'static str {
+            "Mock"
+        }
+        fn docs_url(&self) -> &'static str {
+            "https://example.com/docs"
+        }
+        fn endpoint(&self) -> &'static str {
+            "https://example.com/usage"
+        }
+        fn allowed_host(&self) -> &'static str {
+            "example.com"
+        }
+        fn unit(&self) -> Unit {
+            Unit::Credits
+        }
+        fn min_poll_interval(&self) -> Duration {
+            Duration::from_secs(60)
+        }
+        async fn fetch(&self, _key: &SecretString, _http: &Http) -> Result<Snapshot, ProviderError> {
+            self.entered.notify_one();
+            self.release.notified().await;
+            Err(ProviderError::Unauthorized)
+        }
+    }
+
+    #[tokio::test]
+    async fn result_for_a_replaced_key_is_discarded() {
+        let gate = Arc::new(Gated {
+            entered: tokio::sync::Notify::new(),
+            release: tokio::sync::Notify::new(),
+        });
+        let store = Arc::new(MemoryKeyStore::default());
+        store.set("mock", &SecretString::from("old-key".to_owned())).unwrap();
+        let settings = Settings {
+            enabled: vec!["mock".into()],
+            ..Settings::default()
+        };
+        let poller = Poller::new(
+            vec![gate.clone() as Arc<dyn Provider>],
+            store,
+            Http::new().unwrap(),
+            Arc::new(FakeClock::new("2026-10-16T12:00:00+00:00[UTC]".parse::<Zoned>().unwrap())),
+            Arc::new(|_: &ProviderView| {}),
+            &settings,
+        );
+        poller.load_key_presence().await;
+        let p = Arc::clone(&poller);
+        let task = tokio::spawn(async move { p.refresh("mock").await });
+        gate.entered.notified().await;
+        // The user saves a new key while the old key's request is out.
+        poller.key_saved("mock");
+        gate.release.notify_one();
+        task.await.unwrap().unwrap();
+        let v = poller.view_of("mock").unwrap();
+        assert!(v.error.is_none(), "old key's rejection leaked onto the new key: {:?}", v.error);
+        assert!(v.next_poll_ms.is_some(), "the new key must still be polled");
     }
 
     #[tokio::test]

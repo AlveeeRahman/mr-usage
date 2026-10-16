@@ -1,12 +1,11 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
-  "description": "Exactly the commands the main window calls, plus listening for the usage event. Nothing else.",
+  "description": "Exactly the commands the main window calls, plus listening for the usage event. The frontend never unlistens, so unlisten is not granted. Nothing else.",
   "windows": ["main"],
   "platforms": ["linux", "macOS", "windows"],
   "permissions": [
     "core:event:allow-listen",
-    "core:event:allow-unlisten",
     "allow-list-providers",
     "allow-save-key",
     "allow-forget-key",
