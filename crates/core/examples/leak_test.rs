@@ -3,7 +3,7 @@
 //! Usage's own keystore wrapper instead of a raw `keyring_core::Entry`.
 //!
 //! It stores a secret, reads it back, drops every client copy, then waits
-//! while `scripts/leak-test-linux.sh` dumps the process and greps the dump for
+//! while `.github/scripts/leak-test-linux.sh` dumps the process and greps the dump for
 //! `super-duper-password`. Any hit means the secret survived somewhere in
 //! memory: in our wrapper, in keyring, or in the platform client.
 //!

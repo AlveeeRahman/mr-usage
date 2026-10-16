@@ -19,7 +19,7 @@ sitemap_url: https://alveeerahman.github.io/mr-usage/sitemap.xml
 primary_keyword: "desktop API credit monitor"
 
 title: "Mr. Usage: a desktop API credit monitor"
-description: "See how many Firecrawl, SerpApi and Elicit API credits you have left, in one desktop app. Keys stay in your OS keychain. No server, no telemetry."
+description: "See how many API credits you have left at Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway, in one desktop app. Keys stay in your OS keychain. No server, no telemetry."
 
 version: "0.1.0"
 license_spdx: MIT OR Apache-2.0
@@ -30,7 +30,7 @@ author:
   url: https://github.com/AlveeeRahman
 
 # Facts that the README, the Pages <head> and the release notes repeat.
-providers: [Firecrawl, SerpApi, Elicit]
+providers: [Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter, Runway]
 tauri: "2.12.4"
 key_storage: macOS Keychain, Windows Credential Manager, Linux Secret Service (service name "mr-usage")
 history: in memory only, wiped at local midnight and on exit
@@ -40,13 +40,34 @@ history: in memory only, wiped at local midnight and on exit
 network_surfaces:
   - component: crates/core/src/providers/firecrawl.rs
     hosts: [api.firecrawl.dev]
-    purpose: GET /v2/team/credit-usage with the user's key, at most every 30 minutes.
+    purpose: GET /v2/team/credit-usage with the user's key (free; read from Firecrawl's open-source API server).
   - component: crates/core/src/providers/serpapi.rs
     hosts: [serpapi.com]
     purpose: GET /account.json with the user's key (free, not counted against searches).
   - component: crates/core/src/providers/elicit.rs
     hosts: [elicit.com]
     purpose: GET /api/v2/usage with the user's key.
+  - component: crates/core/src/providers/context7.rs
+    hosts: [context7.com]
+    purpose: GET /api/v2/usage?days=1 with the user's key (documented as not counting as a request).
+  - component: crates/core/src/providers/tavily.rs
+    hosts: [api.tavily.com]
+    purpose: GET /usage with the user's key.
+  - component: crates/core/src/providers/openrouter.rs
+    hosts: [openrouter.ai]
+    purpose: GET /api/v1/key with the user's key.
+  - component: crates/core/src/providers/apify.rs
+    hosts: [api.apify.com]
+    purpose: GET /v2/users/me/limits with the user's token.
+  - component: crates/core/src/providers/hunter.rs
+    hosts: [api.hunter.io]
+    purpose: GET /v2/account with the user's key (documented as free).
+  - component: crates/core/src/providers/runway.rs
+    hosts: [api.dev.runwayml.com]
+    purpose: GET /v1/organization with the user's key and the X-Runway-Version header.
+  - component: install.sh, install.ps1 (run by the user, not by the app)
+    hosts: [api.github.com, github.com, objects.githubusercontent.com]
+    purpose: read the latest release and download the package and SHA256SUMS.txt.
 
 # GitHub allows 20. Lowercase words separated by hyphens, describing what the software
 # is rather than how good it is.
@@ -57,23 +78,23 @@ topics:
   - firecrawl
   - serpapi
   - elicit
+  - context7
+  - tavily
+  - openrouter
+  - apify
   - tauri
-  - tauri-app
   - rust
   - typescript
   - desktop-app
-  - cross-platform
   - macos
   - windows
   - linux
   - keychain
-  - secret-service
-  - credential-manager
   - privacy
   - security
 
 # 1280x640, the size GitHub asks for. docs/assets/social-preview.html is the editable
-# source; scripts/render-social-preview.mjs renders it. Upload it by hand in
+# source; .github/scripts/render-social-preview.mjs renders it. Upload it by hand in
 # Settings > General > Social preview (GitHub has no API for this).
 social_preview: docs/assets/social-preview.png
 
@@ -89,7 +110,8 @@ suite:
 
 # The files that repeat the facts above. Keep them in step by hand.
 appears_in:
-  - README.md (H1 and the documentation line)
+  - README.md (opening lines and the provider table)
+  - docs/DEVELOPMENT.md
   - src-tauri/Cargo.toml (description, homepage, keywords, categories)
   - package.json (description, homepage, keywords)
   - docs/index.html

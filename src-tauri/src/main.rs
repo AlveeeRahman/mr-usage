@@ -22,6 +22,9 @@ use crate::commands::AppState;
 pub const UPDATE_EVENT: &str = "usage:update";
 
 fn main() -> ExitCode {
+    if std::env::args().skip(1).any(|a| a == "--forget-keys") {
+        return forget_keys();
+    }
     logging::init();
     hardening::apply();
     match run() {
@@ -31,6 +34,39 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+/// `mr-usage --forget-keys`: delete every key this app stored in the OS
+/// credential store, then exit without opening a window. The install scripts
+/// run it before removing the app. Exit code 0 means every entry is gone or
+/// was never there; 1 means the store could not be reached or refused, and
+/// one line per provider on stderr says so (the messages are built by
+/// `keystore::map_error` and never contain key bytes).
+fn forget_keys() -> ExitCode {
+    use mr_usage_core::keystore::KeyStore;
+    use std::io::Write;
+
+    let store = OsKeyStore;
+    let mut failed = false;
+    for provider in registry() {
+        match store.delete(provider.id()) {
+            Ok(()) => {}
+            // No store at all: every further attempt would say the same thing.
+            Err(e @ mr_usage_core::keystore::KeystoreError::Unavailable(_)) => {
+                let _ = writeln!(std::io::stderr(), "mr-usage: {e}");
+                return ExitCode::FAILURE;
+            }
+            Err(e) => {
+                failed = true;
+                let _ = writeln!(
+                    std::io::stderr(),
+                    "mr-usage: could not remove the {} key: {e}",
+                    provider.display_name()
+                );
+            }
+        }
+    }
+    if failed { ExitCode::FAILURE } else { ExitCode::SUCCESS }
 }
 
 /// The webview may only show the bundled app. Production origins are
@@ -70,7 +106,7 @@ async fn shutdown_signal() {
 /// Windows GUI apps get WM_CLOSE (for example from `taskkill` without `/F`),
 /// which Tauri already turns into a normal exit. Ctrl-C only reaches console
 /// builds, which release builds are not. TODO(verify): source for the
-/// WM_CLOSE path; scripts/smoke-windows.ps1 exercises it.
+/// WM_CLOSE path; .github/scripts/smoke-windows.ps1 exercises it.
 #[cfg(windows)]
 async fn shutdown_signal() {
     if tokio::signal::ctrl_c().await.is_err() {

@@ -1,0 +1,22 @@
+{
+  "plan": "free",
+  "usageResetsAt": "2026-11-01T00:00:00.000Z",
+  "member": {
+    "requests": 412,
+    "includedInPlan": 1000
+  },
+  "teamspace": {
+    "extraRequests": 0,
+    "extraCostUsd": 0,
+    "spendingLimitUsd": null,
+    "daily": [
+      {
+        "date": "2026-10-04",
+        "requests": 37,
+        "searchRequests": 12,
+        "docsRequests": 25,
+        "extraCostUsd": 0
+      }
+    ]
+  }
+}

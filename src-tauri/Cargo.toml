@@ -1,6 +1,6 @@
 [package]
 name = "mr-usage"
-description = "A desktop API credit monitor: see how many Firecrawl, SerpApi and Elicit credits you have left. Keys stay in your OS keychain."
+description = "A desktop API credit monitor: see how many Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway credits you have left. Keys stay in your OS keychain."
 homepage = "https://alveeerahman.github.io/mr-usage/"
 keywords = ["api-usage", "credits", "tauri", "keychain", "desktop"]
 categories = ["gui"]

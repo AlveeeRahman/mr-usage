@@ -56,7 +56,7 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "Mr. Usage ${{ github.ref_name }}"
-          releaseBody: "Unsigned builds. Check each download against SHA256SUMS.txt before running it. Install notes: see the README."
+          releaseBody: "Install with the one-line command in the README; it picks the right file and verifies it against SHA256SUMS.txt for you. Builds are not code-signed yet."
           releaseDraft: true
           prerelease: false
           uploadUpdaterJson: false

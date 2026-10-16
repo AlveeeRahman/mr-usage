@@ -70,9 +70,9 @@ Fix: period-end dates use the existing UTC formatter, and the now-unused local f
 
 ### 9. The Linux e2e test cannot pass with the shipped webview config (medium, resolved after review)
 
-`src-tauri/src/window.rs:26` (`.incognito(true)`), `e2e/run-linux.sh`, `.github/workflows/ci.yml` (`e2e-linux`). With incognito on, wry 0.57 builds an ephemeral WebKit context with automation disabled (`wry/src/webkitgtk/web_context.rs`, `create_context` sets `automation = false`, and the incognito branch never applies Tauri's automation flag). WebKitWebDriver then fails with `session not created: The remote session failed to create a new browsing context`.
+`src-tauri/src/window.rs:26` (`.incognito(true)`), `.github/e2e/run-linux.sh`, `.github/workflows/ci.yml` (`e2e-linux`). With incognito on, wry 0.57 builds an ephemeral WebKit context with automation disabled (`wry/src/webkitgtk/web_context.rs`, `create_context` sets `automation = false`, and the incognito branch never applies Tauri's automation flag). WebKitWebDriver then fails with `session not created: The remote session failed to create a new browsing context`.
 
-Reproduced in this review: `e2e/run-linux.sh` (on alternate ports, because a stale `tauri-driver` from another session held 4444) failed at session creation. With `.incognito(true)` removed locally and nothing else changed, all 17 checks passed, including the new log check from finding 16. The `e2e-linux` CI job should therefore be red on this branch, and the verification log's "17 of 17" row in `docs/SOURCES.md` does not describe the committed code. A row recording this was added to that log.
+Reproduced in this review: `.github/e2e/run-linux.sh` (on alternate ports, because a stale `tauri-driver` from another session held 4444) failed at session creation. With `.incognito(true)` removed locally and nothing else changed, all 17 checks passed, including the new log check from finding 16. The `e2e-linux` CI job should therefore be red on this branch, and the verification log's "17 of 17" row in `docs/SOURCES.md` does not describe the committed code. A row recording this was added to that log.
 
 Not fixed: whether to drop incognito on Linux (the per-launch data directory already gives a throwaway store), gate it on Tauri's automation variable, or patch wry is the owner's decision.
 
@@ -82,7 +82,7 @@ Resolution (main session, after the review): option (a). Incognito is off on Lin
 
 ### 10. "The app writes no other files" was not true on Windows or macOS (medium, docs fixed, follow-up 19)
 
-`README.md:17`. The README said the app writes nothing but `settings.json`, and its own uninstall section (line 67) says `%LOCALAPPDATA%\<identifier>` is "the WebView2 runtime's working folder". WebView2 creates its user data folder even in InPrivate mode, and `scripts/smoke-macos.sh` itself looks for `~/Library/Caches/<id>` and `~/Library/WebKit/<id>` after a run. The `data_directory` redirect and cleanup in `window.rs` only exist for Linux.
+`README.md:17`. The README said the app writes nothing but `settings.json`, and its own uninstall section (line 67) says `%LOCALAPPDATA%\<identifier>` is "the WebView2 runtime's working folder". WebView2 creates its user data folder even in InPrivate mode, and `.github/scripts/smoke-macos.sh` itself looks for `~/Library/Caches/<id>` and `~/Library/WebKit/<id>` after a run. The `data_directory` redirect and cleanup in `window.rs` only exist for Linux.
 
 Failure scenario: the owner's rule ("the only file the app writes is a settings file") is broken on two of three platforms, and the README tells users otherwise.
 
@@ -114,13 +114,13 @@ Fix: the build job only runs when `github.ref` starts with `refs/tags/v`, and `c
 
 ### 15. The e2e hint check accepted any masked value (low, fixed)
 
-`e2e/drive.py:67`. The expected value was `••••e2f0`, but the test key ends in `e1f0`, so the first half could never match, and the fallback `startswith("••••")` also accepted the four-dot hint shown for short keys, or the wrong four characters.
+`.github/e2e/drive.py:67`. The expected value was `••••e2f0`, but the test key ends in `e1f0`, so the first half could never match, and the fallback `startswith("••••")` also accepted the four-dot hint shown for short keys, or the wrong four characters.
 
 Fix: the check now requires exactly `"••••" + KEY[-4:]`. It passed in the review run (`••••e1f0`).
 
 ### 16. The e2e log leak check could pass vacuously (low, fixed)
 
-`e2e/run-linux.sh:44-50`. The script greps `app.log` for the key, `api_key` and `Authorization`. If the app's stderr ever stopped reaching `app.log` (for example a `tauri-driver` change), the grep would find nothing and pass.
+`.github/e2e/run-linux.sh:44-50`. The script greps `app.log` for the key, `api_key` and `Authorization`. If the app's stderr ever stopped reaching `app.log` (for example a `tauri-driver` change), the grep would find nothing and pass.
 
 Fix: the script first requires the `poll failed` warning that the fake key's first poll always logs. Confirmed present in the review run.
 
@@ -160,7 +160,7 @@ Fix: each now carries a `TODO(verify)` or, for the WebKitGTK file layout, the da
 
 ### 25. Test tooling blind spots (low, follow-ups 28 and 29)
 
-`crates/core/tests/source_audit.rs` only checks the line that contains `expose_secret`, so a multi-line `format!(` slips through, and it ignores everything after the first test module in a file. `scripts/smoke-linux.sh` has an AppImage uninstall check that cannot fail, counts WebKit processes machine-wide, and checks only `$HOME` for stray files. `scripts/smoke-windows.ps1` ignores the NSIS installer's exit code. `e2e/run-linux.sh` does not notice a failed `tauri-driver` bind and talks to whatever owns port 4444. That happened in this review: a stale driver answered with HTTP 500.
+`crates/core/tests/source_audit.rs` only checks the line that contains `expose_secret`, so a multi-line `format!(` slips through, and it ignores everything after the first test module in a file. `.github/scripts/smoke-linux.sh` has an AppImage uninstall check that cannot fail, counts WebKit processes machine-wide, and checks only `$HOME` for stray files. `.github/scripts/smoke-windows.ps1` ignores the NSIS installer's exit code. `.github/e2e/run-linux.sh` does not notice a failed `tauri-driver` bind and talks to whatever owns port 4444. That happened in this review: a stale driver answered with HTTP 500.
 
 ### 26. reqwest honours proxy environment variables (info)
 
@@ -196,4 +196,4 @@ Fix: each now carries a `TODO(verify)` or, for the WebKitGTK file layout, the da
 | `cargo deny check` | pass (with the stricter advisory scope) |
 | `cargo audit -D warnings` | pass |
 | `npm audit --audit-level=low` | 0 vulnerabilities |
-| `e2e/run-linux.sh` (alternate ports) | fails at session creation with the committed `incognito(true)`. 17/17 with it removed locally (finding 9) |
+| `.github/e2e/run-linux.sh` (alternate ports) | fails at session creation with the committed `incognito(true)`. 17/17 with it removed locally (finding 9) |

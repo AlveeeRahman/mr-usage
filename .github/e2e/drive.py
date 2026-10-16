@@ -47,7 +47,7 @@ def wait_for(script, timeout=30):
 
 try:
     n = wait_for("return document.querySelectorAll('#add-provider option').length", 30)
-    check("IPC works under connect-src 'none' (providers listed)", n == 3, f"{n} providers")
+    check("IPC works under connect-src 'none' (providers listed)", n == 9, f"{n} providers")
     footer = js("return document.getElementById('footer').textContent")
     check("footer names the keystore", "Secret Service" in (footer or ""), footer)
     check("no inline style attributes in the DOM", js("return document.querySelectorAll('[style]').length") == 0)

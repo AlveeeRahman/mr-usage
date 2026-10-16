@@ -2,7 +2,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
-export type Unit = "credits" | "searches" | "percent";
+// "usd" values are whole US cents.
+export type Unit = "credits" | "searches" | "requests" | "percent" | "usd";
 export type Theme = "system" | "light" | "dark";
 
 export interface SnapshotView {

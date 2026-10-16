@@ -17,8 +17,12 @@ use crate::net::Http;
 pub enum Unit {
     Credits,
     Searches,
+    /// Context7 counts requests.
+    Requests,
     /// Elicit reports a percentage of plan usage, not a count.
     Percent,
+    /// OpenRouter and Apify report money. `remaining` and `limit` are US cents.
+    Usd,
 }
 
 /// One normalized reading. Holds no secrets and no account identifiers.

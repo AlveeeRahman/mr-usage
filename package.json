@@ -2,7 +2,7 @@
   "name": "mr-usage",
   "private": true,
   "version": "0.1.0",
-  "description": "A desktop API credit monitor: see how many Firecrawl, SerpApi and Elicit credits you have left. Keys stay in your OS keychain.",
+  "description": "A desktop API credit monitor: see how many Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway credits you have left. Keys stay in your OS keychain.",
   "homepage": "https://alveeerahman.github.io/mr-usage/",
   "repository": {
     "type": "git",
@@ -15,6 +15,10 @@
     "firecrawl",
     "serpapi",
     "elicit",
+    "context7",
+    "tavily",
+    "openrouter",
+    "apify",
     "tauri",
     "desktop-app",
     "keychain"

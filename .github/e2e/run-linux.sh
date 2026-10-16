@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Build the app and run e2e/drive.py against it under a virtual display with
+# Build the app and run .github/e2e/drive.py against it under a virtual display with
 # a throwaway GNOME Keyring. Used by CI; runnable locally on Linux.
 # Needs: xvfb, gnome-keyring, dbus, libsecret-tools, webkit2gtk-driver,
 # tauri-driver (cargo install tauri-driver --version 2.1.0 --locked), and
 # the Tauri CLI (cargo install tauri-cli --version 2.12.3 --locked).
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 OUT="${1:-$(mktemp -d)}"
 mkdir -p "$OUT"
 
@@ -30,16 +30,34 @@ dbus-run-session -- bash -c '
   MR_USAGE_LOG=debug tauri-driver --native-driver "$(command -v WebKitWebDriver)" >"'"$OUT"'/app.log" 2>&1 &
   DRIVER=$!
   sleep 2
-  python3 -I e2e/drive.py "'"$OUT"'" "'"$APP"'"
+  python3 -I .github/e2e/drive.py "'"$OUT"'" "'"$APP"'"
   kill $DRIVER 2>/dev/null || true
 '
 
-python3 -I - "$OUT/results.json" <<'PY'
+# On failure, repeat the failed checks and the tail of the app log as
+# GitHub annotations. The job log and artifacts sit on a storage host that
+# some networks cannot reach; annotations are served by the API.
+annotate() {
+  local title="$1" text="$2"
+  text="${text//'%'/%25}"
+  text="${text//$'\r'/%0D}"
+  text="${text//$'\n'/%0A}"
+  echo "::error title=${title}::${text}"
+}
+if ! python3 -I - "$OUT/results.json" <<'PY'
 import json, sys
 results = json.load(open(sys.argv[1]))
-failed = [name for name, ok, _ in results if not ok]
+failed = [f"{name}: {detail}" for name, ok, detail in results if not ok]
+print("\n".join(failed))
 sys.exit(1 if failed or not results else 0)
 PY
+then
+  if [ -n "${GITHUB_ACTIONS:-}" ]; then
+    annotate "e2e checks failed" "$(python3 -I -c 'import json,sys; r=json.load(open(sys.argv[1])); print("\n".join(f"{n}: {d}" for n,ok,d in r if not ok) or "no results")' "$OUT/results.json" 2>/dev/null || echo "results.json missing")"
+    annotate "e2e app log (last 60 lines)" "$(tail -n 60 "$OUT/app.log" 2>/dev/null || echo "no app.log")"
+  fi
+  exit 1
+fi
 
 KEY="e2e0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0"
 # The leak grep is only meaningful if the app's own log reached app.log. The

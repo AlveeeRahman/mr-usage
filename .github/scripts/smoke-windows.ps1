@@ -1,7 +1,7 @@
 # Install, start, stop and uninstall smoke test for the Windows installers.
 #
-#   pwsh scripts/smoke-windows.ps1 -Kind nsis -Installer <path\Mr. Usage_*_x64-setup.exe>
-#   pwsh scripts/smoke-windows.ps1 -Kind msi  -Installer <path\Mr. Usage_*_x64_en-US.msi>
+#   pwsh .github/scripts/smoke-windows.ps1 -Kind nsis -Installer <path\Mr. Usage_*_x64-setup.exe>
+#   pwsh .github/scripts/smoke-windows.ps1 -Kind msi  -Installer <path\Mr. Usage_*_x64_en-US.msi>
 #
 # Checks: silent install puts the exe and Start menu shortcut in place; the app
 # starts and opens its window; it stops cleanly when asked (WM_CLOSE from

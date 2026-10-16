@@ -1,0 +1,6 @@
+{
+  "error": {
+    "type": "invalid-token",
+    "message": "Authentication token is not valid."
+  }
+}

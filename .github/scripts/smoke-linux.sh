@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Install, start, stop and uninstall smoke test for the Linux packages.
 #
-#   scripts/smoke-linux.sh deb      <path/to/mr-usage_*.deb>
-#   scripts/smoke-linux.sh appimage <path/to/Mr. Usage_*.AppImage>
-#   scripts/smoke-linux.sh rpm      <path/to/mr-usage-*.rpm>     (Fedora/RHEL)
+#   .github/scripts/smoke-linux.sh deb      <path/to/mr-usage_*.deb>
+#   .github/scripts/smoke-linux.sh appimage <path/to/Mr. Usage_*.AppImage>
+#   .github/scripts/smoke-linux.sh rpm      <path/to/mr-usage-*.rpm>     (Fedora/RHEL)
 #
 # For each package it checks that:
 #   - it installs, and puts the binary, desktop entry and icons in place;

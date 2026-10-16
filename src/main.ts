@@ -28,6 +28,7 @@ const $ = <T extends HTMLElement>(id: string): T => {
 };
 
 const numberFmt = new Intl.NumberFormat();
+const usdFmt = new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" });
 const timeFmt = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" });
 const utcDateFmt = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
 
@@ -47,12 +48,34 @@ function h<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, te
   return node;
 }
 
+/** The noun after a number, or "" for money, which needs none. */
 function unitWord(view: ProviderView): string {
-  return view.unit === "credits" ? "credits" : view.unit === "searches" ? "searches" : "of plan";
+  switch (view.unit) {
+    case "credits":
+      return "credits";
+    case "searches":
+      return "searches";
+    case "requests":
+      return "requests";
+    case "usd":
+      return "";
+    case "percent":
+      return "of plan";
+  }
 }
 
 function amount(view: ProviderView, value: number): string {
-  return view.unit === "percent" ? `${value}%` : numberFmt.format(value);
+  if (view.unit === "percent") return `${value}%`;
+  if (view.unit === "usd") return usdFmt.format(value / 100);
+  return numberFmt.format(value);
+}
+
+/** "of 1,000 credits left", "of $100.00 left", "credits left", "of plan left". */
+function leftPhrase(view: ProviderView, limit: number | null): string {
+  const word = unitWord(view);
+  if (view.unit === "percent") return "of plan left";
+  if (limit !== null) return `of ${amount(view, limit)}${word ? ` ${word}` : ""} left`;
+  return word ? `${word} left` : "left";
 }
 
 function minutes(secs: number): string {
@@ -84,12 +107,12 @@ function renderCard(view: ProviderView): HTMLElement {
   if (latest && latest.remaining !== null) {
     const figure = h("p", "figure");
     figure.append(h("span", "value", amount(view, latest.remaining)));
-    const of = latest.limit !== null && view.unit !== "percent"
-      ? `of ${numberFmt.format(latest.limit)} ${unitWord(view)} left`
-      : view.unit === "percent" ? "of plan left" : `${unitWord(view)} left`;
-    figure.append(h("span", "of", of));
+    figure.append(h("span", "of", leftPhrase(view, latest.limit)));
     card.append(figure);
     if (fraction !== null) card.append(meter(fraction, level));
+  } else if (latest) {
+    // A reading with no count: a pay-as-you-go plan or a key with no limit.
+    card.append(h("p", "figure", "No remaining count on this plan"));
   } else {
     card.append(h("p", "figure", view.error ? "No reading" : "Waiting for the first check…"));
   }

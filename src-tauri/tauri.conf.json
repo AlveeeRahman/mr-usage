@@ -7,8 +7,8 @@
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "node scripts/ensure-frontend-deps.mjs && npm run dev",
-    "beforeBuildCommand": "node scripts/ensure-frontend-deps.mjs && npm run build"
+    "beforeDevCommand": "node .github/scripts/ensure-frontend-deps.mjs && npm run dev",
+    "beforeBuildCommand": "node .github/scripts/ensure-frontend-deps.mjs && npm run build"
   },
   "app": {
     "withGlobalTauri": false,
@@ -43,7 +43,9 @@
         "media-src": "'none'"
       },
       "freezePrototype": true,
-      "capabilities": ["main"]
+      "capabilities": [
+        "main"
+      ]
     }
   },
   "bundle": {
@@ -51,7 +53,7 @@
     "targets": "all",
     "category": "Utility",
     "shortDescription": "Remaining API credits at a glance",
-    "longDescription": "Mr. Usage polls the usage endpoints of Firecrawl, SerpApi and Elicit and shows how much you have left. Keys live in the OS credential store.",
+    "longDescription": "Mr. Usage polls the usage endpoints of Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway and shows how much you have left. Keys live in the OS credential store.",
     "license": "MIT OR Apache-2.0",
     "icon": [
       "icons/32x32.png",
@@ -59,6 +61,18 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "linux": {
+      "deb": {
+        "recommends": [
+          "gnome-keyring"
+        ]
+      },
+      "rpm": {
+        "recommends": [
+          "gnome-keyring"
+        ]
+      }
+    }
   }
 }

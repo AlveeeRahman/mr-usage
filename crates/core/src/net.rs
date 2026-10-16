@@ -64,10 +64,24 @@ impl Http {
 
     /// GET `endpoint`, refusing to send unless its host is `allowed_host`.
     pub async fn get(&self, endpoint: &'static str, allowed_host: &'static str, auth: Auth<'_>) -> Result<RawResponse, ProviderError> {
+        self.get_with_headers(endpoint, allowed_host, auth, &[]).await
+    }
+
+    /// `get` plus fixed, non-secret headers such as a vendor API version.
+    pub async fn get_with_headers(
+        &self,
+        endpoint: &'static str,
+        allowed_host: &'static str,
+        auth: Auth<'_>,
+        headers: &[(&'static str, &'static str)],
+    ) -> Result<RawResponse, ProviderError> {
         let mut url = Url::parse(endpoint).map_err(|_| ProviderError::Transport("invalid endpoint".into()))?;
         check_allowed(&url, allowed_host)?;
 
         let mut request = self.client.get(url.clone());
+        for (name, value) in headers {
+            request = request.header(*name, *value);
+        }
         match auth {
             Auth::Bearer(key) => {
                 let secret = key.expose_secret();

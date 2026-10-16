@@ -136,12 +136,35 @@ fn exposed_secrets_never_reach_format_or_log_macros() {
     }
 }
 
+/// The struct named `name` in `file`, from its opening brace to the first `}`.
+fn struct_body(file: &str, name: &str) -> String {
+    let text = std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/providers").join(file)).unwrap();
+    let marker = format!("struct {name} {{");
+    text.split(&marker)
+        .nth(1)
+        .and_then(|rest| rest.split('}').next())
+        .unwrap_or_else(|| panic!("{file} has no `{marker}`"))
+        .to_owned()
+}
+
 #[test]
-fn serpapi_body_has_no_echoed_identity_fields() {
-    let text = std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/providers/serpapi.rs")).unwrap();
-    let body_struct = text.split("struct Body {").nth(1).and_then(|rest| rest.split('}').next()).unwrap();
-    for field in ["api_key", "account_email", "account_id"] {
-        assert!(!body_struct.contains(field), "serpapi::Body must not deserialize `{field}`");
+fn providers_do_not_deserialize_echoed_identity_fields() {
+    // Each vendor's response carries these; the structs must leave them out
+    // so that an identifier never reaches a Snapshot, a log or the window.
+    for (file, name, fields) in [
+        ("serpapi.rs", "Body", &["api_key", "account_email", "account_id"][..]),
+        ("hunter.rs", "Data", &["first_name", "last_name", "email", "team_id"][..]),
+        (
+            "openrouter.rs",
+            "Data",
+            &["label", "creator_user_id", "workspace_id", "organization_id"][..],
+        ),
+        ("openrouter.rs", "Budget", &["guardrail_id", "budget_id"][..]),
+    ] {
+        let body = struct_body(file, name);
+        for field in fields {
+            assert!(!body.contains(field), "{file}::{name} must not deserialize `{field}`");
+        }
     }
 }
 

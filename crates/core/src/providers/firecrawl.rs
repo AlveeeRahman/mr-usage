@@ -7,10 +7,17 @@
 //! billingPeriodEnd}}`, 404/500 bodies `{success: false, error}`.
 //!
 //! Cost: <https://docs.firecrawl.dev/billing> says every API call consumes
-//! credits but its per-endpoint table does not list this endpoint. Until the
-//! owner observes a live account, assume it may cost a credit and poll no more
-//! often than every 30 minutes. TODO(verify): confirm with a live key by
-//! comparing `remainingCredits` across two polls with no other usage.
+//! credits but its per-endpoint table does not list this endpoint. The
+//! open-source API server settles it (firecrawl/firecrawl, commit
+//! 386330419c6924cc5d733e59abca9b857241acc4, 2026-10-15, `apps/api/src`):
+//! `routes/v2.ts` mounts `/team/credit-usage` behind
+//! `authMiddleware(RateLimiterMode.Account)`, `controllers/v2/credit-usage.ts`
+//! only reads the balance (`getTeamBalance` in `services/autumn/usage.ts`), and
+//! `billTeam(` is called from the scrape, crawl, search, map, extract and
+//! agent controllers but not from this one. The Account rate limiter allows
+//! 1000 requests per minute. So the call is free and the floor is the global
+//! one minute. A live check with a real key is still worth doing
+//! (docs/FOLLOWUPS.md, item 2).
 
 use std::time::Duration;
 
@@ -73,11 +80,11 @@ impl Provider for Firecrawl {
     }
 
     fn min_poll_interval(&self) -> Duration {
-        Duration::from_secs(30 * 60)
+        Duration::from_secs(60)
     }
 
     fn note(&self) -> Option<&'static str> {
-        Some("Checked every 30 minutes at most: Firecrawl does not document whether this call costs a credit.")
+        Some("Free to call, as read from Firecrawl's open-source API server; not yet confirmed against a live account.")
     }
 
     async fn fetch(&self, key: &SecretString, http: &Http) -> Result<Snapshot, ProviderError> {

@@ -30,10 +30,11 @@ const MARKERS: &[&str] = &[
 /// (`Authorization: Basic <value>`).
 const AUTH_SCHEMES: &[&str] = &["basic", "digest", "negotiate", "ntlm"];
 
-/// Prefixes of vendor key formats. Firecrawl documents `fc-`, Elicit documents
-/// `elk_live_` (docs/SOURCES.md, Elicit row, 2026-10-16). TODO(verify): the
-/// Firecrawl `fc-` prefix and `elk_test_` have no recorded source.
-const KEY_PREFIXES: &[&str] = &["fc-", "elk_live_", "elk_test_"];
+/// Prefixes of vendor key formats. Elicit documents `elk_live_`, Tavily
+/// `tvly-`, Context7 `ctx7sk` and OpenRouter `sk-or-v1-` (docs/SOURCES.md,
+/// 2026-10-16). TODO(verify): the Firecrawl `fc-` prefix and `elk_test_` have
+/// no recorded source.
+const KEY_PREFIXES: &[&str] = &["fc-", "elk_live_", "elk_test_", "tvly-", "ctx7sk", "sk-or-v1-"];
 
 /// A bare token at least this long that mixes letters and digits is treated as
 /// a key. SerpApi keys are 64 hex characters. TODO(verify): no source is

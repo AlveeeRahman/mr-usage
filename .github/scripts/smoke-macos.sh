@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Install, start, stop and uninstall smoke test for the macOS disk image.
 #
-#   scripts/smoke-macos.sh <path/to/Mr. Usage_*.dmg>
+#   .github/scripts/smoke-macos.sh <path/to/Mr. Usage_*.dmg>
 #
 # Checks: the DMG mounts and holds the app; copying it to /Applications
 # installs it; it launches through LaunchServices (`open`) and directly; it
