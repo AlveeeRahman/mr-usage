@@ -35,7 +35,8 @@ fn main() -> ExitCode {
 
 /// The webview may only show the bundled app. Production origins are
 /// `tauri://localhost` (macOS, Linux) and `http://tauri.localhost` (Windows);
-/// debug builds also allow the Vite dev server.
+/// debug builds also allow the Vite dev server. TODO(verify): add the Tauri
+/// documentation URL for these origins to docs/SOURCES.md.
 fn is_app_url(url: &tauri::Url) -> bool {
     let host = url.host_str();
     match url.scheme() {
@@ -68,7 +69,8 @@ async fn shutdown_signal() {
 
 /// Windows GUI apps get WM_CLOSE (for example from `taskkill` without `/F`),
 /// which Tauri already turns into a normal exit. Ctrl-C only reaches console
-/// builds, which release builds are not.
+/// builds, which release builds are not. TODO(verify): source for the
+/// WM_CLOSE path; scripts/smoke-windows.ps1 exercises it.
 #[cfg(windows)]
 async fn shutdown_signal() {
     if tokio::signal::ctrl_c().await.is_err() {

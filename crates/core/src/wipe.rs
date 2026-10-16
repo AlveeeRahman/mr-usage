@@ -2,7 +2,8 @@
 //!
 //! Local time comes from `jiff`, which reads the system time zone database.
 //! (`time::OffsetDateTime::now_local` refuses to work in multi-threaded
-//! processes on Linux, which a Tauri app always is.)
+//! processes on Linux, which a Tauri app always is. TODO(verify): add the
+//! `time` documentation URL and read date to docs/SOURCES.md.)
 
 use std::sync::Mutex;
 

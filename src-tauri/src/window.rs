@@ -6,6 +6,10 @@
 //! (`hsts-storage.sqlite`, cache and storage salts) even in that mode, so the
 //! base directory is pointed at a per-launch folder in `$XDG_RUNTIME_DIR` (a
 //! user-only tmpfs cleared at logout) and removed when the app exits.
+//! (Observed 2026-10-16 during review with WebKitGTK 4.1 on Linux: with
+//! incognito on, those three files land in the per-launch folder.)
+//! TODO(verify): the non-persistent store on macOS and Windows; WebView2 still
+//! creates its user data folder (docs/FOLLOWUPS.md).
 
 use std::path::PathBuf;
 
