@@ -54,7 +54,7 @@ jobs:
           releaseBody: "Unsigned builds. Check each download against SHA256SUMS.txt before running it. Install notes: see the README."
           releaseDraft: true
           prerelease: false
-          includeUpdaterJson: false
+          uploadUpdaterJson: false
           args: ${{ matrix.args }}
 
   checksums:
