@@ -6,6 +6,7 @@
 
 [![CI](https://github.com/AlveeeRahman/mr-usage/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AlveeeRahman/mr-usage/actions/workflows/ci.yml)
 [![Installers](https://github.com/AlveeeRahman/mr-usage/actions/workflows/smoke.yml/badge.svg?branch=main)](https://github.com/AlveeeRahman/mr-usage/actions/workflows/smoke.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/AlveeeRahman/mr-usage/badge)](https://scorecard.dev/viewer/?uri=github.com/AlveeeRahman/mr-usage)
 [![License: MIT or Apache-2.0](https://img.shields.io/badge/license-MIT%20or%20Apache--2.0-blue.svg)](#license)
 [![Rust 1.90+](https://img.shields.io/badge/rust-1.90%2B-orange.svg)](https://www.rust-lang.org/tools/install)
 [![Tauri 2](https://img.shields.io/badge/Tauri-2-24C8D8.svg)](https://v2.tauri.app/)
