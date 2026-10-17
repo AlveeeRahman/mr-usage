@@ -1,0 +1,7 @@
+{
+    "max_api_credit": 20000000,
+    "used_api_credit": 3704332,
+    "max_concurrency": 200,
+    "current_concurrency": 1,
+    "renewal_subscription_date": "2022-04-18T10:05:58.134716"
+}

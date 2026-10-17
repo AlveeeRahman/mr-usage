@@ -1,0 +1,15 @@
+{
+  "account": {
+    "current_month_usage": 4800,
+    "monthly_allowance": 10000,
+    "remaining_credits": 5200
+  },
+  "api_usage": {
+    "searches_this_hour": 250,
+    "hourly_rate_limit": 200000
+  },
+  "subscription": {
+    "period_start": "2024-12-04T00:34:59Z",
+    "period_end": "2025-01-04T00:34:59Z"
+  }
+}

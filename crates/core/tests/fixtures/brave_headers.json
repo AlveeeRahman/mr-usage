@@ -1,0 +1,6 @@
+{
+  "x-ratelimit-limit": "1, 15000",
+  "x-ratelimit-policy": "1;w=1, 15000;w=2592000",
+  "x-ratelimit-remaining": "0, 14523",
+  "x-ratelimit-reset": "1, 1234567"
+}

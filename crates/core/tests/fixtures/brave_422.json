@@ -1,0 +1,11 @@
+{
+  "type": "ErrorResponse",
+  "error": {
+    "id": "7a9c1e4b-0000-4000-8000-000000000000",
+    "status": 422,
+    "detail": "Unable to validate request parameter(s)",
+    "meta": null,
+    "code": "VALIDATION"
+  },
+  "time": 1700000000
+}

@@ -1,0 +1,15 @@
+{
+  "totalSuccess": 1200,
+  "totalFailed": 34,
+  "totalDue": 12.5,
+  "remainingCredits": 8800,
+  "domainStats": [
+    {
+      "domain": "example.com",
+      "totalRequests": 1234,
+      "success": 1200,
+      "failure": 34,
+      "successRate": 97.2
+    }
+  ]
+}

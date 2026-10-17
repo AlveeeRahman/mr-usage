@@ -1,0 +1,13 @@
+{
+	"statusCode": 400,
+	"error": {
+		"code": "VALIDATION_ERROR",
+		"message": "Validation failed",
+		"details": [
+			{
+				"field": "outputType",
+				"message": "outputType must be one of the following values: sourcedAnswer, searchResults, structured"
+			}
+		]
+	}
+}
