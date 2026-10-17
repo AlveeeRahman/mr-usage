@@ -11,8 +11,12 @@ name: release
 #
 # 2. Run the workflow by hand (workflow_dispatch) with a `tag` such as v0.1.0.
 #    Same pipeline, same draft, for when a tag cannot be pushed from where you
-#    are. GitHub creates the git tag at the moment you publish the draft, so
-#    it points at the commit the draft was built from.
+#    are. GitHub creates the git tag at the moment the draft is published, so
+#    it points at the commit the draft was built from. Tick `publish` and the
+#    last job publishes the draft itself, but only after every installer has
+#    been built, checksummed and test-installed on a fresh runner of each OS.
+#    A stale draft for the same tag is removed first; a published release with
+#    that tag stops the run.
 #
 # 3. Run the workflow by hand with the `tag` field empty. The pipeline runs
 #    against a throwaway draft named v0.0.0-ci.<run number>, marked
@@ -30,6 +34,11 @@ on:
         description: "Release tag to build, such as v0.1.0. Leave empty for a rehearsal that deletes its draft."
         required: false
         default: ""
+      publish:
+        description: "Publish the release once every check has passed. Leave off to review the draft first."
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -41,8 +50,36 @@ env:
   REHEARSAL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag == '' }}
 
 jobs:
-  build:
+  # Check the tag and clear a stale draft for it, so the builders create one
+  # fresh draft that targets this very commit.
+  prepare:
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Check the tag name
+        run: |
+          case "$TAG" in
+            v[0-9]*) echo "building $TAG" ;;
+            *) echo "::error::the tag must look like v0.1.0, got '$TAG'"; exit 1 ;;
+          esac
+      - name: Remove a stale draft with this tag; refuse a published one
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.tag_name == \"$TAG\") | \"\(.id) \(.draft)\"" | while read -r id draft; do
+            if [ "$draft" = "true" ]; then
+              echo "deleting stale draft release $id for $TAG"
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+            else
+              echo "::error::$TAG is already published (release $id); bump the version instead of rebuilding it"
+              exit 1
+            fi
+          done
+
+  build:
+    needs: prepare
     permissions:
       contents: write
     strategy:
@@ -62,13 +99,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Check the tag name
-        shell: bash
-        run: |
-          case "$TAG" in
-            v[0-9]*) echo "building $TAG" ;;
-            *) echo "::error::the tag must look like v0.1.0, got '$TAG'"; exit 1 ;;
-          esac
       - if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
@@ -159,6 +189,25 @@ jobs:
           if (-not (Get-ChildItem -Path $env:LOCALAPPDATA -Filter mr-usage.exe -Recurse -Depth 2)) { throw 'not installed' }
           ./installers/install.ps1 -Uninstall
           if (Get-ChildItem -Path $env:LOCALAPPDATA -Filter mr-usage.exe -Recurse -Depth 2 -ErrorAction SilentlyContinue) { throw 'still installed' }
+
+  # Only on a manual run that asked for it, and only after the draft was
+  # installed and removed again on a fresh runner of each OS. The draft is
+  # pointed at this run's commit, so the tag GitHub creates matches the build.
+  publish:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' && github.event.inputs.publish == 'true'
+    needs: verify-install
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          id="$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.tag_name == \"$TAG\" and .draft) | .id" | head -n 1)"
+          [ -n "$id" ] || { echo "::error::no draft release for $TAG"; exit 1; }
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$id" \
+            -F draft=false -f make_latest=true -f "target_commitish=$GITHUB_SHA" \
+            --jq '"published \(.tag_name): \(.html_url)"'
 
   # A rehearsal leaves nothing behind. (A draft has no git tag, so there is
   # nothing else to remove.) A real release's draft stays for review.
