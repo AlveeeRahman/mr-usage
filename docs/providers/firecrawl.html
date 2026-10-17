@@ -48,7 +48,7 @@
         "name": "Does checking my Firecrawl usage cost credits?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Firecrawl's open-source API server bills nothing for this call: its credit-usage controller only reads the balance, and the billing function is never called from it. That has not yet been confirmed against a live account, and the card says so."
+          "text": "Firecrawl's open-source API server bills nothing for this call: its credit-usage controller only reads the balance, and the billing function is never called from it. A live account confirmed it: the credit count did not move across polls."
         }
       },
       {
@@ -139,7 +139,7 @@
   <p>The app shows you this exact address before you save a key, and <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/SOURCES.md">docs/SOURCES.md</a> records where each fact came from and when it was read.</p>
 
   <h2>Questions</h2>
-  <h3>Does checking my Firecrawl usage cost credits?</h3><p>Firecrawl&#x27;s open-source API server bills nothing for this call: its credit-usage controller only reads the balance, and the billing function is never called from it. That has not yet been confirmed against a live account, and the card says so.</p><h3>Where does my Firecrawl API key go?</h3><p>Into your operating system&#x27;s credential store, under the service name mr-usage: Keychain on macOS, Credential Manager on Windows, the Secret Service on Linux. The app reads it at the moment it calls the vendor, wraps it in a zeroizing type, and drops it. It is never written to a file of the app&#x27;s own and never sent back to the window.</p><h3>How often is the card refreshed?</h3><p>Every 5 minutes by default. Settings lets you pick anything from 1 minute to 24 hours, and changing the interval takes effect from the last poll. There is also a Refresh button on each card, limited to once a minute.</p>
+  <h3>Does checking my Firecrawl usage cost credits?</h3><p>Firecrawl&#x27;s open-source API server bills nothing for this call: its credit-usage controller only reads the balance, and the billing function is never called from it. A live account confirmed it: the credit count did not move across polls.</p><h3>Where does my Firecrawl API key go?</h3><p>Into your operating system&#x27;s credential store, under the service name mr-usage: Keychain on macOS, Credential Manager on Windows, the Secret Service on Linux. The app reads it at the moment it calls the vendor, wraps it in a zeroizing type, and drops it. It is never written to a file of the app&#x27;s own and never sent back to the window.</p><h3>How often is the card refreshed?</h3><p>Every 5 minutes by default. Settings lets you pick anything from 1 minute to 24 hours, and changing the interval takes effect from the last poll. There is also a Refresh button on each card, limited to once a minute.</p>
 
   <h2>Other providers</h2>
   <ul class="others"><li><a href="serpapi.html">SerpApi</a></li><li><a href="elicit.html">Elicit</a></li><li><a href="context7.html">Context7</a></li><li><a href="tavily.html">Tavily</a></li><li><a href="openrouter.html">OpenRouter</a></li><li><a href="apify.html">Apify</a></li><li><a href="hunter.html">Hunter</a></li><li><a href="runway.html">Runway</a></li></ul>

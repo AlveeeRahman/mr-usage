@@ -32,7 +32,7 @@ PROVIDERS = [
         card="Credits left out of the plan, and the end of the billing period.",
         endpoint="GET https://api.firecrawl.dev/v2/team/credit-usage", auth="Authorization: Bearer <key>",
         docs="https://docs.firecrawl.dev/api-reference/endpoint/credit-usage",
-        cost="Firecrawl's open-source API server bills nothing for this call: its credit-usage controller only reads the balance, and the billing function is never called from it. That has not yet been confirmed against a live account, and the card says so.",
+        cost="Firecrawl's open-source API server bills nothing for this call: its credit-usage controller only reads the balance, and the billing function is never called from it. A live account confirmed it: the credit count did not move across polls.",
         note="Pay-as-you-go accounts can run past zero into an overage allowance. The card clamps the figure at zero and lists the overage separately.",
     ),
     dict(

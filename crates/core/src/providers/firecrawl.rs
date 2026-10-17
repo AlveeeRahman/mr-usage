@@ -16,8 +16,8 @@
 //! `billTeam(` is called from the scrape, crawl, search, map, extract and
 //! agent controllers but not from this one. The Account rate limiter allows
 //! 1000 requests per minute. So the call is free and the floor is the global
-//! one minute. A live check with a real key is still worth doing
-//! (docs/FOLLOWUPS.md, item 2).
+//! one minute. Confirmed on a live account on 2026-10-17: `remainingCredits`
+//! did not move across polls with no other usage.
 
 use std::time::Duration;
 
@@ -84,7 +84,7 @@ impl Provider for Firecrawl {
     }
 
     fn note(&self) -> Option<&'static str> {
-        Some("Free to call, as read from Firecrawl's open-source API server; not yet confirmed against a live account.")
+        Some("Free to call: Firecrawl's open-source API server bills nothing for it, and a live account confirmed it.")
     }
 
     async fn fetch(&self, key: &SecretString, http: &Http) -> Result<Snapshot, ProviderError> {

@@ -90,7 +90,7 @@ Repeat for each provider you use. A card gets a yellow "Low" badge under 20% lef
 | Hunter | Searches left, plus verifications and the credit pool where the plan has one |
 | Runway | The organization's credit balance |
 
-Each card is refreshed every 5 minutes, and Settings lets you pick anything from 1 minute to 24 hours. Changing the interval takes effect from the last poll, so dropping from an hour to a minute does not wait an hour. Every one of these calls reads your account's own usage page. SerpApi, Context7 and Hunter document the call as free, Firecrawl's open-source server shows it bills nothing, and none of the other vendors list it as a billable call.
+Each card is refreshed every 5 minutes, and Settings lets you pick anything from 1 minute to 24 hours. Changing the interval takes effect from the last poll, so dropping from an hour to a minute does not wait an hour. Every one of these calls reads your account's own usage page. SerpApi, Context7 and Hunter document the call as free, Firecrawl's open-source server shows it bills nothing (and a live account confirmed it), and none of the other vendors list it as a billable call.
 
 ## What it keeps, and where
 
