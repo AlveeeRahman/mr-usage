@@ -1,0 +1,13 @@
+{
+  "quota": {
+    "path": "api.limits.beta.rows",
+    "account_id": 123456789,
+    "allotted": 100,
+    "used": 50,
+    "reset": "month",
+    "report": "day",
+    "overage": false,
+    "period_start": 1714546800,
+    "period_reset": 1717225200
+  }
+}

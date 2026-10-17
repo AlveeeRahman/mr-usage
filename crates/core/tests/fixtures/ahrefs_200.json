@@ -1,0 +1,11 @@
+{
+  "limits_and_usage": {
+    "api_key_expiration_date": "2027-01-01T00:00:00Z",
+    "subscription": "Enterprise",
+    "units_limit_api_key": 500000,
+    "units_limit_workspace": 2000000,
+    "units_usage_api_key": 12345,
+    "units_usage_workspace": 456789,
+    "usage_reset_date": "2026-11-01"
+  }
+}

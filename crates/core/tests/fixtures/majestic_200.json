@@ -1,0 +1,138 @@
+{
+  "Code": "OK",
+  "ErrorMessage": "",
+  "FullError": "",
+  "AnalysisDepth": 30000,
+  "ExplorerBacklinksShown": 30000,
+  "GetHostedDomainsAnalysisResUnitsCost": 5000,
+  "GetRefDomainInfoAnalysisResUnitsCost": 1000,
+  "GetTopPagesAnalysisResUnitsCost": 5000,
+  "IndexBuildDate": "2017-09-04 13:42:54",
+  "IndexType": 0,
+  "MaxAnalyseIndexItemBatchCount": 10,
+  "MaxBulkBacklinksCheck": 400,
+  "MaxGetIndexInfoBatchCount": 100,
+  "MaxGetTopBackLinksAnalysisResUnitsCost": 5000,
+  "MinGetLinkedDomainsAnalysisResUnitsCost": 1000,
+  "MinGetTopBackLinksAnalysisResUnitsCost": 5000,
+  "ServerBuild": "2017-10-13 13:57:22",
+  "ServerName": "SHADOJAGUAR",
+  "ServerVersion": "1.0.6495.23321",
+  "StandardReportBacklinksShown": 20000,
+  "SubscriptionIsActive": 1,
+  "TotalAnalysisResUnits": 97094051,
+  "TotalDetailedReportsPerPeriodRemaining": 1010,
+  "TotalIndexItemInfoResUnits": 504986,
+  "TotalRetrievalResUnits": 19462890,
+  "UniqueIndexID": "20170904134254-HISTORICAL",
+  "DataTables": {
+    "Subscriptions": {
+      "Headers": {},
+      "Data": [
+        {
+          "Starts": "2017-09-25 15:06:27",
+          "Expires": "2017-10-25 15:05:40",
+          "IndexItemInfoResUnits": 499986,
+          "RetrievalResUnits": 19262890,
+          "AnalysisResUnits": 96094051,
+          "AdvancedReportsRemaining": 950,
+          "StandardReportsRemaining": 950,
+          "StandardReportBacklinksShown": 20000,
+          "DetailedReportsPerPeriodRemaining": 950
+        },
+        {
+          "Starts": "2017-10-13 12:17:04",
+          "Expires": "2017-11-13 12:16:58",
+          "IndexItemInfoResUnits": 5000,
+          "RetrievalResUnits": 200000,
+          "AnalysisResUnits": 1000000,
+          "AdvancedReportsRemaining": 60,
+          "StandardReportsRemaining": 60,
+          "StandardReportBacklinksShown": 7500,
+          "DetailedReportsPerPeriodRemaining": 60
+        }
+      ]
+    },
+    "SiteExplorerInfo": {
+      "Headers": {
+        "DomainsRemaining": 280,
+        "DomainsUsed": 0,
+        "Enabled": "1",
+        "MaxBackLinks": 30000,
+        "MaxDomains": 280,
+        "MaxFairUseLinesReturned": 10000,
+        "MaxFairUseTotalPageViews": 100,
+        "RefreshDate": "2017-10-17 18:01:25",
+        "ResultsRestricted": 3,
+        "TimeTillRefresh": "1 hour",
+        "TimeTillRefresh24H": "01:00"
+      },
+      "Data": []
+    },
+    "CustomerSubscriptionSummary": {
+      "Headers": {
+        "APIAccess": 1,
+        "CustomerSubscriptions": 1,
+        "DeveloperAPIAccess": 1,
+        "SiteExplorerAvailable": 1,
+        "ThirdPartyAPIAccess": 1
+      },
+      "Data": []
+    },
+    "SubscriptionPlans": {
+      "Headers": {},
+      "Data": [
+        {
+          "CustomerID": 895472,
+          "SubscriptionID": 61975,
+          "Created": "25/09/2017 15:06:27",
+          "Active": 1,
+          "Status": 1,
+          "Code": "SUB_MAJESTIC_250",
+          "Title": "Majestic Platinum",
+          "SubscriptionStockcodeID": 10,
+          "ExpirationDate": "",
+          "MaxPeriods": 0
+        },
+        {
+          "CustomerID": 895472,
+          "SubscriptionID": 61750,
+          "Created": "13/09/2017 11:17:54",
+          "Active": 1,
+          "Status": 2,
+          "Code": "MAJESTIC_LITE_2016",
+          "Title": "Majestic Lite",
+          "SubscriptionStockcodeID": 336,
+          "ExpirationDate": "",
+          "MaxPeriods": 0
+        },
+        {
+          "CustomerID": 895472,
+          "SubscriptionID": 61720,
+          "Created": "12/09/2017 10:19:33",
+          "Active": 0,
+          "Status": 3,
+          "Code": "MAJESTIC_PRO_2016",
+          "Title": "Majestic Pro",
+          "SubscriptionStockcodeID": 337,
+          "ExpirationDate": "12/10/2017 11:16:36",
+          "MaxPeriods": 1
+        }
+      ]
+    },
+    "IndexInfo": {
+      "Headers": {},
+      "Data": [
+        {
+          "Name": "historical",
+          "IndexBuildDate": "2017-09-04 13:42:54",
+          "UniqueCrawledPages": 1354587484632,
+          "UniqueIndexedURLs": 6513834312534,
+          "FirstBackLinkDate": "2011-12-26",
+          "MostRecentBackLinkDate": "2017-07-27",
+          "RecentBackLinksFromDate": "2017-03-29"
+        }
+      ]
+    }
+  }
+}

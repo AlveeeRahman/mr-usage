@@ -1,0 +1,10 @@
+{
+  "version": "0.1.20250526",
+  "status_code": 40100,
+  "status_message": "you are not authorized to access this resource. see your login details here: https://app.dataforseo.com/api-dashboard .",
+  "time": "0 sec.",
+  "cost": 0,
+  "tasks_count": 0,
+  "tasks_error": 0,
+  "tasks": []
+}

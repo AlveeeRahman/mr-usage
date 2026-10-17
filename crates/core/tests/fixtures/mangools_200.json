@@ -1,0 +1,112 @@
+{
+  "competitor-keywords-rows": 2000,
+  "related-keywords-rows": 700,
+  "reqs-per-short-period": 3,
+  "api_quota": {
+    "related-keywords": {
+      "limit": 100,
+      "remaining": 99,
+      "reset": 35000
+    },
+    "serps": {
+      "limit": 100,
+      "remaining": 100,
+      "reset": null
+    }
+  },
+  "permanent_credits": {
+    "related-keywords": {
+      "limit": 100,
+      "remaining": 99
+    },
+    "serps": {
+      "limit": 100,
+      "remaining": 100
+    }
+  },
+  "resources": {
+    "related-keywords": {
+      "limit": 500,
+      "remaining": 497,
+      "reset": 7796
+    },
+    "trends": {
+      "limit": 500,
+      "remaining": 499,
+      "reset": 8300
+    },
+    "tracked_keywords": {
+      "limit": 1651,
+      "remaining": 1651
+    },
+    "serps": {
+      "limit": 500,
+      "remaining": 496,
+      "reset": 7769
+    },
+    "links": {
+      "limit": 100000,
+      "remaining": 99500,
+      "reset": 572091
+    },
+    "sch-url-metrics": {
+      "limit": 600,
+      "remaining": 600,
+      "reset": 7769
+    },
+    "kw-url-metrics": {
+      "limit": 600,
+      "remaining": 600,
+      "reset": 7769
+    },
+    "lm-url-metrics": {
+      "limit": 100000,
+      "remaining": 99999,
+      "reset": 14958
+    },
+    "sp-overview": {
+      "limit": 70,
+      "remaining": 70,
+      "reset": 14958
+    },
+    "lm-suggest": {
+      "limit": 100,
+      "remaining": 100,
+      "reset": 14958
+    },
+    "ai-watcher-prompts": {
+      "limit": 100,
+      "remaining": 96,
+      "reset": null
+    },
+    "ai-watcher-monitors": {
+      "limit": 3,
+      "remaining": 2,
+      "reset": null
+    },
+    "checked-keywords-ranks": {
+      "limit": 1651,
+      "remaining": 1651,
+      "reset": null
+    }
+  },
+  "tracked-keywords": 1500,
+  "upgraded_account": true,
+  "limit_options": [
+    {
+      "name": "Related keywords",
+      "tooltip": "string",
+      "limits": [
+        {
+          "plan": "BASIC",
+          "value": "200",
+          "color": "orange"
+        }
+      ]
+    }
+  ],
+  "highestPlan": "premium",
+  "platformPlan": "mangools",
+  "trackings": 10,
+  "maxGeneratePrompts": 5
+}
