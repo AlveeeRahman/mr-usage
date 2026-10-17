@@ -16,6 +16,7 @@ export interface ConfigField {
 
 export interface SnapshotView {
   takenAtMs: number;
+  unit: Unit;
   remaining: number | null;
   limit: number | null;
   periodEndMs: number | null;

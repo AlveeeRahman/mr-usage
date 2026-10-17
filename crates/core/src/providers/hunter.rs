@@ -173,6 +173,7 @@ pub(crate) fn parse(status: StatusCode, retry_after: Option<Duration>, body: &[u
         period_end: data.reset_date.as_deref().and_then(parse_date),
         spent: None,
         spend_per_hour: None,
+        unit: None,
         extra,
     })
 }

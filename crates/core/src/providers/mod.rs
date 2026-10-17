@@ -8,15 +8,50 @@ use serde::Deserialize;
 use crate::provider::{Provider, ProviderError};
 use crate::redact;
 
+pub mod ahrefs;
 pub mod apify;
+pub mod azurequantum;
+pub mod bfl;
+pub mod brave;
+pub mod brightdata;
 pub mod context7;
+pub mod crawlbase;
+pub mod dataforseo;
+pub mod deepgram;
+pub mod deepseek;
+pub mod did;
+pub mod digitalocean;
+pub mod elevenlabs;
 pub mod elicit;
+pub mod fal;
 pub mod firecrawl;
+pub mod heygen;
 pub mod hunter;
+pub mod ibmquantum;
+pub mod keywordseverywhere;
+pub mod linkup;
+pub mod luma;
+pub mod majestic;
+pub mod mangools;
+pub mod moonshot;
+pub mod moz;
+pub mod novita;
 pub mod openrouter;
+pub mod recraft;
+pub mod runpod;
 pub mod runway;
+pub mod scrapingbee;
+pub mod searchapi;
+pub mod semrush;
+pub mod seranking;
 pub mod serpapi;
+pub mod serpstat;
+pub mod siliconflow;
+pub mod stability;
 pub mod tavily;
+pub mod vast;
+pub mod vercelgateway;
+pub mod xai;
 
 /// Every provider the app knows about, in display order.
 pub fn registry() -> Vec<Arc<dyn Provider>> {
@@ -30,6 +65,41 @@ pub fn registry() -> Vec<Arc<dyn Provider>> {
         Arc::new(apify::Apify),
         Arc::new(hunter::Hunter),
         Arc::new(runway::Runway),
+        Arc::new(brave::Brave),
+        Arc::new(searchapi::SearchApi),
+        Arc::new(scrapingbee::ScrapingBee),
+        Arc::new(brightdata::BrightData),
+        Arc::new(linkup::Linkup),
+        Arc::new(crawlbase::Crawlbase),
+        Arc::new(deepseek::DeepSeek),
+        Arc::new(moonshot::Moonshot),
+        Arc::new(vercelgateway::VercelGateway),
+        Arc::new(novita::Novita),
+        Arc::new(fal::Fal),
+        Arc::new(siliconflow::SiliconFlow),
+        Arc::new(xai::XAi),
+        Arc::new(elevenlabs::ElevenLabs),
+        Arc::new(deepgram::Deepgram),
+        Arc::new(did::DId),
+        Arc::new(heygen::HeyGen),
+        Arc::new(stability::Stability),
+        Arc::new(bfl::BlackForestLabs),
+        Arc::new(luma::Luma),
+        Arc::new(recraft::Recraft),
+        Arc::new(runpod::RunPod),
+        Arc::new(vast::Vast),
+        Arc::new(digitalocean::DigitalOcean),
+        Arc::new(azurequantum::AzureQuantum),
+        Arc::new(ibmquantum::IbmQuantum),
+        Arc::new(ahrefs::Ahrefs),
+        Arc::new(moz::Moz),
+        Arc::new(semrush::Semrush),
+        Arc::new(seranking::SeRanking),
+        Arc::new(serpstat::Serpstat),
+        Arc::new(mangools::Mangools),
+        Arc::new(dataforseo::DataForSeo),
+        Arc::new(majestic::Majestic),
+        Arc::new(keywordseverywhere::KeywordsEverywhere),
     ]
 }
 
@@ -144,16 +214,66 @@ mod tests {
                 "openrouter",
                 "apify",
                 "hunter",
-                "runway"
+                "runway",
+                "brave",
+                "searchapi",
+                "scrapingbee",
+                "brightdata",
+                "linkup",
+                "crawlbase",
+                "deepseek",
+                "moonshot",
+                "vercelgateway",
+                "novita",
+                "fal",
+                "siliconflow",
+                "xai",
+                "elevenlabs",
+                "deepgram",
+                "did",
+                "heygen",
+                "stability",
+                "bfl",
+                "luma",
+                "recraft",
+                "runpod",
+                "vast",
+                "digitalocean",
+                "azurequantum",
+                "ibmquantum",
+                "ahrefs",
+                "moz",
+                "semrush",
+                "seranking",
+                "serpstat",
+                "mangools",
+                "dataforseo",
+                "majestic",
+                "keywordseverywhere",
             ]
         );
     }
 
+    /// A provider with an extra setting shows a template with `<…>` in the
+    /// add form and builds the real URL from the setting; every other
+    /// provider's endpoint must be a real URL on its own allowlist.
     #[test]
     fn every_provider_endpoint_is_on_its_own_allowlist() {
         for p in registry() {
+            if p.config_field().is_some() {
+                assert!(p.endpoint().contains('<'), "{} should show a template", p.id());
+                continue;
+            }
             let url = reqwest::Url::parse(p.endpoint()).unwrap();
             assert!(crate::net::check_allowed(&url, p.allowed_host()).is_ok(), "{}", p.id());
+        }
+    }
+
+    #[test]
+    fn every_provider_has_a_category_and_a_display_name() {
+        for p in registry() {
+            assert!(!p.display_name().is_empty(), "{}", p.id());
+            assert!(!p.category().label().is_empty(), "{}", p.id());
         }
     }
 

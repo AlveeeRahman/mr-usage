@@ -16,7 +16,7 @@ Recorded here instead of implemented. Anything that adds persistence or a networ
 
 ## Security hardening
 
-7. Tauri isolation pattern. IPC can be routed through a sandboxed isolation iframe that validates every message. With eight commands and a strict CSP the gain is small, but it is cheap defense in depth.
+7. Tauri isolation pattern. IPC can be routed through a sandboxed isolation iframe that validates every message. With ten commands and a strict CSP the gain is small, but it is cheap defense in depth.
 8. Raw IPC body for `save_key`. The key crosses the bridge as a JSON argument and serde_json's intermediate values are freed without zeroizing (`docs/THREAT_MODEL.md`, "Known residual risks"). A raw-bytes command body would let Rust zeroize its copy. Measure with the leak test before deciding.
 9. SerpApi URL copy. reqwest keeps the request URL, key included, for the life of the request and frees it unzeroized. Fixable only upstream or by moving to a lower-level client.
 10. Windows crash dumps. Windows Error Reporting can capture process dumps. Opting out (`WerAddExcludedApplication` or `SetErrorMode`) needs a small amount of `unsafe` FFI and testing on Windows.

@@ -182,6 +182,7 @@ pub(crate) fn parse(status: StatusCode, retry_after: Option<Duration>, body: &[u
         period_end,
         spent,
         spend_per_hour: None,
+        unit: None,
         extra,
     })
 }

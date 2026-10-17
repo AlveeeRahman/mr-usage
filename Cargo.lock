@@ -2280,6 +2280,7 @@ name = "mr-usage-core"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "base64 0.23.1",
  "jiff",
  "keyring",
  "mr-usage-core",

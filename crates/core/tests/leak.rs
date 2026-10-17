@@ -113,6 +113,7 @@ impl Provider for EchoProvider {
             period_end: None,
             spent: None,
             spend_per_hour: None,
+            unit: None,
             extra: vec![],
         })
     }

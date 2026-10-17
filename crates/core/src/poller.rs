@@ -82,6 +82,8 @@ pub struct ProviderView {
 #[serde(rename_all = "camelCase")]
 pub struct SnapshotView {
     pub taken_at_ms: i64,
+    /// The unit this reading is in: the provider's, unless it overrode it.
+    pub unit: Unit,
     pub remaining: Option<u64>,
     pub limit: Option<u64>,
     pub period_end_ms: Option<i64>,
@@ -232,6 +234,7 @@ impl Poller {
             min_poll_interval_secs: p.min_poll_interval().as_secs(),
             latest: rt.history.back().map(|s| SnapshotView {
                 taken_at_ms: millis(s.taken_at),
+                unit: s.unit.unwrap_or_else(|| p.unit()),
                 remaining: s.remaining,
                 limit: s.limit,
                 period_end_ms: s.period_end.map(millis),
@@ -603,6 +606,7 @@ mod tests {
                 period_end: None,
                 spent: None,
                 spend_per_hour: None,
+                unit: None,
                 extra: vec![],
             })
         }
@@ -852,6 +856,7 @@ mod tests {
                     period_end: None,
                     spent: None,
                     spend_per_hour: None,
+                    unit: None,
                     extra: vec![],
                 })
             }

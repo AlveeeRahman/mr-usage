@@ -92,6 +92,9 @@ pub struct Snapshot {
     pub spent: Option<u64>,
     /// The vendor's own burn rate per hour, in the provider's unit.
     pub spend_per_hour: Option<u64>,
+    /// Overrides the provider's unit for this reading, for vendors that
+    /// report a currency per account (DeepSeek bills in yuan or dollars).
+    pub unit: Option<Unit>,
     /// Provider-specific label/value pairs for display only. Never secrets.
     pub extra: Vec<(String, String)>,
 }
@@ -106,6 +109,7 @@ impl Snapshot {
             period_end: None,
             spent: None,
             spend_per_hour: None,
+            unit: None,
             extra: Vec::new(),
         }
     }

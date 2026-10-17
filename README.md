@@ -160,7 +160,7 @@ This removes the keys from your credential store, then the app, then its setting
 | Folder | Holds |
 | --- | --- |
 | `crates/core/` | Providers, keystore, redaction, HTTP, poller, midnight wipe, settings. Plain Cargo, no Tauri, so it can be audited and tested without a webview |
-| `src-tauri/` | The Tauri shell: command line, the eight commands the window may call, capabilities, CSP, window, signal handling |
+| `src-tauri/` | The Tauri shell: command line, the ten commands the window may call, capabilities, CSP, window, signal handling |
 | `frontend/` | The window: one HTML file and three TypeScript files, no framework |
 | `installers/` | `install.sh` for macOS and Linux, `install.ps1` for Windows. Each is also the uninstaller |
 | `docs/` | Threat model, sources for every vendor fact, follow-ups, and the GitHub Pages site |

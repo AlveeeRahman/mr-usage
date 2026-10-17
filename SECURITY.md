@@ -12,7 +12,7 @@ Please report privately through GitHub: open the repository's Security tab and c
 - Reads a key at the moment it calls the vendor, wraps it in `secrecy::SecretString`, and drops it, which zeroizes it. Keys are never cached in app state and never sent back to the window.
 - Contacts only `api.firecrawl.dev`, `serpapi.com`, `elicit.com`, `context7.com`, `api.tavily.com`, `openrouter.ai`, `api.apify.com`, `api.hunter.io` and `api.dev.runwayml.com`, each only for the provider you added a key for, over TLS 1.2 or newer, HTTPS only, with redirects disabled and a host allowlist checked before every request. No telemetry, no update check. (The install scripts, which run outside the app, read GitHub Releases.)
 - Writes one file of its own, `settings.json` (poll interval, enabled providers, theme). On Linux the webview's scratch folder lives in `$XDG_RUNTIME_DIR` and is deleted on exit. On macOS and Windows the system webview keeps its own folder, and the README lists the paths.
-- Runs its window under a strict Content Security Policy, with no network access from the page, devtools compiled out of release builds, and exactly eight commands the page may call.
+- Runs its window under a strict Content Security Policy, with no network access from the page, devtools compiled out of release builds, and exactly ten commands the page may call.
 - Deletes its own keystore entries when asked (`mr-usage --forget-keys`), which the install scripts do before uninstalling. `--help` and `--version` are the only other options. An unrecognised argument stops the app with exit status 2 before anything is initialised.
 - Cannot protect keys from someone who can run programs as you. The OS keystore hands keys to processes running under your account.
 

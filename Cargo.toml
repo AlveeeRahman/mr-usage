@@ -12,6 +12,7 @@ repository = "https://github.com/AlveeeRahman/mr-usage"
 # Versions read from the crates.io index and docs.rs on 2026-10-16. See docs/SOURCES.md.
 [workspace.dependencies]
 async-trait = "=0.1.92"
+base64 = "=0.23.1"
 jiff = { version = "=0.2.38", default-features = false, features = ["std", "tz-system", "tzdb-bundle-platform", "tzdb-zoneinfo", "tzdb-concatenated"] }
 keyring = { version = "=4.2.0", default-features = false, features = ["v1"] }
 libc = "=0.2.190"

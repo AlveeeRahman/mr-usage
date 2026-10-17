@@ -76,9 +76,14 @@ function button(label: string, className: string, onClick: (btn: HTMLButtonEleme
   return btn;
 }
 
+/** The reading's own unit when it has one (a currency can differ per account). */
+function unitOf(view: ProviderView): ProviderView["unit"] {
+  return view.latest?.unit ?? view.unit;
+}
+
 /** The noun after a number, or "" for money, which needs none. */
 function unitWord(view: ProviderView): string {
-  switch (view.unit) {
+  switch (unitOf(view)) {
     case "credits":
       return "credits";
     case "searches":
@@ -110,13 +115,14 @@ function duration(secs: number): string {
 }
 
 function amount(view: ProviderView, value: number): string {
-  switch (view.unit) {
+  const unit = unitOf(view);
+  switch (unit) {
     case "percent":
       return `${value}%`;
     case "usd":
     case "cny":
     case "eur":
-      return moneyFmt[view.unit].format(value / 100);
+      return moneyFmt[unit].format(value / 100);
     case "seconds":
       return duration(value);
     default:
@@ -127,7 +133,7 @@ function amount(view: ProviderView, value: number): string {
 /** "of 1,000 credits left", "of $100.00 left", "credits left", "of plan left". */
 function leftPhrase(view: ProviderView, limit: number | null): string {
   const word = unitWord(view);
-  if (view.unit === "percent") return "of plan left";
+  if (unitOf(view) === "percent") return "of plan left";
   if (limit !== null) return `of ${amount(view, limit)}${word ? ` ${word}` : ""} left`;
   return word ? `${word} left` : "left";
 }
