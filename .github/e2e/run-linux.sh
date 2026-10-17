@@ -20,6 +20,14 @@ mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME"
 SETTINGS="$XDG_CONFIG_HOME/io.github.alveeerahman.mr-usage/settings.json"
 
 export DISPLAY=:99
+# Under Xvfb there is no GPU. WebKitGTK's DMABUF renderer then runs on a
+# software EGL fallback that sometimes takes the web process down between two
+# WebDriver calls, which ends the session with a connection reset. Tauri's
+# Linux graphics guide names this switch for exactly that failure
+# (https://v2.tauri.app/develop/debug/linux-graphics/); it costs nothing here
+# because there is no acceleration to lose. The app inherits it from
+# tauri-driver.
+export WEBKIT_DISABLE_DMABUF_RENDERER=1
 Xvfb :99 -screen 0 1280x900x24 >/dev/null 2>&1 &
 XVFB=$!
 trap 'kill $XVFB 2>/dev/null || true; rm -rf "$SANDBOX"' EXIT
