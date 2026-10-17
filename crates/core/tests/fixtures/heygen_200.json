@@ -1,0 +1,18 @@
+{
+  "data": {
+    "username": "jane_doe",
+    "email": "jane@example.com",
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "billing_type": "wallet",
+    "wallet": {
+      "currency": "usd",
+      "remaining_balance": 42.50,
+      "auto_reload": {
+        "enabled": false
+      }
+    },
+    "subscription": null,
+    "usage_based": null
+  }
+}

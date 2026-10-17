@@ -1,0 +1,5 @@
+{
+    "id": "296a972f-666a-44a1-a3df-c9c28a1f56c0",
+    "name": "bad_request",
+    "message": "Header parameter Authorization is required, but not found"
+}

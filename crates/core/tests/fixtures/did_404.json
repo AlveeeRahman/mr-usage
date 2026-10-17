@@ -1,0 +1,4 @@
+{
+  "kind": "NotFoundError",
+  "description": "not credits found for user"
+}

@@ -1,0 +1,65 @@
+{
+  "tier": "starter",
+  "character_count": 1000,
+  "character_limit": 10000,
+  "max_character_limit_extension": 10000,
+  "max_credit_limit_extension": 10000,
+  "can_extend_character_limit": true,
+  "allowed_to_extend_character_limit": true,
+  "voice_slots_used": 1,
+  "professional_voice_slots_used": 0,
+  "professional_voice_slots_used_in_workspace": 0,
+  "voice_limit": 10,
+  "voice_add_edit_counter": 0,
+  "professional_voice_limit": 1,
+  "can_extend_voice_limit": true,
+  "can_use_instant_voice_cloning": true,
+  "can_use_professional_voice_cloning": true,
+  "current_overage": {
+    "amount": "0",
+    "currency": "usd"
+  },
+  "status": "active",
+  "open_invoices": [
+    {
+      "amount_due_cents": 1000,
+      "discounts": [
+        {
+          "discount_percent_off": 20
+        }
+      ],
+      "next_payment_attempt_unix": 1738356858,
+      "payment_intent_status": "processing",
+      "payment_intent_statusses": [
+        "processing",
+        "succeeded"
+      ],
+      "subtotal_cents": 900,
+      "tax_cents": 100
+    }
+  ],
+  "has_open_invoices": true,
+  "next_character_count_reset_unix": 1738356858,
+  "currency": "usd",
+  "billing_period": "monthly_period",
+  "character_refresh_period": "monthly_period",
+  "next_invoice": {
+    "amount_due_cents": 1000,
+    "discounts": [
+      {
+        "discount_percent_off": 20
+      }
+    ],
+    "next_payment_attempt_unix": 1738356858,
+    "payment_intent_status": "processing",
+    "payment_intent_statusses": [
+      "processing",
+      "succeeded"
+    ],
+    "subtotal_cents": 900,
+    "tax_cents": 100
+  },
+  "has_used_starter_coupon_on_account": false,
+  "has_used_creator_coupon_on_account": false,
+  "is_eligible_for_starter_promo": false
+}

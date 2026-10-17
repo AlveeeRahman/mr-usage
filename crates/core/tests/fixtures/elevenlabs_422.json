@@ -1,0 +1,9 @@
+{
+  "detail": [
+    {
+      "loc": ["header", "xi-api-key"],
+      "msg": "Field required",
+      "type": "missing"
+    }
+  ]
+}
