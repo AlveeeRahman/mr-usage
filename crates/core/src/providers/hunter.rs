@@ -35,7 +35,7 @@ use serde::Deserialize;
 
 use super::{MAX_VENDOR_TEXT, count, http_status_message, malformed};
 use crate::net::{Auth, Http};
-use crate::provider::{Provider, ProviderError, Snapshot, Unit, parse_date};
+use crate::provider::{Category, Provider, ProviderError, Snapshot, Unit, parse_date};
 use crate::redact;
 
 pub struct Hunter;
@@ -117,6 +117,10 @@ impl Provider for Hunter {
         Unit::Searches
     }
 
+    fn category(&self) -> Category {
+        Category::Data
+    }
+
     fn min_poll_interval(&self) -> Duration {
         Duration::from_secs(60)
     }
@@ -125,7 +129,7 @@ impl Provider for Hunter {
         Some("Hunter documents this call as free. On a single-credit-pool plan the search count is Hunter's approximate view of that pool.")
     }
 
-    async fn fetch(&self, key: &SecretString, http: &Http) -> Result<Snapshot, ProviderError> {
+    async fn fetch(&self, key: &SecretString, _config: Option<&str>, http: &Http) -> Result<Snapshot, ProviderError> {
         let response = http.get(ENDPOINT, HOST, Auth::Bearer(key)).await?;
         parse(response.status, response.retry_after, &response.body, Timestamp::now())
     }
@@ -167,6 +171,8 @@ pub(crate) fn parse(status: StatusCode, retry_after: Option<Duration>, body: &[u
         remaining: Some(searches.0),
         limit: Some(searches.1).filter(|a| *a > 0),
         period_end: data.reset_date.as_deref().and_then(parse_date),
+        spent: None,
+        spend_per_hour: None,
         extra,
     })
 }

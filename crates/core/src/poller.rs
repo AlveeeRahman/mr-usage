@@ -3,7 +3,7 @@
 //! The poller reads a key from the keystore at fetch time, hands it to the
 //! provider and drops it. Keys are never stored in poller state.
 
-use std::collections::{HashMap, VecDeque};
+use std::collections::{BTreeMap, HashMap, VecDeque};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
 
@@ -12,7 +12,7 @@ use serde::Serialize;
 
 use crate::keystore::{KeyStore, KeystoreError};
 use crate::net::Http;
-use crate::provider::{Provider, ProviderError, Snapshot, Unit};
+use crate::provider::{Category, ConfigField, Provider, ProviderError, Snapshot, Unit};
 use crate::settings::Settings;
 use crate::wipe::{Clock, MidnightWiper};
 
@@ -50,6 +50,7 @@ struct State {
     wiper: MidnightWiper,
     interval: Duration,
     enabled: Vec<String>,
+    config: BTreeMap<String, String>,
 }
 
 /// What the frontend renders for one provider.
@@ -61,7 +62,11 @@ pub struct ProviderView {
     pub docs_url: &'static str,
     pub endpoint: &'static str,
     pub unit: Unit,
+    pub category: Category,
     pub note: Option<&'static str>,
+    pub config_field: Option<ConfigField>,
+    /// The provider's extra setting as the user typed it. Never a key.
+    pub config: Option<String>,
     pub enabled: bool,
     pub has_key: bool,
     pub poll_interval_secs: u64,
@@ -80,6 +85,8 @@ pub struct SnapshotView {
     pub remaining: Option<u64>,
     pub limit: Option<u64>,
     pub period_end_ms: Option<i64>,
+    pub spent: Option<u64>,
+    pub spend_per_hour: Option<u64>,
     pub extra: Vec<(String, String)>,
 }
 
@@ -153,6 +160,7 @@ impl Poller {
                 wiper: MidnightWiper::new(&now),
                 interval: settings.poll_interval(),
                 enabled: settings.enabled.clone(),
+                config: settings.provider_config.clone(),
             }),
         })
     }
@@ -214,7 +222,10 @@ impl Poller {
             docs_url: p.docs_url(),
             endpoint: p.endpoint(),
             unit: p.unit(),
+            category: p.category(),
             note: p.note(),
+            config_field: p.config_field(),
+            config: state.config.get(p.id()).cloned(),
             enabled: state.enabled.iter().any(|e| e == p.id()),
             has_key: rt.has_key,
             poll_interval_secs: Self::interval_for(p, state.interval).as_secs(),
@@ -224,6 +235,8 @@ impl Poller {
                 remaining: s.remaining,
                 limit: s.limit,
                 period_end_ms: s.period_end.map(millis),
+                spent: s.spent,
+                spend_per_hour: s.spend_per_hour,
                 extra: s.extra.clone(),
             }),
             history: rt
@@ -261,6 +274,7 @@ impl Poller {
             let mut state = self.lock();
             state.interval = settings.poll_interval();
             state.enabled = settings.enabled.clone();
+            state.config = settings.provider_config.clone();
             let State {
                 runtime,
                 interval,
@@ -309,6 +323,25 @@ impl Poller {
                     generation: rt.generation.wrapping_add(1),
                     ..Runtime::default()
                 };
+            }
+        }
+        self.emit(id);
+    }
+
+    /// The provider's extra setting changed: the next poll should use it now,
+    /// and an error caused by the old value should not hold polling back.
+    pub fn config_changed(&self, id: &str) {
+        let now = self.clock.now().timestamp();
+        {
+            let mut state = self.lock();
+            let enabled = state.enabled.iter().any(|e| e == id);
+            if let Some(rt) = state.runtime.get_mut(id)
+                && rt.has_key
+                && enabled
+            {
+                rt.failures = 0;
+                rt.last_error = None;
+                rt.next_due = Some(now);
             }
         }
         self.emit(id);
@@ -417,15 +450,16 @@ impl Poller {
         let provider = Arc::clone(self.provider(id).ok_or(PollerError::UnknownProvider)?);
         let id = provider.id();
         let started = self.clock.now().timestamp();
-        let generation = {
+        let (generation, config) = {
             let mut state = self.lock();
+            let config = state.config.get(id).cloned();
             let rt = state.runtime.get_mut(id).ok_or(PollerError::UnknownProvider)?;
             if rt.in_flight {
                 return Err(PollerError::Busy);
             }
             rt.in_flight = true;
             rt.last_attempt = Some(started);
-            rt.generation
+            (rt.generation, config)
         };
 
         let store = Arc::clone(&self.keystore);
@@ -434,7 +468,10 @@ impl Poller {
             .unwrap_or_else(|_| Err(KeystoreError::Failure("keystore task failed".into())));
 
         let outcome: Result<Snapshot, LastError> = match key {
-            Ok(Some(key)) => provider.fetch(&key, &self.http).await.map_err(LastError::Provider),
+            Ok(Some(key)) => provider
+                .fetch(&key, config.as_deref(), &self.http)
+                .await
+                .map_err(LastError::Provider),
             Ok(None) => Err(LastError::Keystore(KeystoreError::Failure("no key is stored".into()))),
             Err(e) => Err(LastError::Keystore(e)),
         };
@@ -549,10 +586,13 @@ mod tests {
         fn unit(&self) -> Unit {
             Unit::Credits
         }
+        fn category(&self) -> Category {
+            Category::Data
+        }
         fn min_poll_interval(&self) -> Duration {
             Duration::from_secs(60)
         }
-        async fn fetch(&self, key: &SecretString, _http: &Http) -> Result<Snapshot, ProviderError> {
+        async fn fetch(&self, key: &SecretString, _config: Option<&str>, _http: &Http) -> Result<Snapshot, ProviderError> {
             assert_eq!(key.expose_secret(), "mock-key-123");
             let n = self.calls.fetch_add(1, Ordering::SeqCst) as u64;
             let result = self.result.lock().unwrap().clone();
@@ -561,6 +601,8 @@ mod tests {
                 remaining: Some(base - n),
                 limit: Some(base),
                 period_end: None,
+                spent: None,
+                spend_per_hour: None,
                 extra: vec![],
             })
         }
@@ -794,10 +836,13 @@ mod tests {
             fn unit(&self) -> Unit {
                 Unit::Credits
             }
+            fn category(&self) -> Category {
+                Category::Data
+            }
             fn min_poll_interval(&self) -> Duration {
                 Duration::from_secs(60)
             }
-            async fn fetch(&self, _key: &SecretString, _http: &Http) -> Result<Snapshot, ProviderError> {
+            async fn fetch(&self, _key: &SecretString, _config: Option<&str>, _http: &Http) -> Result<Snapshot, ProviderError> {
                 self.entered.notify_one();
                 self.release.notified().await;
                 Ok(Snapshot {
@@ -805,6 +850,8 @@ mod tests {
                     remaining: Some(1),
                     limit: None,
                     period_end: None,
+                    spent: None,
+                    spend_per_hour: None,
                     extra: vec![],
                 })
             }
@@ -898,10 +945,13 @@ mod tests {
         fn unit(&self) -> Unit {
             Unit::Credits
         }
+        fn category(&self) -> Category {
+            Category::Data
+        }
         fn min_poll_interval(&self) -> Duration {
             Duration::from_secs(60)
         }
-        async fn fetch(&self, _key: &SecretString, _http: &Http) -> Result<Snapshot, ProviderError> {
+        async fn fetch(&self, _key: &SecretString, _config: Option<&str>, _http: &Http) -> Result<Snapshot, ProviderError> {
             self.entered.notify_one();
             self.release.notified().await;
             Err(ProviderError::Unauthorized)

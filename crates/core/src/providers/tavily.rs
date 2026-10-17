@@ -25,7 +25,7 @@ use serde::Deserialize;
 
 use super::{MAX_VENDOR_TEXT, count, http_status_message, malformed};
 use crate::net::{Auth, Http};
-use crate::provider::{Provider, ProviderError, Snapshot, Unit};
+use crate::provider::{Category, Provider, ProviderError, Snapshot, Unit};
 use crate::redact;
 
 pub struct Tavily;
@@ -96,6 +96,10 @@ impl Provider for Tavily {
         Unit::Credits
     }
 
+    fn category(&self) -> Category {
+        Category::Search
+    }
+
     fn min_poll_interval(&self) -> Duration {
         Duration::from_secs(60)
     }
@@ -104,7 +108,7 @@ impl Provider for Tavily {
         Some("Tavily's pricing page lists only search, extract, map, crawl and research as credit-consuming calls.")
     }
 
-    async fn fetch(&self, key: &SecretString, http: &Http) -> Result<Snapshot, ProviderError> {
+    async fn fetch(&self, key: &SecretString, _config: Option<&str>, http: &Http) -> Result<Snapshot, ProviderError> {
         let response = http.get(ENDPOINT, HOST, Auth::Bearer(key)).await?;
         parse(response.status, response.retry_after, &response.body, Timestamp::now())
     }
@@ -154,6 +158,8 @@ pub(crate) fn parse(status: StatusCode, retry_after: Option<Duration>, body: &[u
         remaining,
         limit,
         period_end: None,
+        spent: None,
+        spend_per_hour: None,
         extra,
     })
 }

@@ -26,7 +26,7 @@ use serde::Deserialize;
 
 use super::{count, error_message, http_status_message, malformed};
 use crate::net::{Auth, Http};
-use crate::provider::{Provider, ProviderError, Snapshot, Unit};
+use crate::provider::{Category, Provider, ProviderError, Snapshot, Unit};
 
 pub struct Runway;
 
@@ -73,6 +73,10 @@ impl Provider for Runway {
         Unit::Credits
     }
 
+    fn category(&self) -> Category {
+        Category::Media
+    }
+
     fn min_poll_interval(&self) -> Duration {
         Duration::from_secs(60)
     }
@@ -81,7 +85,7 @@ impl Provider for Runway {
         Some("Shows the organization's credit balance. Runway does not document whether this call costs credits.")
     }
 
-    async fn fetch(&self, key: &SecretString, http: &Http) -> Result<Snapshot, ProviderError> {
+    async fn fetch(&self, key: &SecretString, _config: Option<&str>, http: &Http) -> Result<Snapshot, ProviderError> {
         let response = http.get_with_headers(ENDPOINT, HOST, Auth::Bearer(key), &[VERSION_HEADER]).await?;
         parse(response.status, response.retry_after, &response.body, Timestamp::now())
     }
@@ -112,6 +116,8 @@ pub(crate) fn parse(status: StatusCode, retry_after: Option<Duration>, body: &[u
         remaining: Some(balance),
         limit: None,
         period_end: None,
+        spent: None,
+        spend_per_hour: None,
         extra,
     })
 }

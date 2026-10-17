@@ -10,6 +10,8 @@ const COMMANDS: &[&str] = &[
     "refresh",
     "get_settings",
     "update_settings",
+    "update_layout",
+    "set_provider_config",
     "wipe_now",
 ];
 

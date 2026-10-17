@@ -19,7 +19,7 @@ use mr_usage_core::keystore::memory::MemoryKeyStore;
 use mr_usage_core::keystore::{self, KeyStore, OsKeyStore};
 use mr_usage_core::net::Http;
 use mr_usage_core::poller::{Poller, ProviderView};
-use mr_usage_core::provider::{Provider, ProviderError, Snapshot, Unit};
+use mr_usage_core::provider::{Category, Provider, ProviderError, Snapshot, Unit};
 use mr_usage_core::settings::Settings;
 use mr_usage_core::wipe::SystemClock;
 use secrecy::{ExposeSecret, SecretString};
@@ -98,15 +98,21 @@ impl Provider for EchoProvider {
     fn unit(&self) -> Unit {
         Unit::Credits
     }
+    fn category(&self) -> Category {
+        Category::Data
+    }
+
     fn min_poll_interval(&self) -> Duration {
         Duration::from_secs(60)
     }
-    async fn fetch(&self, key: &SecretString, _http: &Http) -> Result<Snapshot, ProviderError> {
+    async fn fetch(&self, key: &SecretString, _config: Option<&str>, _http: &Http) -> Result<Snapshot, ProviderError> {
         Ok(Snapshot {
             taken_at: Timestamp::UNIX_EPOCH,
             remaining: Some(key.expose_secret().len() as u64),
             limit: None,
             period_end: None,
+            spent: None,
+            spend_per_hour: None,
             extra: vec![],
         })
     }

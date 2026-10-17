@@ -22,7 +22,7 @@ use serde::Deserialize;
 
 use super::{error_message, http_status_message, malformed};
 use crate::net::{Auth, Http};
-use crate::provider::{Provider, ProviderError, Snapshot, Unit, parse_date};
+use crate::provider::{Category, Provider, ProviderError, Snapshot, Unit, parse_date};
 
 pub struct SerpApi;
 
@@ -71,11 +71,15 @@ impl Provider for SerpApi {
         Unit::Searches
     }
 
+    fn category(&self) -> Category {
+        Category::Search
+    }
+
     fn min_poll_interval(&self) -> Duration {
         Duration::from_secs(60)
     }
 
-    async fn fetch(&self, key: &SecretString, http: &Http) -> Result<Snapshot, ProviderError> {
+    async fn fetch(&self, key: &SecretString, _config: Option<&str>, http: &Http) -> Result<Snapshot, ProviderError> {
         let response = http
             .get(
                 ENDPOINT,
@@ -131,6 +135,8 @@ pub(crate) fn parse(status: StatusCode, retry_after: Option<Duration>, body: &[u
         remaining,
         limit,
         period_end: parsed.plan_renewal_date.as_deref().and_then(parse_date),
+        spent: None,
+        spend_per_hour: None,
         extra,
     })
 }

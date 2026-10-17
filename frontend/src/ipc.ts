@@ -2,15 +2,25 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
-// "usd" values are whole US cents.
-export type Unit = "credits" | "searches" | "requests" | "percent" | "usd";
+// Money units are whole minor units: cents for "usd" and "eur", fen for "cny".
+export type Unit = "credits" | "searches" | "requests" | "percent" | "usd" | "cny" | "eur" | "characters" | "seconds";
+export type Category = "search" | "data" | "llm" | "media" | "compute" | "quantum" | "seo";
 export type Theme = "system" | "light" | "dark";
+export type View = "pinned" | "all";
+
+export interface ConfigField {
+  label: string;
+  hint: string;
+  placeholder: string;
+}
 
 export interface SnapshotView {
   takenAtMs: number;
   remaining: number | null;
   limit: number | null;
   periodEndMs: number | null;
+  spent: number | null;
+  spendPerHour: number | null;
   extra: [string, string][];
 }
 
@@ -30,7 +40,10 @@ export interface ProviderView {
   docsUrl: string;
   endpoint: string;
   unit: Unit;
+  category: Category;
   note: string | null;
+  configField: ConfigField | null;
+  config: string | null;
   enabled: boolean;
   hasKey: boolean;
   pollIntervalSecs: number;
@@ -46,6 +59,10 @@ export interface Settings {
   pollIntervalSecs: number;
   enabled: string[];
   theme: Theme;
+  pinned: string[];
+  collapsed: string[];
+  view: View;
+  providerConfig: Record<string, string>;
 }
 
 export interface SettingsView {
@@ -65,6 +82,10 @@ export const refresh = (providerId: string) => invoke<ProviderView>("refresh", {
 export const getSettings = () => invoke<SettingsView>("get_settings");
 export const updateSettings = (pollIntervalSecs: number, theme: Theme) =>
   invoke<SettingsView>("update_settings", { pollIntervalSecs, theme });
+export const updateLayout = (view: View, pinned: string[], collapsed: string[]) =>
+  invoke<SettingsView>("update_layout", { view, pinned, collapsed });
+export const setProviderConfig = (providerId: string, value: string | null) =>
+  invoke<ProviderView>("set_provider_config", { providerId, value });
 export const wipeNow = () => invoke<void>("wipe_now");
 
 // The returned UnlistenFn must not be called: `core:event:allow-unlisten` is

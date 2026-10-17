@@ -21,19 +21,94 @@ pub enum Unit {
     Requests,
     /// Elicit reports a percentage of plan usage, not a count.
     Percent,
-    /// OpenRouter and Apify report money. `remaining` and `limit` are US cents.
+    /// Money in US cents.
     Usd,
+    /// Money in Chinese fen (hundredths of a yuan).
+    Cny,
+    /// Money in euro cents.
+    Eur,
+    /// ElevenLabs counts characters.
+    Characters,
+    /// Quantum services meter job time in seconds.
+    Seconds,
+}
+
+/// Where a provider sits in the "All APIs" view.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Category {
+    /// Web search, scraping and crawling.
+    Search,
+    /// Research and data lookups.
+    Data,
+    /// Model inference and gateways.
+    Llm,
+    /// Speech, image and video generation.
+    Media,
+    /// GPU and cloud compute.
+    Compute,
+    /// Quantum processors and simulators.
+    Quantum,
+    /// Search-engine optimisation and marketing data.
+    Seo,
+}
+
+impl Category {
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Search => "Search and scraping",
+            Self::Data => "Research and data",
+            Self::Llm => "LLM inference",
+            Self::Media => "Speech and media",
+            Self::Compute => "Compute",
+            Self::Quantum => "Quantum",
+            Self::Seo => "SEO and marketing",
+        }
+    }
+}
+
+/// One optional, non-secret setting a provider needs besides its key: a
+/// project id, a team id, a workspace name. Stored in `settings.json`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConfigField {
+    pub label: &'static str,
+    pub hint: &'static str,
+    pub placeholder: &'static str,
 }
 
 /// One normalized reading. Holds no secrets and no account identifiers.
+///
+/// Three shapes come out of it. A quota: `remaining` and `limit`. A balance:
+/// `remaining` alone. Spend: `spent` with no `remaining`, and `limit` as the
+/// cap when the vendor has one.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Snapshot {
     pub taken_at: Timestamp,
     pub remaining: Option<u64>,
     pub limit: Option<u64>,
     pub period_end: Option<Timestamp>,
+    /// Spent so far in the current period, in the provider's unit.
+    pub spent: Option<u64>,
+    /// The vendor's own burn rate per hour, in the provider's unit.
+    pub spend_per_hour: Option<u64>,
     /// Provider-specific label/value pairs for display only. Never secrets.
     pub extra: Vec<(String, String)>,
+}
+
+impl Snapshot {
+    /// A reading with only the timestamp set. Providers fill in what they have.
+    pub fn at(taken_at: Timestamp) -> Self {
+        Self {
+            taken_at,
+            remaining: None,
+            limit: None,
+            period_end: None,
+            spent: None,
+            spend_per_hour: None,
+            extra: Vec::new(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
@@ -81,12 +156,18 @@ pub trait Provider: Send + Sync {
     /// The only host this provider may contact.
     fn allowed_host(&self) -> &'static str;
     fn unit(&self) -> Unit;
+    fn category(&self) -> Category;
     fn min_poll_interval(&self) -> Duration;
     /// A one-line caveat shown on the card, if any.
     fn note(&self) -> Option<&'static str> {
         None
     }
-    async fn fetch(&self, key: &SecretString, http: &Http) -> Result<Snapshot, ProviderError>;
+    /// The extra non-secret setting this provider needs, if any.
+    fn config_field(&self) -> Option<ConfigField> {
+        None
+    }
+    /// `config` is the value of `config_field`, when the user has set one.
+    async fn fetch(&self, key: &SecretString, config: Option<&str>, http: &Http) -> Result<Snapshot, ProviderError>;
 }
 
 /// Parse an ISO 8601 / RFC 3339 timestamp. Returns `None` rather than failing

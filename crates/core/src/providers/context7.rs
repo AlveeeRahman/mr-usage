@@ -25,7 +25,7 @@ use serde::Deserialize;
 
 use super::{cents, count, dollars, error_message, http_status_message, malformed};
 use crate::net::{Auth, Http};
-use crate::provider::{Provider, ProviderError, Snapshot, Unit, parse_timestamp};
+use crate::provider::{Category, Provider, ProviderError, Snapshot, Unit, parse_timestamp};
 
 pub struct Context7;
 
@@ -82,6 +82,10 @@ impl Provider for Context7 {
         Unit::Requests
     }
 
+    fn category(&self) -> Category {
+        Category::Data
+    }
+
     fn min_poll_interval(&self) -> Duration {
         Duration::from_secs(60)
     }
@@ -90,7 +94,7 @@ impl Provider for Context7 {
         Some("Context7 documents this call as free: it does not count as a request.")
     }
 
-    async fn fetch(&self, key: &SecretString, http: &Http) -> Result<Snapshot, ProviderError> {
+    async fn fetch(&self, key: &SecretString, _config: Option<&str>, http: &Http) -> Result<Snapshot, ProviderError> {
         let response = http.get(ENDPOINT, HOST, Auth::Bearer(key)).await?;
         parse(response.status, response.retry_after, &response.body, Timestamp::now())
     }
@@ -138,6 +142,8 @@ pub(crate) fn parse(status: StatusCode, retry_after: Option<Duration>, body: &[u
         remaining,
         limit,
         period_end: parsed.usage_resets_at.as_deref().and_then(parse_timestamp),
+        spent: None,
+        spend_per_hour: None,
         extra,
     })
 }

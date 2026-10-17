@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 use mr_usage_core::keystore::{self, KeyStore};
 use mr_usage_core::poller::{Poller, ProviderView};
-use mr_usage_core::settings::{MAX_POLL_SECS, MIN_POLL_SECS, Settings, Theme};
+use mr_usage_core::settings::{MAX_POLL_SECS, MIN_POLL_SECS, Settings, Theme, View, WindowGeometry};
 use secrecy::SecretString;
 use serde::Serialize;
 use tauri::State;
@@ -17,6 +17,9 @@ pub struct AppState {
     pub keystore: Arc<dyn KeyStore>,
     pub settings: Mutex<Settings>,
     pub settings_path: PathBuf,
+    /// The last size and position the window reported while it was neither
+    /// minimized nor full screen. Written to the settings file on exit.
+    pub window_geometry: Mutex<Option<WindowGeometry>>,
 }
 
 impl AppState {
@@ -44,7 +47,7 @@ impl AppState {
     /// a disk that refuses the write (full, read-only, permissions) does not
     /// leave the window, the poller and the saved key disagreeing with each
     /// other. The error says that only the persistence failed.
-    fn update(&self, change: impl FnOnce(&mut Settings)) -> Result<Settings, String> {
+    pub fn update(&self, change: impl FnOnce(&mut Settings)) -> Result<Settings, String> {
         let ids = self.poller.provider_ids();
         let mut guard = self.settings();
         let mut next = guard.clone();
@@ -140,6 +143,36 @@ pub fn update_settings(state: State<'_, AppState>, poll_interval_secs: u64, them
         s.theme = theme;
     })?;
     Ok(get_settings(state))
+}
+
+/// Which view is open, which cards are pinned and which are folded. Pure
+/// layout; the poller is not involved.
+#[tauri::command]
+pub fn update_layout(state: State<'_, AppState>, view: View, pinned: Vec<String>, collapsed: Vec<String>) -> Result<SettingsView, String> {
+    state.update(|s| {
+        s.view = view;
+        s.pinned = pinned;
+        s.collapsed = collapsed;
+    })?;
+    Ok(get_settings(state))
+}
+
+/// Set or clear a provider's extra identifier (project id, team id, workspace
+/// name). Not a key: it is stored in the settings file. The provider is
+/// polled again so the new value takes effect at once.
+#[tauri::command]
+pub fn set_provider_config(state: State<'_, AppState>, provider_id: String, value: Option<String>) -> Result<ProviderView, String> {
+    let id = state.known_provider(&provider_id)?;
+    state.update(|s| match value.as_deref().map(str::trim).filter(|v| !v.is_empty()) {
+        Some(v) => {
+            s.provider_config.insert(id.to_owned(), v.to_owned());
+        }
+        None => {
+            s.provider_config.remove(id);
+        }
+    })?;
+    state.poller.config_changed(id);
+    state.poller.view_of(id).ok_or_else(|| "Unknown provider.".to_owned())
 }
 
 #[tauri::command]

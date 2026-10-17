@@ -1,6 +1,7 @@
 //! The only file the app writes. It must never hold a key, an account email
 //! or a usage number; `tests::serialized_settings_hold_no_secrets` enforces it.
 
+use std::collections::BTreeMap;
 use std::path::Path;
 use std::time::Duration;
 
@@ -9,7 +10,11 @@ use serde::{Deserialize, Serialize};
 pub const DEFAULT_POLL_SECS: u64 = 5 * 60;
 pub const MIN_POLL_SECS: u64 = 60;
 pub const MAX_POLL_SECS: u64 = 24 * 60 * 60;
-const MAX_FILE_BYTES: u64 = 16 * 1024;
+const MAX_FILE_BYTES: u64 = 64 * 1024;
+/// A provider's extra setting is an identifier, never prose.
+const MAX_CONFIG_CHARS: usize = 200;
+pub const MIN_WINDOW_WIDTH: u32 = 360;
+pub const MIN_WINDOW_HEIGHT: u32 = 480;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,6 +25,26 @@ pub enum Theme {
     Dark,
 }
 
+/// Which list the window opens on.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum View {
+    Pinned,
+    #[default]
+    All,
+}
+
+/// Where the window was when the app last quit, in logical pixels.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct WindowGeometry {
+    pub x: i32,
+    pub y: i32,
+    pub width: u32,
+    pub height: u32,
+    pub maximized: bool,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Settings {
@@ -28,6 +53,20 @@ pub struct Settings {
     /// Provider ids with polling enabled.
     pub enabled: Vec<String>,
     pub theme: Theme,
+    /// Provider ids shown on the Pinned view, in pin order.
+    #[serde(default)]
+    pub pinned: Vec<String>,
+    /// Provider ids whose card the user folded to its headline.
+    #[serde(default)]
+    pub collapsed: Vec<String>,
+    #[serde(default)]
+    pub view: View,
+    /// One non-secret identifier per provider that needs one (a project id,
+    /// a team id, a workspace name), keyed by provider id.
+    #[serde(default)]
+    pub provider_config: BTreeMap<String, String>,
+    #[serde(default)]
+    pub window: Option<WindowGeometry>,
 }
 
 impl Default for Settings {
@@ -36,8 +75,25 @@ impl Default for Settings {
             poll_interval_secs: DEFAULT_POLL_SECS,
             enabled: Vec::new(),
             theme: Theme::System,
+            pinned: Vec::new(),
+            collapsed: Vec::new(),
+            view: View::All,
+            provider_config: BTreeMap::new(),
+            window: None,
         }
     }
+}
+
+/// Keep known ids once each, in their first order of appearance.
+fn known_once(ids: &mut Vec<String>, known_ids: &[&str]) {
+    let mut seen = Vec::new();
+    ids.retain(|id| {
+        let keep = known_ids.contains(&id.as_str()) && !seen.contains(id);
+        if keep {
+            seen.push(id.clone());
+        }
+        keep
+    });
 }
 
 impl Settings {
@@ -48,14 +104,23 @@ impl Settings {
     /// Clamp values and drop unknown or duplicate provider ids.
     pub fn sanitized(mut self, known_ids: &[&str]) -> Self {
         self.poll_interval_secs = self.poll_interval_secs.clamp(MIN_POLL_SECS, MAX_POLL_SECS);
-        let mut seen = Vec::new();
-        self.enabled.retain(|id| {
-            let keep = known_ids.contains(&id.as_str()) && !seen.contains(id);
-            if keep {
-                seen.push(id.clone());
-            }
-            keep
-        });
+        known_once(&mut self.enabled, known_ids);
+        known_once(&mut self.pinned, known_ids);
+        known_once(&mut self.collapsed, known_ids);
+        self.provider_config = self
+            .provider_config
+            .into_iter()
+            .filter(|(id, _)| known_ids.contains(&id.as_str()))
+            .filter_map(|(id, value)| {
+                let value = value.trim();
+                (!value.is_empty() && value.chars().count() <= MAX_CONFIG_CHARS && !value.chars().any(char::is_control))
+                    .then(|| (id, value.to_owned()))
+            })
+            .collect();
+        if let Some(w) = &mut self.window {
+            w.width = w.width.max(MIN_WINDOW_WIDTH);
+            w.height = w.height.max(MIN_WINDOW_HEIGHT);
+        }
         self
     }
 
@@ -123,6 +188,17 @@ mod tests {
             poll_interval_secs: 900,
             enabled: IDS.iter().map(|s| (*s).to_owned()).collect(),
             theme: Theme::Dark,
+            pinned: vec!["serpapi".into()],
+            collapsed: vec!["elicit".into()],
+            view: View::Pinned,
+            provider_config: [("firecrawl".to_owned(), "wrkspc_01".to_owned())].into_iter().collect(),
+            window: Some(WindowGeometry {
+                x: 10,
+                y: 20,
+                width: 800,
+                height: 600,
+                maximized: false,
+            }),
         };
         let json = serde_json::to_string(&s).unwrap().to_ascii_lowercase();
         for forbidden in [
@@ -155,10 +231,44 @@ mod tests {
             poll_interval_secs: 1,
             enabled: vec!["serpapi".into(), "nope".into(), "serpapi".into()],
             theme: Theme::Light,
+            pinned: vec!["nope".into(), "elicit".into()],
+            collapsed: vec!["elicit".into(), "elicit".into()],
+            provider_config: [
+                ("serpapi".to_owned(), "  team_1 ".to_owned()),
+                ("nope".to_owned(), "x".to_owned()),
+                ("elicit".to_owned(), "   ".to_owned()),
+                ("firecrawl".to_owned(), "a\nb".to_owned()),
+            ]
+            .into_iter()
+            .collect(),
+            window: Some(WindowGeometry {
+                x: 0,
+                y: 0,
+                width: 10,
+                height: 10,
+                maximized: true,
+            }),
+            ..Settings::default()
         }
         .sanitized(IDS);
         assert_eq!(s.poll_interval_secs, MIN_POLL_SECS);
         assert_eq!(s.enabled, vec!["serpapi".to_owned()]);
+        assert_eq!(s.pinned, vec!["elicit".to_owned()]);
+        assert_eq!(s.collapsed, vec!["elicit".to_owned()]);
+        assert_eq!(s.provider_config.get("serpapi").map(String::as_str), Some("team_1"));
+        assert_eq!(s.provider_config.len(), 1);
+        assert_eq!(
+            (s.window.unwrap().width, s.window.unwrap().height),
+            (MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
+        );
+    }
+
+    #[test]
+    fn a_file_from_before_the_new_fields_still_loads() {
+        let old = br#"{"pollIntervalSecs":300,"enabled":["serpapi"],"theme":"system"}"#;
+        let s: Settings = serde_json::from_slice(old).unwrap();
+        assert_eq!(s.view, View::All);
+        assert!(s.pinned.is_empty() && s.window.is_none());
     }
 
     /// A fresh directory per test, removed when the guard drops.
@@ -196,6 +306,7 @@ mod tests {
             poll_interval_secs: 600,
             enabled: vec!["elicit".into()],
             theme: Theme::Dark,
+            ..Settings::default()
         };
         s.save(&path).unwrap();
         assert_eq!(Settings::load(&path, IDS), s);

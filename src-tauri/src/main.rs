@@ -15,7 +15,7 @@ use mr_usage_core::poller::{Poller, ProviderView, Sink};
 use mr_usage_core::providers::registry;
 use mr_usage_core::settings::Settings;
 use mr_usage_core::wipe::SystemClock;
-use tauri::{Emitter, Manager, RunEvent};
+use tauri::{Emitter, Manager, RunEvent, WindowEvent};
 
 use crate::commands::AppState;
 
@@ -147,11 +147,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let app = tauri::Builder::default()
         .plugin(nav_guard)
         .setup(|app| {
-            window::create_main(app)?;
             let settings_path = app.path().app_config_dir()?.join("settings.json");
             let providers = registry();
             let ids: Vec<&str> = providers.iter().map(|p| p.id()).collect();
             let settings = Settings::load(&settings_path, &ids);
+            window::create_main(app, settings.window)?;
 
             let handle = app.handle().clone();
             let sink: Sink = Arc::new(move |view: &ProviderView| {
@@ -167,6 +167,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 keystore,
                 settings: Mutex::new(settings.clone()),
                 settings_path,
+                window_geometry: Mutex::new(settings.window),
             });
 
             let exit_handle = app.handle().clone();
@@ -184,6 +185,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             });
             Ok(())
         })
+        .on_window_event(|window, event| {
+            if matches!(event, WindowEvent::Resized(_) | WindowEvent::Moved(_)) {
+                window::remember_geometry(window);
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             commands::list_providers,
             commands::save_key,
@@ -192,6 +198,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             commands::refresh,
             commands::get_settings,
             commands::update_settings,
+            commands::update_layout,
+            commands::set_provider_config,
             commands::wipe_now,
         ])
         .build(tauri::generate_context!())?;
@@ -200,6 +208,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         if let RunEvent::Exit = event {
             if let Some(state) = handle.try_state::<AppState>() {
                 state.poller.wipe();
+                window::save_geometry(&state);
             }
             window::cleanup(handle);
         }

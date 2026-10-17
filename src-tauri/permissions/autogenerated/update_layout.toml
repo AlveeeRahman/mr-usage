@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-update-layout"
+description = "Enables the update_layout command without any pre-configured scope."
+commands.allow = ["update_layout"]
+
+[[permission]]
+identifier = "deny-update-layout"
+description = "Denies the update_layout command without any pre-configured scope."
+commands.deny = ["update_layout"]

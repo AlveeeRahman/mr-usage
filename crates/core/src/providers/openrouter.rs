@@ -30,7 +30,7 @@ use serde::Deserialize;
 
 use super::{cents, count, dollars, error_message, http_status_message, malformed};
 use crate::net::{Auth, Http};
-use crate::provider::{Provider, ProviderError, Snapshot, Unit, parse_timestamp};
+use crate::provider::{Category, Provider, ProviderError, Snapshot, Unit, parse_timestamp};
 
 pub struct OpenRouter;
 
@@ -95,6 +95,10 @@ impl Provider for OpenRouter {
         Unit::Usd
     }
 
+    fn category(&self) -> Category {
+        Category::Llm
+    }
+
     fn min_poll_interval(&self) -> Duration {
         Duration::from_secs(60)
     }
@@ -103,7 +107,7 @@ impl Provider for OpenRouter {
         Some("Shows this key's credit limit. A key without a limit shows spend only.")
     }
 
-    async fn fetch(&self, key: &SecretString, http: &Http) -> Result<Snapshot, ProviderError> {
+    async fn fetch(&self, key: &SecretString, _config: Option<&str>, http: &Http) -> Result<Snapshot, ProviderError> {
         let response = http.get(ENDPOINT, HOST, Auth::Bearer(key)).await?;
         parse(response.status, response.retry_after, &response.body, Timestamp::now())
     }
@@ -160,9 +164,9 @@ pub(crate) fn parse(status: StatusCode, retry_after: Option<Duration>, body: &[u
             extra.push(("Budget".to_owned(), format!("{} of {} left, {interval}", dollars(r), dollars(l))));
         }
     }
-    if let Some(spent) = cents(data.usage_monthly).or_else(|| cents(data.usage)) {
-        extra.push(("Spent this month".to_owned(), dollars(spent)));
-    }
+    // This month's spend, or the key's lifetime usage when the monthly figure
+    // is missing. A key with no limit and no budget shows it as its headline.
+    let spent = cents(data.usage_monthly).or_else(|| cents(data.usage));
     if let Some(f) = data.free_model_daily_requests
         && let (Some(used), Some(l)) = (count(f.used), count(f.limit).filter(|l| *l > 0))
     {
@@ -176,6 +180,8 @@ pub(crate) fn parse(status: StatusCode, retry_after: Option<Duration>, body: &[u
         remaining,
         limit,
         period_end,
+        spent,
+        spend_per_hour: None,
         extra,
     })
 }
@@ -203,7 +209,6 @@ mod tests {
             vec![
                 ("Limit resets".to_owned(), "monthly".to_owned()),
                 ("Budget".to_owned(), "$17.50 of $50.00 left, weekly".to_owned()),
-                ("Spent this month".to_owned(), "$25.50".to_owned()),
                 ("Free-model requests today".to_owned(), "12 of 50".to_owned()),
             ]
         );
@@ -236,7 +241,7 @@ mod tests {
         assert_eq!((s.remaining, s.limit), (None, None));
         assert_eq!(s.period_end, None);
         assert!(s.extra.contains(&("Key limit".to_owned(), "none".to_owned())));
-        assert!(s.extra.contains(&("Spent this month".to_owned(), "$25.50".to_owned())));
+        assert_eq!(s.spent, Some(2550));
     }
 
     #[test]

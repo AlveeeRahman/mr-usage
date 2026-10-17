@@ -58,7 +58,7 @@ def wait_for(script, timeout=30):
 
 try:
     n = wait_for("return document.querySelectorAll('#add-provider option').length", 30)
-    check("IPC works under connect-src 'none' (providers listed)", n == 9, f"{n} providers")
+    check("IPC works under connect-src 'none' (providers listed)", n >= 9, f"{n} providers")
     footer = js("return document.getElementById('footer').textContent")
     check("footer names the keystore", "Secret Service" in (footer or ""), footer)
     check("no inline style attributes in the DOM", js("return document.querySelectorAll('[style]').length") == 0)
@@ -86,12 +86,13 @@ try:
     check("dark theme applied", wait_for("return document.documentElement.getAttribute('data-theme')==='dark'", 10))
     shot("03-key-saved-dark.png")
 
-    r = js("return [...document.querySelectorAll('.card button')].map(b=>b.textContent)")
-    check("card has Refresh and Forget", r == ["Refresh", "Forget key"], str(r))
-    js("[...document.querySelectorAll('.card button')].find(b=>b.textContent==='Forget key').click()")
+    r = js("return [...document.querySelectorAll('.card.keyed button')].map(b=>b.textContent)")
+    check("keyed card has Refresh and Forget", "Refresh" in r and "Forget key" in r, str(r))
+    check("only the keyed card is expanded", js("return document.querySelectorAll('.card.keyed').length") == 1)
+    js("[...document.querySelectorAll('.card.keyed button')].find(b=>b.textContent==='Forget key').click()")
     time.sleep(0.3)
-    js("[...document.querySelectorAll('.card button')].find(b=>b.textContent.startsWith('Click again')).click()")
-    gone = wait_for("return document.querySelectorAll('.card').length===0 ? 'gone' : null", 10)
+    js("[...document.querySelectorAll('.card.keyed button')].find(b=>b.textContent.startsWith('Click again')).click()")
+    gone = wait_for("return document.querySelectorAll('.card.keyed').length===0 ? 'gone' : null", 10)
     check("forget removes the card", gone)
     check("forget removes the key from the OS keystore", "serpapi" not in secret_search())
     js("const t=document.getElementById('theme'); t.value='system'; t.dispatchEvent(new Event('change'));")

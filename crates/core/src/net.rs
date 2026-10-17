@@ -23,6 +23,13 @@ const MAX_RETRY_AFTER: Duration = Duration::from_secs(24 * 60 * 60);
 pub enum Auth<'a> {
     /// `Authorization: Bearer <key>`.
     Bearer(&'a SecretString),
+    /// `<name>: <prefix><key>`, for vendors with their own header such as
+    /// `xi-api-key` or `x-key`, or a scheme other than Bearer.
+    Header {
+        name: &'static str,
+        prefix: &'static str,
+        value: &'a SecretString,
+    },
     /// `?<name>=<key>`. Only for vendors whose documentation offers nothing else.
     Query { name: &'static str, value: &'a SecretString },
 }
@@ -32,6 +39,9 @@ pub struct RawResponse {
     pub status: StatusCode,
     pub retry_after: Option<Duration>,
     pub body: Zeroizing<Vec<u8>>,
+    /// Every header whose name contains `ratelimit`, lower-cased name and
+    /// trimmed value. Brave Search reports its quota this way.
+    pub rate_limit: Vec<(String, String)>,
 }
 
 pub struct Http {
@@ -63,41 +73,70 @@ impl Http {
     }
 
     /// GET `endpoint`, refusing to send unless its host is `allowed_host`.
-    pub async fn get(&self, endpoint: &'static str, allowed_host: &'static str, auth: Auth<'_>) -> Result<RawResponse, ProviderError> {
-        self.get_with_headers(endpoint, allowed_host, auth, &[]).await
+    pub async fn get(&self, endpoint: &str, allowed_host: &str, auth: Auth<'_>) -> Result<RawResponse, ProviderError> {
+        self.send(reqwest::Method::GET, endpoint, allowed_host, auth, &[], None).await
     }
 
     /// `get` plus fixed, non-secret headers such as a vendor API version.
     pub async fn get_with_headers(
         &self,
-        endpoint: &'static str,
-        allowed_host: &'static str,
+        endpoint: &str,
+        allowed_host: &str,
         auth: Auth<'_>,
         headers: &[(&'static str, &'static str)],
+    ) -> Result<RawResponse, ProviderError> {
+        self.send(reqwest::Method::GET, endpoint, allowed_host, auth, headers, None).await
+    }
+
+    /// POST a fixed JSON document, for vendors whose usage query is GraphQL.
+    /// The body is a constant chosen by the provider and never carries the key.
+    pub async fn post_json(
+        &self,
+        endpoint: &str,
+        allowed_host: &str,
+        auth: Auth<'_>,
+        headers: &[(&'static str, &'static str)],
+        body: &'static str,
+    ) -> Result<RawResponse, ProviderError> {
+        self.send(reqwest::Method::POST, endpoint, allowed_host, auth, headers, Some(body))
+            .await
+    }
+
+    async fn send(
+        &self,
+        method: reqwest::Method,
+        endpoint: &str,
+        allowed_host: &str,
+        auth: Auth<'_>,
+        headers: &[(&'static str, &'static str)],
+        body: Option<&'static str>,
     ) -> Result<RawResponse, ProviderError> {
         let mut url = Url::parse(endpoint).map_err(|_| ProviderError::Transport("invalid endpoint".into()))?;
         check_allowed(&url, allowed_host)?;
 
-        let mut request = self.client.get(url.clone());
-        for (name, value) in headers {
-            request = request.header(*name, *value);
-        }
+        let mut secret_header: Option<(&'static str, HeaderValue)> = None;
         match auth {
             Auth::Bearer(key) => {
-                let secret = key.expose_secret();
-                let mut text = Zeroizing::new(String::with_capacity(7 + secret.len()));
-                text.push_str("Bearer ");
-                text.push_str(secret);
-                let mut value = HeaderValue::from_str(&text)
-                    .map_err(|_| ProviderError::Transport("the key contains characters that cannot be sent".into()))?;
-                value.set_sensitive(true);
-                request = request.header(AUTHORIZATION, value);
+                secret_header = Some((AUTHORIZATION.as_str(), sensitive_value("Bearer ", key)?));
+            }
+            Auth::Header { name, prefix, value } => {
+                secret_header = Some((name, sensitive_value(prefix, value)?));
             }
             Auth::Query { name, value } => {
                 url.query_pairs_mut().append_pair(name, value.expose_secret());
                 check_allowed(&url, allowed_host)?;
-                request = self.client.get(url);
             }
+        }
+
+        let mut request = self.client.request(method, url);
+        for (name, value) in headers {
+            request = request.header(*name, *value);
+        }
+        if let Some((name, value)) = secret_header {
+            request = request.header(name, value);
+        }
+        if let Some(body) = body {
+            request = request.header(reqwest::header::CONTENT_TYPE, "application/json").body(body);
         }
 
         let mut response = request.send().await.map_err(transport_error)?;
@@ -108,6 +147,12 @@ impl Http {
             .and_then(|v| v.to_str().ok())
             .and_then(|v| v.trim().parse::<u64>().ok())
             .map(|secs| Duration::from_secs(secs).min(MAX_RETRY_AFTER));
+        let rate_limit = response
+            .headers()
+            .iter()
+            .filter(|(name, _)| name.as_str().contains("ratelimit"))
+            .filter_map(|(name, value)| Some((name.as_str().to_owned(), value.to_str().ok()?.trim().to_owned())))
+            .collect();
 
         if response.content_length().is_some_and(|len| len > MAX_BODY_BYTES as u64) {
             return Err(ProviderError::Transport("response too large".into()));
@@ -121,15 +166,41 @@ impl Http {
             }
             body.extend_from_slice(&chunk);
         }
-        Ok(RawResponse { status, retry_after, body })
+        Ok(RawResponse {
+            status,
+            retry_after,
+            body,
+            rate_limit,
+        })
     }
 }
 
+/// `<prefix><key>` as a header value marked sensitive, built in a zeroizing
+/// buffer so no plain copy of the key is left on the heap.
+fn sensitive_value(prefix: &str, key: &SecretString) -> Result<HeaderValue, ProviderError> {
+    let secret = key.expose_secret();
+    let mut text = Zeroizing::new(String::with_capacity(prefix.len() + secret.len()));
+    text.push_str(prefix);
+    text.push_str(secret);
+    let mut value =
+        HeaderValue::from_str(&text).map_err(|_| ProviderError::Transport("the key contains characters that cannot be sent".into()))?;
+    value.set_sensitive(true);
+    Ok(value)
+}
+
 /// Refuse any URL that is not `https://<allowed_host>/` on the default port
-/// with no userinfo.
+/// with no userinfo. An allowlist entry of the form `*.example.com` accepts
+/// any host below `example.com`, for vendors with one host per workspace.
 pub fn check_allowed(url: &Url, allowed_host: &str) -> Result<(), ProviderError> {
+    let host_ok = match (url.host_str(), allowed_host.strip_prefix("*.")) {
+        (Some(host), Some(suffix)) => {
+            host.len() > suffix.len() + 1 && host.ends_with(suffix) && host.as_bytes()[host.len() - suffix.len() - 1] == b'.'
+        }
+        (Some(host), None) => host == allowed_host,
+        (None, _) => false,
+    };
     let ok = url.scheme() == "https"
-        && url.host_str() == Some(allowed_host)
+        && host_ok
         && url.port_or_known_default() == Some(443)
         && url.username().is_empty()
         && url.password().is_none();
@@ -195,6 +266,20 @@ mod tests {
         ] {
             let url = Url::parse(raw).unwrap();
             assert!(check_allowed(&url, "api.firecrawl.dev").is_err(), "{raw}");
+        }
+    }
+
+    #[test]
+    fn allowlist_suffix_accepts_one_or_more_labels_below_it_only() {
+        for ok in ["https://ws1.eastus.quantum.azure.com/q", "https://a.quantum.azure.com/"] {
+            assert!(check_allowed(&Url::parse(ok).unwrap(), "*.quantum.azure.com").is_ok(), "{ok}");
+        }
+        for bad in [
+            "https://quantum.azure.com/",
+            "https://evilquantum.azure.com/",
+            "https://quantum.azure.com.evil.example/",
+        ] {
+            assert!(check_allowed(&Url::parse(bad).unwrap(), "*.quantum.azure.com").is_err(), "{bad}");
         }
     }
 
