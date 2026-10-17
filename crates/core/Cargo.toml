@@ -14,6 +14,9 @@ name = "mr_usage_core"
 [features]
 # Exposes the in-memory keystore for tests. Never enabled by the app.
 test-util = []
+# Exposes the parsers and the error reader to the fuzz targets in ../../fuzz.
+# Never enabled by the app.
+fuzzing = []
 
 [dependencies]
 async-trait.workspace = true

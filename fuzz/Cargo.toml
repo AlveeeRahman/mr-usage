@@ -1,0 +1,34 @@
+[package]
+name = "mr-usage-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+description = "cargo-fuzz targets for Mr. Usage's core crate. Not part of the workspace; see docs/DEVELOPMENT.md."
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "=0.4.13"
+mr-usage-core = { path = "../crates/core", features = ["fuzzing"] }
+
+[[bin]]
+name = "provider_parse"
+path = "fuzz_targets/provider_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "redact"
+path = "fuzz_targets/redact.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "error_message"
+path = "fuzz_targets/error_message.rs"
+test = false
+doc = false
+bench = false

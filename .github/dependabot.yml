@@ -16,6 +16,14 @@ updates:
       # advisories this leaves are justified in .cargo/audit.toml.
       - dependency-name: glib
       - dependency-name: proc-macro-error
+  - package-ecosystem: cargo
+    directory: /fuzz
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      fuzz:
+        patterns: ["*"]
   - package-ecosystem: npm
     directory: /
     schedule:

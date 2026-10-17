@@ -3,6 +3,8 @@
 //! Everything security-relevant lives here so it can be tested with plain
 //! `cargo test` and audited without a webview in the picture.
 
+#[cfg(feature = "fuzzing")]
+pub mod fuzz;
 pub mod keystore;
 pub mod net;
 pub mod poller;
