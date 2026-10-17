@@ -7,7 +7,9 @@
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 
-const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ?? "playwright");
+const playwright = await import(process.env.PLAYWRIGHT_MODULE ?? "playwright");
+// A CommonJS build of Playwright puts its exports under `default`.
+const chromium = playwright.chromium ?? playwright.default.chromium;
 const html = resolve("docs/assets/social-preview.html");
 const out = resolve("docs/assets/social-preview.png");
 
