@@ -16,7 +16,7 @@ Credential Manager on Windows, GNOME Keyring or KWallet on Linux) and never come
 the window. The app has no account, no server and no analytics. The only thing it talks to
 is the usage page of each vendor you gave it a key for.
 
-![Mr. Usage showing remaining credits for several providers in dark mode](docs/assets/social-preview.png)
+![Mr. Usage on macOS: the Firecrawl card shows 1,196 of 1,500 credits left and the SerpApi card 200 of 250 searches, each polled with a key from the Keychain](docs/assets/readme-macos.png)
 
 ## Install
 
