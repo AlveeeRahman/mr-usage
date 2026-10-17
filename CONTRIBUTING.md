@@ -27,7 +27,7 @@ Every pull request is held to the same rules the existing code follows.
 - New functionality comes with tests. A new provider gets its documented example responses as fixtures and a test per documented error status. A bug fix gets a regression test that fails without the fix. Tests are not optional extras to add later.
 - Every fact about a vendor (endpoint, auth header, response fields, whether the call is free) is recorded in `docs/SOURCES.md` with the page it came from and the date it was read. A guess is marked `TODO(verify)` in the code.
 - The core crate never deserializes anything that identifies the account: no emails, names, key labels or ids. `crates/core/tests/source_audit.rs` checks for this and will tell you where to register a new struct.
-- Add a line under "Unreleased" in [CHANGELOG.md](CHANGELOG.md). The release workflow turns that section into the release notes.
+- If a user of the app would notice the change, add one line under "Unreleased" in [CHANGELOG.md](CHANGELOG.md). Internal fixes, CI and documentation changes stay out of it. The release workflow turns that section into the release notes.
 
 The minimum supported Rust version is 1.90, checked in CI on the core crate. The frontend builds with Node 22.
 
