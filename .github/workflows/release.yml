@@ -81,6 +81,9 @@ jobs:
     outputs:
       release_id: ${{ steps.draft.outputs.release_id }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Check the tag name
         run: |
           case "$TAG" in
@@ -116,16 +119,29 @@ jobs:
               exit 1
             fi
           fi
+      # The release notes are the tag's section of CHANGELOG.md. A tag with no
+      # section stops the run here, before anything is built. A rehearsal has
+      # no section by design and gets a placeholder.
+      - name: Release notes from CHANGELOG.md
+        id: notes
+        if: steps.clear.outputs.skip != 'true'
+        run: |
+          if [ "$REHEARSAL" = "true" ]; then
+            printf 'Delivery rehearsal: not a release.\n' > "$RUNNER_TEMP/notes.md"
+          else
+            bash .github/scripts/release-notes.sh "$TAG" > "$RUNNER_TEMP/notes.md"
+          fi
+          printf '\nInstall with the one-line command in the README; it picks the right file and verifies it against SHA256SUMS.txt for you. Builds are not code-signed yet.\n' >> "$RUNNER_TEMP/notes.md"
       - name: Create the draft release
         id: draft
         if: steps.clear.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          id="$(gh api -X POST "repos/$GITHUB_REPOSITORY/releases" \
-            -f "tag_name=$TAG" -f "name=Mr. Usage $TAG" -f "target_commitish=$GITHUB_SHA" \
-            -f "body=Install with the one-line command in the README; it picks the right file and verifies it against SHA256SUMS.txt for you. Builds are not code-signed yet." \
-            -F draft=true -F "prerelease=$REHEARSAL" --jq '.id')"
+          id="$(jq -n --arg tag "$TAG" --arg name "Mr. Usage $TAG" --arg sha "$GITHUB_SHA" \
+                --rawfile body "$RUNNER_TEMP/notes.md" --argjson pre "$REHEARSAL" \
+                '{tag_name: $tag, name: $name, target_commitish: $sha, body: $body, draft: true, prerelease: $pre}' \
+            | gh api -X POST "repos/$GITHUB_REPOSITORY/releases" --input - --jq '.id')"
           echo "draft release $id for $TAG"
           echo "release_id=$id" >> "$GITHUB_OUTPUT"
 

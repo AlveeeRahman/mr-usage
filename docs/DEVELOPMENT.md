@@ -82,6 +82,8 @@ The binary answers `--help`, `--version` and `--forget-keys` before it initialis
 
 ## Release
 
+Add a `## [0.2.0] - YYYY-MM-DD` section to `CHANGELOG.md` first, moving the entries from "Unreleased" under it; the workflow copies that section into the release notes and stops, before building anything, when the tag has no section. Then:
+
 ```sh
 git tag v0.2.0 && git push origin v0.2.0
 ```
