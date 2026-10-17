@@ -140,7 +140,11 @@ cycle() {
   [ "$(helpers)" = "0" ] && pass "[$how] no WebKit helpers left" || fail "[$how] $(helpers) WebKit helper(s) left running 10 s after exit"
   [ "$(leftover_webview)" = "0" ] && pass "[$how] webview folder removed" || fail "[$how] webview folder left behind"
   if [ "$MODE" = fuse ]; then
-    grep -q "/.mount_$(basename "$BIN" | cut -c1-6)" /proc/mounts && fail "[$how] AppImage FUSE mount still present" || pass "[$how] AppImage FUSE mount gone"
+    # The runtime unmounts after the app exits; a signal stop makes that a
+    # little later than a window close, so poll rather than look once.
+    local mount="/.mount_$(basename "$BIN" | cut -c1-6)"
+    for _ in $(seq 1 100); do grep -q "$mount" /proc/mounts || break; sleep 0.1; done
+    grep -q "$mount" /proc/mounts && fail "[$how] AppImage FUSE mount still present 10 s after exit" || pass "[$how] AppImage FUSE mount gone"
   elif [ "$MODE" = extract ]; then
     # type2-runtime 8f39b89 (embedded by Tauri's bundler) does not delete its
     # extraction folder in this mode. That is the runtime's behaviour, not the
