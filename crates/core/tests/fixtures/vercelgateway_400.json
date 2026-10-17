@@ -1,0 +1,6 @@
+{
+  "error": {
+    "message": "Invalid request body",
+    "type": "invalid_request_error"
+  }
+}

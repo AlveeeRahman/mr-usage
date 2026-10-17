@@ -1,0 +1,6 @@
+{
+  "error": {
+    "type": "validation_error",
+    "message": "Invalid request parameters"
+  }
+}
