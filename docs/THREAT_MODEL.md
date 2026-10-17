@@ -4,7 +4,7 @@ Last reviewed 2026-10-16. Update this file in the same commit as any change that
 
 ## What the app protects
 
-1. API keys for Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway. A leaked key lets someone spend the user's credits.
+1. API keys for the 44 providers in the registry. A leaked key lets someone spend the user's credits.
 2. Account details the vendors echo back. SerpApi's account call returns the key and the account email in its response body. Hunter's returns the owner's name and email. OpenRouter's returns the first and last characters of the key as a label, plus user and workspace identifiers. The parsers leave these fields out of their structs, and `crates/core/tests/source_audit.rs` fails the build if a struct names one of them.
 3. Usage numbers. They are low value, but no record of them should outlive the day.
 

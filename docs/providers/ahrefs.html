@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Check what you have left at Ahrefs: Mr. Usage</title>
+<meta name="description" content="Mr. Usage reads Ahrefs&#x27;s documented usage endpoint with your own key and keeps a card with aPI units left of this key&#x27;s monthly limit (or of the workspace pool when the key has no limit), resetting on `usage_reset_date`, refreshed on its own. Open source for macOS, Windows and Linux. Keys stay in your OS keychain.">
+<link rel="canonical" href="https://alveeerahman.github.io/mr-usage/providers/ahrefs.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Mr. Usage">
+<meta property="og:title" content="Check what you have left at Ahrefs: Mr. Usage">
+<meta property="og:description" content="Mr. Usage reads Ahrefs&#x27;s documented usage endpoint with your own key and keeps a card with aPI units left of this key&#x27;s monthly limit (or of the workspace pool when the key has no limit), resetting on `usage_reset_date`, refreshed on its own. Open source for macOS, Windows and Linux. Keys stay in your OS keychain.">
+<meta property="og:url" content="https://alveeerahman.github.io/mr-usage/providers/ahrefs.html">
+<meta property="og:image" content="https://alveeerahman.github.io/mr-usage/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Mr. Usage: remaining API credits for nine vendors in one desktop window">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Mr. Usage",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "macOS, Windows, Linux",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "url": "https://alveeerahman.github.io/mr-usage/",
+    "downloadUrl": "https://github.com/AlveeeRahman/mr-usage/releases/latest",
+    "softwareHelp": "https://alveeerahman.github.io/mr-usage/providers/ahrefs.html",
+    "license": "https://github.com/AlveeeRahman/mr-usage/blob/HEAD/LICENSE-MIT",
+    "author": {
+      "@type": "Person",
+      "name": "Alvee Rahman",
+      "url": "https://github.com/AlveeeRahman"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Does checking my Ahrefs usage cost credits?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "the docs say the call is free and consumes no API units."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where does my Ahrefs API key go?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Into your operating system's credential store, under the service name mr-usage: Keychain on macOS, Credential Manager on Windows, the Secret Service on Linux. The app reads it at the moment it calls the vendor, wraps it in a zeroizing type, and drops it. It is never written to a file of the app's own and never sent back to the window."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How often is the card refreshed?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Every 5 minutes by default. Settings lets you pick anything from 1 minute to 24 hours, and changing the interval takes effect from the last poll. There is also a Refresh button on each card, limited to once a minute."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Mr. Usage",
+        "item": "https://alveeerahman.github.io/mr-usage/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Ahrefs",
+        "item": "https://alveeerahman.github.io/mr-usage/providers/ahrefs.html"
+      }
+    ]
+  }
+]
+</script>
+<style>
+  :root { color-scheme: dark; --ink:#f0efec; --sub:#c3c2b7; --line:#383835; --accent:#86b6ef; --bg:#1a1a19; --code:#232321; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.65 system-ui, -apple-system, "Segoe UI", "Cantarell", "Noto Sans", sans-serif; }
+  main { max-width: 46rem; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+  h1 { font-size: 2rem; line-height:1.2; margin: 0 0 .5rem; }
+  h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
+  p { margin: .7rem 0; }
+  .crumbs { color: var(--sub); font-size: .9rem; margin: 0 0 1.5rem; }
+  .sub { color: var(--sub); font-size: 1.05rem; }
+  a { color: var(--accent); }
+  pre { background: var(--code); padding: .9rem 1rem; border-radius: 8px; overflow-x:auto; font-size:.85rem; line-height:1.5; }
+  code { background: var(--code); padding:.1rem .3rem; border-radius:4px; font-size:.9em; }
+  pre code { padding:0; background:none; }
+  table { border-collapse: collapse; width:100%; font-size:.92rem; }
+  th, td { text-align:left; padding:.45rem .6rem; border-bottom:1px solid var(--line); vertical-align: top; }
+  .cta { display:inline-block; margin:.8rem .6rem 0 0; padding:.55rem 1rem; border:1px solid var(--accent); border-radius:8px; text-decoration:none; font-weight:600; }
+  .others { display:flex; flex-wrap:wrap; gap:.4rem .6rem; padding:0; list-style:none; margin:.4rem 0 0; }
+  .others li a { display:inline-block; padding:.25rem .7rem; border:1px solid var(--line); border-radius:999px; text-decoration:none; font-size:.9rem; }
+  footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--sub); font-size:.9rem; }
+</style>
+</head>
+<body>
+<main>
+  <p class="crumbs"><a href="../">Mr. Usage</a> &rsaquo; Ahrefs</p>
+  <h1>Check what you have left at Ahrefs</h1>
+  <p class="sub">Mr. Usage reads Ahrefs&#x27;s documented usage endpoint with your own key and keeps a card with aPI units left of this key&#x27;s monthly limit (or of the workspace pool when the key has no limit), resetting on `usage_reset_date`, refreshed on its own.</p>
+
+  <p>
+    <a class="cta" href="../#install">Install Mr. Usage</a>
+    <a class="cta" href="https://github.com/AlveeeRahman/mr-usage">GitHub repository</a>
+  </p>
+
+  <h2>What the Ahrefs card shows</h2>
+  <p>API units left of this key&#x27;s monthly limit (or of the workspace pool when the key has no limit), resetting on `usage_reset_date`. A yellow "Low" badge appears under 20% left and a red "Nearly out" badge under 5%, with a line of today's readings underneath.</p>
+  <p>Counts API units. Shows this key&#x27;s own monthly limit when it has one, otherwise the workspace&#x27;s.</p>
+
+  <h2>What Mr. Usage reads</h2>
+  <table>
+    <tr><th>Call</th><td><code>`GET https://api.ahrefs.com/v3/subscription-info/limits-and-usage?output=json`</code></td></tr>
+    <tr><th>Authentication</th><td>`Authorization: Bearer` header.</td></tr>
+    <tr><th>Verified against</th><td><a href="https://docs.ahrefs.com/en/api/reference/subscription-info/get-limits-and-usage" rel="noopener">https://docs.ahrefs.com/en/api/reference/subscription-info/get-limits-and-usage</a></td></tr>
+    <tr><th>Anything else contacted</th><td>Nothing. The host is on a per-provider allowlist checked before every request, redirects are off, and the connection is TLS 1.2 or newer.</td></tr>
+  </table>
+  <p>The app shows you this exact address before you save a key, and <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/SOURCES.md">docs/SOURCES.md</a> records where each fact came from and when it was read.</p>
+
+  <h2>Questions</h2>
+  <h3>Does checking my Ahrefs usage cost credits?</h3><p>the docs say the call is free and consumes no API units.</p><h3>Where does my Ahrefs API key go?</h3><p>Into your operating system&#x27;s credential store, under the service name mr-usage: Keychain on macOS, Credential Manager on Windows, the Secret Service on Linux. The app reads it at the moment it calls the vendor, wraps it in a zeroizing type, and drops it. It is never written to a file of the app&#x27;s own and never sent back to the window.</p><h3>How often is the card refreshed?</h3><p>Every 5 minutes by default. Settings lets you pick anything from 1 minute to 24 hours, and changing the interval takes effect from the last poll. There is also a Refresh button on each card, limited to once a minute.</p>
+
+  <h2>Other providers</h2>
+  <ul class="others"><li><a href="firecrawl.html">Firecrawl</a></li><li><a href="serpapi.html">SerpApi</a></li><li><a href="elicit.html">Elicit</a></li><li><a href="context7.html">Context7</a></li><li><a href="tavily.html">Tavily</a></li><li><a href="openrouter.html">OpenRouter</a></li><li><a href="apify.html">Apify</a></li><li><a href="hunter.html">Hunter</a></li><li><a href="runway.html">Runway</a></li><li><a href="brave.html">Brave Search</a></li><li><a href="searchapi.html">SearchApi.io</a></li><li><a href="scrapingbee.html">ScrapingBee</a></li><li><a href="brightdata.html">Bright Data</a></li><li><a href="linkup.html">Linkup</a></li><li><a href="crawlbase.html">Crawlbase</a></li><li><a href="deepseek.html">DeepSeek</a></li><li><a href="moonshot.html">Moonshot (Kimi)</a></li><li><a href="vercelgateway.html">Vercel AI Gateway</a></li><li><a href="novita.html">Novita AI</a></li><li><a href="fal.html">fal.ai</a></li><li><a href="siliconflow.html">SiliconFlow</a></li><li><a href="xai.html">xAI</a></li><li><a href="elevenlabs.html">ElevenLabs</a></li><li><a href="deepgram.html">Deepgram</a></li><li><a href="did.html">D-ID</a></li><li><a href="heygen.html">HeyGen</a></li><li><a href="stability.html">Stability AI</a></li><li><a href="bfl.html">Black Forest Labs</a></li><li><a href="luma.html">Luma</a></li><li><a href="recraft.html">Recraft</a></li><li><a href="runpod.html">RunPod</a></li><li><a href="vast.html">Vast.ai</a></li><li><a href="digitalocean.html">DigitalOcean</a></li><li><a href="azurequantum.html">Azure Quantum</a></li><li><a href="ibmquantum.html">IBM Quantum</a></li><li><a href="moz.html">Moz</a></li><li><a href="semrush.html">Semrush</a></li><li><a href="seranking.html">SE Ranking</a></li><li><a href="serpstat.html">Serpstat</a></li><li><a href="mangools.html">Mangools</a></li><li><a href="dataforseo.html">DataForSEO</a></li><li><a href="majestic.html">Majestic</a></li><li><a href="keywordseverywhere.html">Keywords Everywhere</a></li></ul>
+
+  <footer>
+    Open source under MIT or Apache-2.0 &middot; <a href="https://github.com/AlveeeRahman/mr-usage">github.com/AlveeeRahman/mr-usage</a> &middot; <a href="../">All providers and install</a>
+  </footer>
+</main>
+</body>
+</html>

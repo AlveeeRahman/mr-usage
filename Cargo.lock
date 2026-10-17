@@ -2261,7 +2261,7 @@ dependencies = [
 
 [[package]]
 name = "mr-usage"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "libc",
  "mr-usage-core",
@@ -2277,7 +2277,7 @@ dependencies = [
 
 [[package]]
 name = "mr-usage-core"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "async-trait",
  "base64 0.23.1",

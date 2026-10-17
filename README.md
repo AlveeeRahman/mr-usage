@@ -13,8 +13,12 @@
 
 **Documentation**: [alveeerahman.github.io/mr-usage](https://alveeerahman.github.io/mr-usage/)
 
-**mr-usage** is one window that shows how much of each paid API you have left: Firecrawl,
-SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway. Paste a key once.
+**mr-usage** is one window that shows how much of each paid API you have left: 44 providers
+across search and scraping, research and data, LLM inference, speech and media, compute,
+quantum and SEO, from Firecrawl, SerpApi and OpenRouter to DeepSeek, ElevenLabs, RunPod,
+Azure Quantum and Ahrefs. Every card reads the vendor's own documented usage endpoint with
+your ordinary key: no admin keys, no cookies, no private endpoints, and no call that costs
+money. Paste a key once.
 It goes into the credential store your operating system already has (Keychain on macOS,
 Credential Manager on Windows, GNOME Keyring or KWallet on Linux) and never comes back to
 the window. The app has no account, no server and no analytics. The only thing it talks to
@@ -82,17 +86,88 @@ flowchart LR
 
 Repeat for each provider you use. A card gets a yellow "Low" badge under 20% left and a red "Nearly out" badge under 5%.
 
+**Search and scraping**
+
+**Search and scraping**
+
+**Search and scraping**
+
 | Provider | What the card shows |
 | --- | --- |
 | Firecrawl | Credits left out of the plan, and the end of the billing period |
 | SerpApi | Searches left this month, and the renewal date |
+| Tavily | Credits left out of the plan, plus this key's own usage |
+| Apify | Dollars left of this month's spending limit |
+| Brave Search | Searches left this month of the plan's monthly quota, and when the month resets |
+| SearchApi.io | Search credits left this month of the monthly allowance, the subscription period end, searches used this month and this hour |
+| ScrapingBee | API credits left of the plan's credits, the renewal date, and current concurrency |
+| Bright Data | Account funds in dollars, this period's pending costs, and any credit or prepayment |
+| Linkup | The prepaid credit balance in dollars |
+| Crawlbase | Crawling API credits left this month on a subscription, or this month's amount due in dollars on pay as you go, with successful and failed request counts |
+
+**Research and data**
+
+| Provider | What the card shows |
+| --- | --- |
 | Elicit | Percentage of the plan left |
 | Context7 | Requests left this month, and extra-request cost on paid plans |
-| Tavily | Credits left out of the plan, plus this key's own usage |
-| OpenRouter | Dollars left on the key's credit limit (a key without a limit shows the workspace budget, or else the month's spend) |
-| Apify | Dollars left of this month's spending limit |
 | Hunter | Searches left, plus verifications and the credit pool where the plan has one |
+
+**LLM inference**
+
+| Provider | What the card shows |
+| --- | --- |
+| OpenRouter | Dollars left on the key's credit limit (a key without a limit shows the workspace budget, or else the month's spend) |
+| DeepSeek | The account's remaining balance in the currency DeepSeek bills you in (yuan or dollars), with the granted and topped-up parts as extras and a flag when inference is blocked |
+| Moonshot (Kimi) | The spendable balance (cash plus vouchers) in dollars, with voucher and cash balances as extras; a negative cash balance shows as debt |
+| Vercel AI Gateway | The team's remaining AI Gateway credit in dollars, plus "Used so far" (lifetime spend, not this month's) |
+| Novita AI | The spendable balance in dollars; when the account has a credit line it is shown as the limit, with the top-up balance and any amount owed as extras |
+| SiliconFlow | The total balance in dollars, with the granted and topped-up parts as extras |
+| xAI | The team's prepaid credit balance in dollars (postpaid usage and spending limits are not shown) |
+
+**Speech and media**
+
+| Provider | What the card shows |
+| --- | --- |
 | Runway | The organization's credit balance |
+| fal.ai | The account's remaining credit balance in dollars |
+| ElevenLabs | Characters left out of the plan's character limit for the current billing period, with the next reset date, the plan tier, and any usage-based overage spend |
+| Deepgram | The project's outstanding prepaid balance in US dollars, adding up every balance whose units are USD |
+| D-ID | Credits remaining out of the total across the account's credit pools, with the renewal date set to when the first pool that still has credits expires |
+| HeyGen | Whichever the account uses: the prepaid wallet balance (dollars or credits), the subscription's premium credits with their reset date, or the metered spend against its cap |
+| Stability AI | The account's credit balance rounded down, with the exact fractional balance as an extra |
+| Black Forest Labs | The account's credit balance rounded down, with the exact fractional balance as an extra when it is not whole |
+| Luma | The Dream Machine credit balance in US dollars (the API reports cents) |
+| Recraft | The account's remaining Recraft credits |
+
+**Compute**
+
+| Provider | What the card shows |
+| --- | --- |
+| RunPod | The prepaid RunPod balance in dollars, the current hourly burn rate, and the account spend limit when one is set |
+| Vast.ai | The account's prepaid balance in dollars; a negative balance shows as zero left with an "Owed" line |
+| DigitalOcean | Account credit left (when the balance is negative) and this month's usage in dollars, with any amount owed and the month-to-date balance as lines |
+
+**Quantum**
+
+| Provider | What the card shows |
+| --- | --- |
+| Azure Quantum | The largest free job-hours quota of the workspace in seconds, what is used and held against it, when it resets, and the other quota rows (FPGA hours, concurrent jobs) as lines |
+| IBM Quantum | Nothing yet; the card explains that IBM Quantum needs an IAM token exchange on a second host |
+
+**SEO and marketing**
+
+| Provider | What the card shows |
+| --- | --- |
+| Ahrefs | API units left of this key's monthly limit (or of the workspace pool when the key has no limit), resetting on `usage_reset_date` |
+| Moz | Rows left of the production Data API quota (`api.limits.data.rows`), renewing at `period_reset` |
+| Semrush | Standard API units remaining (balance; no limit or renewal date) |
+| SE Ranking | Data API units left of the subscription's total, with the subscription expiry as the renewal date |
+| Serpstat | API credits (result lines) left of the plan's maximum; no renewal date is reported |
+| Mangools | SERP lookups left of the `serps` pool's limit, resetting in `reset` seconds; the other pools are listed below |
+| DataForSEO | Account balance in dollars, with total deposits, today's spend and the daily and per-minute spending limits below |
+| Majestic | Retrieval units remaining (balance), with analysis and index-item units below; the renewal date is the earliest subscription expiry |
+| Keywords Everywhere | Prepaid credits remaining (balance; no limit or renewal date) |
 
 Each card is refreshed every 5 minutes, and Settings lets you pick anything from 1 minute to 24 hours. Changing the interval takes effect from the last poll, so dropping from an hour to a minute does not wait an hour. Every one of these calls reads your account's own usage page. SerpApi, Context7 and Hunter document the call as free, Firecrawl's open-source server shows it bills nothing (and a live account confirmed it), and none of the other vendors list it as a billable call.
 
@@ -148,7 +223,7 @@ This removes the keys from your credential store, then the app, then its setting
 | Gate | What runs |
 | --- | --- |
 | Lints | `cargo fmt --check` and `cargo clippy -D warnings`, with `unwrap`, `expect`, `panic!` and print macros denied outside tests |
-| Tests on three operating systems | 109 tests: provider parsers against the vendors' own documented responses, log redaction, settings, an allocator that scans every freed block for the key, a source audit, and the binary's command line |
+| Tests on three operating systems | 306 tests: provider parsers against the vendors' own documented responses, log redaction, settings, an allocator that scans every freed block for the key, a source audit, and the binary's command line |
 | Minimum Rust version | The core crate on Rust 1.90 with the locked dependency graph |
 | Real keystore | Round trip and a core-dump leak scan against GNOME Keyring |
 | End to end | The real Linux build driven through WebDriver: save a key, see it land in the Secret Service, watch the first poll |

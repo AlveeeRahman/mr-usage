@@ -19,10 +19,10 @@ sitemap_url: https://alveeerahman.github.io/mr-usage/sitemap.xml
 primary_keyword: "desktop API credit monitor"
 
 title: "Mr. Usage: a desktop API credit monitor"
-description: "A desktop API credit monitor: check the remaining credits and balance of your Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway keys in one window. Keys stay in your OS keychain. No server, no telemetry."
+description: "A desktop API credit monitor: see what you have left at 44 paid APIs, from Firecrawl, SerpApi and OpenRouter to DeepSeek, ElevenLabs, RunPod, Azure Quantum and Ahrefs, in one window. Keys stay in your OS keychain."
 
 # GitHub's About box takes at most 350 characters; this is the same text, shortened.
-about: "Desktop API credit monitor: see the remaining credits and balance of your Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway keys in one window. Keys stay in your OS keychain. No server, no telemetry."
+about: "Desktop API credit monitor: see what you have left at 44 paid APIs (Firecrawl, SerpApi, OpenRouter, DeepSeek, ElevenLabs, RunPod, Ahrefs and more). Keys stay in your OS keychain. Rust, Tauri 2."
 
 version: "0.1.0"
 license_spdx: MIT OR Apache-2.0
@@ -33,7 +33,7 @@ author:
   url: https://github.com/AlveeeRahman
 
 # Facts that the README, the Pages <head> and the release notes repeat.
-providers: [Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter, Runway]
+providers: [Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter, Runway, Brave Search, SearchApi.io, ScrapingBee, Bright Data, Linkup, Crawlbase, DeepSeek, Moonshot (Kimi), Vercel AI Gateway, Novita AI, fal.ai, SiliconFlow, xAI, ElevenLabs, Deepgram, D-ID, HeyGen, Stability AI, Black Forest Labs, Luma, Recraft, RunPod, Vast.ai, DigitalOcean, Azure Quantum, IBM Quantum, Ahrefs, Moz, Semrush, SE Ranking, Serpstat, Mangools, DataForSEO, Majestic, Keywords Everywhere]
 tauri: "2.12.4"
 key_storage: macOS Keychain, Windows Credential Manager, Linux Secret Service (service name "mr-usage")
 history: in memory only, wiped at local midnight and on exit
@@ -43,35 +43,136 @@ history: in memory only, wiped at local midnight and on exit
 network_surfaces:
   - component: crates/core/src/providers/firecrawl.rs
     hosts: [api.firecrawl.dev]
-    purpose: GET /v2/team/credit-usage with the user's key (free; read from Firecrawl's open-source API server).
+    purpose: "Firecrawl: the documented usage endpoint https://api.firecrawl.dev/v2/team/credit-usage, with the user's own key."
   - component: crates/core/src/providers/serpapi.rs
     hosts: [serpapi.com]
-    purpose: GET /account.json with the user's key (free, not counted against searches).
+    purpose: "SerpApi: the documented usage endpoint https://serpapi.com/account.json, with the user's own key."
   - component: crates/core/src/providers/elicit.rs
     hosts: [elicit.com]
-    purpose: GET /api/v2/usage with the user's key.
+    purpose: "Elicit: the documented usage endpoint https://elicit.com/api/v2/usage, with the user's own key."
   - component: crates/core/src/providers/context7.rs
     hosts: [context7.com]
-    purpose: GET /api/v2/usage?days=1 with the user's key (documented as not counting as a request).
+    purpose: "Context7: the documented usage endpoint https://context7.com/api/v2/usage?days=1, with the user's own key."
   - component: crates/core/src/providers/tavily.rs
     hosts: [api.tavily.com]
-    purpose: GET /usage with the user's key.
+    purpose: "Tavily: the documented usage endpoint https://api.tavily.com/usage, with the user's own key."
   - component: crates/core/src/providers/openrouter.rs
     hosts: [openrouter.ai]
-    purpose: GET /api/v1/key with the user's key.
+    purpose: "OpenRouter: the documented usage endpoint https://openrouter.ai/api/v1/key, with the user's own key."
   - component: crates/core/src/providers/apify.rs
     hosts: [api.apify.com]
-    purpose: GET /v2/users/me/limits with the user's token.
+    purpose: "Apify: the documented usage endpoint https://api.apify.com/v2/users/me/limits, with the user's own key."
   - component: crates/core/src/providers/hunter.rs
     hosts: [api.hunter.io]
-    purpose: GET /v2/account with the user's key (documented as free).
+    purpose: "Hunter: the documented usage endpoint https://api.hunter.io/v2/account, with the user's own key."
   - component: crates/core/src/providers/runway.rs
     hosts: [api.dev.runwayml.com]
-    purpose: GET /v1/organization with the user's key and the X-Runway-Version header.
-  - component: installers/install.sh, installers/install.ps1 (run by the user, not by the app)
-    hosts: [api.github.com, github.com, objects.githubusercontent.com]
-    purpose: read the latest release and download the package and SHA256SUMS.txt.
-
+    purpose: "Runway: the documented usage endpoint https://api.dev.runwayml.com/v1/organization, with the user's own key."
+  - component: crates/core/src/providers/brave.rs
+    hosts: [api.search.brave.com]
+    purpose: "Brave Search: the documented usage endpoint https://api.search.brave.com/res/v1/web/search, with the user's own key."
+  - component: crates/core/src/providers/searchapi.rs
+    hosts: [www.searchapi.io]
+    purpose: "SearchApi.io: the documented usage endpoint https://www.searchapi.io/api/v1/me, with the user's own key."
+  - component: crates/core/src/providers/scrapingbee.rs
+    hosts: [app.scrapingbee.com]
+    purpose: "ScrapingBee: the documented usage endpoint https://app.scrapingbee.com/api/v1/usage, with the user's own key."
+  - component: crates/core/src/providers/brightdata.rs
+    hosts: [api.brightdata.com]
+    purpose: "Bright Data: the documented usage endpoint https://api.brightdata.com/customer/balance, with the user's own key."
+  - component: crates/core/src/providers/linkup.rs
+    hosts: [api.linkup.so]
+    purpose: "Linkup: the documented usage endpoint https://api.linkup.so/v1/credits/balance, with the user's own key."
+  - component: crates/core/src/providers/crawlbase.rs
+    hosts: [api.crawlbase.com]
+    purpose: "Crawlbase: the documented usage endpoint https://api.crawlbase.com/account?product=crawling-api, with the user's own key."
+  - component: crates/core/src/providers/deepseek.rs
+    hosts: [api.deepseek.com]
+    purpose: "DeepSeek: the documented usage endpoint https://api.deepseek.com/user/balance, with the user's own key."
+  - component: crates/core/src/providers/moonshot.rs
+    hosts: [api.moonshot.ai]
+    purpose: "Moonshot (Kimi): the documented usage endpoint https://api.moonshot.ai/v1/users/me/balance, with the user's own key."
+  - component: crates/core/src/providers/vercelgateway.rs
+    hosts: [ai-gateway.vercel.sh]
+    purpose: "Vercel AI Gateway: the documented usage endpoint https://ai-gateway.vercel.sh/v1/credits, with the user's own key."
+  - component: crates/core/src/providers/novita.rs
+    hosts: [api.novita.ai]
+    purpose: "Novita AI: the documented usage endpoint https://api.novita.ai/openapi/v1/billing/balance/detail, with the user's own key."
+  - component: crates/core/src/providers/fal.rs
+    hosts: [api.fal.ai]
+    purpose: "fal.ai: the documented usage endpoint https://api.fal.ai/v1/account/billing?expand=credits, with the user's own key."
+  - component: crates/core/src/providers/siliconflow.rs
+    hosts: [api.siliconflow.com]
+    purpose: "SiliconFlow: the documented usage endpoint https://api.siliconflow.com/v1/user/info, with the user's own key."
+  - component: crates/core/src/providers/xai.rs
+    hosts: [management-api.x.ai]
+    purpose: "xAI: the documented usage endpoint https://management-api.x.ai/v1/billing/teams/<team id>/prepaid/balance, with the user's own key."
+  - component: crates/core/src/providers/elevenlabs.rs
+    hosts: [api.elevenlabs.io]
+    purpose: "ElevenLabs: the documented usage endpoint https://api.elevenlabs.io/v1/user/subscription, with the user's own key."
+  - component: crates/core/src/providers/deepgram.rs
+    hosts: [api.deepgram.com]
+    purpose: "Deepgram: the documented usage endpoint https://api.deepgram.com/v1/projects/<project id>/balances, with the user's own key."
+  - component: crates/core/src/providers/did.rs
+    hosts: [api.d-id.com]
+    purpose: "D-ID: the documented usage endpoint https://api.d-id.com/credits, with the user's own key."
+  - component: crates/core/src/providers/heygen.rs
+    hosts: [api.heygen.com]
+    purpose: "HeyGen: the documented usage endpoint https://api.heygen.com/v3/users/me, with the user's own key."
+  - component: crates/core/src/providers/stability.rs
+    hosts: [api.stability.ai]
+    purpose: "Stability AI: the documented usage endpoint https://api.stability.ai/v1/user/balance, with the user's own key."
+  - component: crates/core/src/providers/bfl.rs
+    hosts: [api.bfl.ai]
+    purpose: "Black Forest Labs: the documented usage endpoint https://api.bfl.ai/v1/credits, with the user's own key."
+  - component: crates/core/src/providers/luma.rs
+    hosts: [api.lumalabs.ai]
+    purpose: "Luma: the documented usage endpoint https://api.lumalabs.ai/dream-machine/v1/credits, with the user's own key."
+  - component: crates/core/src/providers/recraft.rs
+    hosts: [external.api.recraft.ai]
+    purpose: "Recraft: the documented usage endpoint https://external.api.recraft.ai/v1/users/me, with the user's own key."
+  - component: crates/core/src/providers/runpod.rs
+    hosts: [api.runpod.io]
+    purpose: "RunPod: the documented usage endpoint https://api.runpod.io/graphql, with the user's own key."
+  - component: crates/core/src/providers/vast.rs
+    hosts: [console.vast.ai]
+    purpose: "Vast.ai: the documented usage endpoint https://console.vast.ai/api/v0/users/current, with the user's own key."
+  - component: crates/core/src/providers/digitalocean.rs
+    hosts: [api.digitalocean.com]
+    purpose: "DigitalOcean: the documented usage endpoint https://api.digitalocean.com/v2/customers/my/balance, with the user's own key."
+  - component: crates/core/src/providers/azurequantum.rs
+    hosts: ["*.quantum.azure.com"]
+    purpose: "Azure Quantum: the documented usage endpoint https://<workspace address>/quotas?api-version=2026-01-15-preview, with the user's own key."
+  - component: crates/core/src/providers/ibmquantum.rs
+    hosts: [quantum.cloud.ibm.com]
+    purpose: "IBM Quantum: the documented usage endpoint https://quantum.cloud.ibm.com/api/v1/instances/usage (Service-CRN: <instance CRN>), with the user's own key."
+  - component: crates/core/src/providers/ahrefs.rs
+    hosts: [api.ahrefs.com]
+    purpose: "Ahrefs: the documented usage endpoint https://api.ahrefs.com/v3/subscription-info/limits-and-usage?output=json, with the user's own key."
+  - component: crates/core/src/providers/moz.rs
+    hosts: [api.moz.com]
+    purpose: "Moz: the documented usage endpoint https://api.moz.com/jsonrpc, with the user's own key."
+  - component: crates/core/src/providers/semrush.rs
+    hosts: [www.semrush.com]
+    purpose: "Semrush: the documented usage endpoint https://www.semrush.com/users/countapiunits.html, with the user's own key."
+  - component: crates/core/src/providers/seranking.rs
+    hosts: [api.seranking.com]
+    purpose: "SE Ranking: the documented usage endpoint https://api.seranking.com/v1/account/subscription?output=json, with the user's own key."
+  - component: crates/core/src/providers/serpstat.rs
+    hosts: [api.serpstat.com]
+    purpose: "Serpstat: the documented usage endpoint https://api.serpstat.com/v4/, with the user's own key."
+  - component: crates/core/src/providers/mangools.rs
+    hosts: [api.mangools.com]
+    purpose: "Mangools: the documented usage endpoint https://api.mangools.com/v3/kwfinder/limits, with the user's own key."
+  - component: crates/core/src/providers/dataforseo.rs
+    hosts: [api.dataforseo.com]
+    purpose: "DataForSEO: the documented usage endpoint https://api.dataforseo.com/v3/appendix/user_data, with the user's own key."
+  - component: crates/core/src/providers/majestic.rs
+    hosts: [api.majestic.com]
+    purpose: "Majestic: the documented usage endpoint https://api.majestic.com/api/json?cmd=GetSubscriptionInfo, with the user's own key."
+  - component: crates/core/src/providers/keywordseverywhere.rs
+    hosts: [api.keywordseverywhere.com]
+    purpose: "Keywords Everywhere: the documented usage endpoint https://api.keywordseverywhere.com/v1/account/credits, with the user's own key."
 # GitHub allows 20. Lowercase words separated by hyphens, describing what the software
 # is rather than how good it is.
 topics:

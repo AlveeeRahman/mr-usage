@@ -108,6 +108,442 @@ All pages below were read on 2026-10-16. Crate versions and feature flags were r
 | Whether this call costs credits | Unverified | The docs do not say. `TODO(verify)` in `providers/runway.rs`. |
 | Live response | Not yet verified live | |
 
+## Brave Search
+
+| Fact | State | Source |
+| --- | --- | --- |
+| No usage endpoint; quota is in `X-RateLimit-Limit`, `X-RateLimit-Policy`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` on every response, each `per-second, per-month` | Verified 2026-10-17 | https://api-dashboard.search.brave.com/documentation/guides/rate-limiting |
+| Monthly limit `0` means unlimited; `X-RateLimit-Reset` is seconds from now | Verified 2026-10-17 | same page |
+| Only successful (non-error) responses are counted and billed, so a rejected request is free | Verified 2026-10-17 | same page ("Important" note and "Key Insights") |
+| Probe: `GET https://api.search.brave.com/res/v1/web/search` with no `q` (required parameter) and the key in `X-Subscription-Token`; the 422 carries the headers | Verified: `q` required and header auth per API reference; that the 422 carries the headers follows from "Every API response includes headers" | https://api-dashboard.search.brave.com/api-reference/web/search/get |
+| Error body `{type:"ErrorResponse", error:{id,status,detail,meta,code}, time}` for 404/422/429; `code` in `INTERNAL`, `QUOTA_LIMITED`, `RATE_LIMITED`, ... | Verified 2026-10-17 (schema only, no example body) | same API reference |
+| Fixture `brave_headers.json` | Copied from the "Example Response Headers" block, names lower-cased | rate-limiting page |
+| Fixture `brave_422.json` | Built from the documented schema (no example published); `error.id` made up | API reference |
+
+Not yet verified: Not confirmed with a live key that the 422 rejection actually carries the X-RateLimit headers (the docs say every response does). If it does not, the card returns Unsupported with a clear message rather than guessing. Behaviour on a used-up month (429 `QUOTA_LIMITED` with monthly remaining 0) is read as a zero quota; inferred from the schema, not observed.
+
+## SearchApi.io
+
+| Fact | State | Source |
+| --- | --- | --- |
+| `GET https://www.searchapi.io/api/v1/me`, key as `Authorization: Bearer` or `?api_key=` | Verified 2026-10-17 | https://www.searchapi.io/docs/account-api |
+| 200 body `{account:{current_month_usage, monthly_allowance, remaining_credits}, api_usage:{searches_this_hour, hourly_rate_limit}, subscription:{period_start, period_end}}`; `subscription` only with an active subscription | Verified 2026-10-17 | same page |
+| Error bodies | Not documented on the page; generic extractor used | — |
+| Whether the call is billed | Not stated; treated as free (usage read, not a search) | — |
+| Fixture `searchapi_200.json` | Copied verbatim from the page's Response example | same page |
+
+Not yet verified: No documented error body; 401/403/429 mapping tested with empty bodies. Whether the call is free is not stated by the vendor.
+
+## ScrapingBee
+
+| Fact | State | Source |
+| --- | --- | --- |
+| `GET https://app.scrapingbee.com/api/v1/usage`, `Authorization: Bearer` | Verified 2026-10-17 | https://www.scrapingbee.com/documentation/#usage-endpoint |
+| 200 body `{max_api_credit, used_api_credit, max_concurrency, current_concurrency, renewal_subscription_date}`; date has no offset (`2022-04-18T10:05:58.134716`), read as UTC | Verified 2026-10-17 | same section |
+| "Calls to this endpoint will not increase concurrency, but you can only call it 6 times per minute" | Verified 2026-10-17 | same section |
+| Status codes (written for the scraping endpoint): 401 out of credits or invalid key, 403 account banned, 429 too many concurrent requests, 400/500 with message in body; only 200/404/410/413 scrapes are billed | Verified 2026-10-17 | same page, "Status Code" table |
+| Whether the usage call costs credits | Not stated explicitly; it is a usage read and treated as free | — |
+| Fixture `scrapingbee_200.json` | Copied verbatim from the "Results." example | same section |
+
+Not yet verified: No example error body is published; status mapping tested with empty and generic bodies.
+
+## Bright Data
+
+| Fact | State | Source |
+| --- | --- | --- |
+| `GET https://api.brightdata.com/customer/balance`, `Authorization: Bearer` | Verified 2026-10-17 | https://docs.brightdata.com/api-reference/account-management-api/Get_total_balance_through_API |
+| 200 body `{balance, credit, prepayment, pending_costs}`, all USD; `pending_costs` = usage expected on next month's invoice | Verified 2026-10-17 | same page |
+| No endpoint exposes free-tier credits (FAQ on the page) | Verified 2026-10-17 | same page |
+| Error bodies | Not documented; generic extractor used | — |
+| Whether the call is billed | Not stated; Account Management read, treated as free | — |
+| Fixture `brightdata_200.json` | Copied verbatim from the 200 example | same page |
+
+Not yet verified: No documented error body or status list; mapping tested with empty bodies. Free-tier accounts show funds only; free credits are not exposed by the API (documented).
+
+## Linkup
+
+| Fact | State | Source |
+| --- | --- | --- |
+| `GET https://api.linkup.so/v1/credits/balance`, `Authorization: Bearer`; 200 body `{balance}` "number of credits remaining" | Verified 2026-10-17 | https://docs.linkup.so/pages/documentation/endpoints/account/balance |
+| Credits are US dollars (API key: "USD, prepaid credit balance"; $20 sign-up credit; all prices in $) | Verified 2026-10-17 | https://docs.linkup.so/pages/documentation/platform/pricing |
+| Error body `{statusCode, error:{code, message, details:[{field, message}]}}`; 401 missing/invalid key, 403 no permission, 429 out of credit or too many concurrent requests, 500, 504 | Verified 2026-10-17 | https://docs.linkup.so/pages/documentation/platform/errors |
+| Whether the balance call is billed | Pricing tables list search, fetch, research, tasks, extract only; balance treated as free | pricing page |
+| Fixture `linkup_200.json` | Copied verbatim from the 200 example | balance page |
+| Fixture `linkup_400.json` | Copied verbatim from the errors page example | errors page |
+
+Not yet verified: The vendor does not say in so many words that the balance call is free.
+
+## Crawlbase
+
+| Fact | State | Source |
+| --- | --- | --- |
+| `GET https://api.crawlbase.com/account?token=<key>&product=crawling-api`; key only as the `token` query parameter | Verified 2026-10-17 | https://crawlbase.com/docs/account-api |
+| Response fields `totalSuccess`, `totalFailed`, `totalDue` (USD), `remainingCredits` (subscription products only), `domainStats[]` (domain, totalRequests, success, failure, successRate) | Verified 2026-10-17 | same page |
+| "Rate limit: 1 request per 5 minutes"; the API is "actively supported" though listed under legacy | Verified 2026-10-17 | same page |
+| Error bodies | Not documented; generic extractor used | — |
+| Whether the call is billed | Not stated; usage read, treated as free | — |
+| Fixture `crawlbase_200.json` | Built from the documented fields (no example response published); one made-up domain | same page |
+
+Not yet verified: No example response or error body is published; the fixture is schema-built. Only the `crawling-api` product is polled; other products (crawler, smartproxy, ...) would need a config field.
+
+## DeepSeek
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.deepseek.com/user/balance`, `Authorization: Bearer <key>` | verified 2026-10-17 | https://api-docs.deepseek.com/api/get-user-balance |
+| 200 body `{is_available, balance_infos: [{currency: CNY\|USD, total_balance, granted_balance, topped_up_balance}]}`, amounts as decimal strings in whole currency units | verified 2026-10-17 | same page (schema and example) |
+| Error statuses 400, 401 Authentication Fails, 402 Insufficient Balance, 422, 429 Rate Limit Reached, 500, 503; no body shape shown | verified 2026-10-17 | https://api-docs.deepseek.com/quick_start/error_codes |
+| Call is free: not a model request, no price listed on the page | inferred from the docs; not confirmed on a live key | same pages |
+| Fixture `deepseek_200.json` | copied verbatim 2026-10-17 | balance page, "Example" tab |
+
+Not yet verified: Error body shape: not documented; the module assumes the OpenAI-compatible `{"error": {"message", ...}}` form and the 429/402 tests use a hand-built body of that form (stated in the module doc). "Free" is inferred, not confirmed live.
+
+## Moonshot (Kimi)
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.moonshot.ai/v1/users/me/balance`, `Authorization: Bearer <key>` | verified 2026-10-17 | https://platform.kimi.ai/docs/api/balance |
+| 200 body `{code: 0, data: {available_balance, voucher_balance, cash_balance}, scode, status}`; amounts are JSON numbers in USD; cash may be negative; available <= 0 blocks inference | verified 2026-10-17 | same page ("Response Fields") |
+| Errors 401 and 500 with `{"error": {"message", "type", "code"}}` (schema placeholder only); keys from platform.kimi.com are independent and get 401 | verified 2026-10-17 | same page |
+| Call is free: not a model request, no price listed | inferred from the docs; not confirmed on a live key | same page |
+| Fixtures `moonshot_200.json`, `moonshot_401.json` | copied verbatim 2026-10-17 | same page ("Response Example"; 401 placeholder body) |
+
+Not yet verified: The docs mention platform.kimi.com as the independent platform; the task brief mentioned platform.moonshot.cn. The note names both. The .cn host's own response shape was not checked. "Free" is inferred, not confirmed live.
+
+## Vercel AI Gateway
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://ai-gateway.vercel.sh/v1/credits`, `Authorization: Bearer <AI Gateway API key>` (OIDC token also accepted) | verified 2026-10-17 | https://vercel.com/docs/ai-gateway/sdks-and-apis/rest-api ("Check credit balance") |
+| 200 body `{"balance": "95.50", "total_used": "4.50"}`, decimal strings in USD; `total_used` is lifetime | verified 2026-10-17 | same page |
+| Errors `{"error": {"message", "type"}}` with 400, 401, 403 (paid plan needed), 404, 500, 503; only `/v1/models?include_availability` documents a 429 with `Retry-After: 60` | verified 2026-10-17 | same page ("Error responses") |
+| Call is free: a lookup, not inference, no price listed | inferred from the docs; not confirmed on a live key | same page |
+| Fixtures `vercelgateway_200.json`, `vercelgateway_400.json` | copied verbatim 2026-10-17 | same page (sample response; generic "Error response") |
+
+Not yet verified: "Free" is inferred, not confirmed live. `spent` holds lifetime spend; the UI should not label it as a period figure.
+
+## Novita AI
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.novita.ai/openapi/v1/billing/balance/detail`, `Authorization: Bearer <key>` | verified 2026-10-17 | https://docs.novita.ai/api-reference/basic-get-user-balance |
+| 200 body `{availableBalance, cashBalance, creditLimit, pendingCharges, outstandingInvoices}`, string integers in 1/10000 USD (`10000` = $1.00); pendingCharges currently always `0` | verified 2026-10-17 | same page |
+| Error bodies and rate limits: none documented on the page | verified absent 2026-10-17 | same page |
+| Call is free: a billing lookup, no price listed | inferred from the docs; not confirmed on a live key | same page |
+| Fixture `novita_200.json` | copied verbatim 2026-10-17 | same page (200 example) |
+
+Not yet verified: No error body shape is documented; errors fall back to `{"error"|"message"}` text or the HTTP status. `limit = creditLimit` as the brief asked; note the documented example has availableBalance (100) above creditLimit (20), so the card can show remaining above limit. "Free" is inferred, not confirmed live.
+
+## fal.ai
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.fal.ai/v1/account/billing?expand=credits`, header `Authorization: Key <key>` | verified 2026-10-17 | https://fal.ai/docs/platform-apis/v1/account/billing |
+| 200 body `{username, credits: {current_balance: 24.5, currency: "USD"}}`; `credits` only present with `expand=credits` | verified 2026-10-17 | same page |
+| Permission `billing:usage:read`, in the BILLING, READONLY and FULL key presets | verified 2026-10-17 | same page (Authorizations and page description) |
+| Errors `{"error": {"type", "message"}}`: 400 validation_error, 401/403 authorization_error, 429 rate_limited, 500 server_error | verified 2026-10-17 | same page |
+| Call is free: account lookup, no price listed | inferred from the docs; not confirmed on a live key | same page |
+| Fixtures `fal_200.json`, `fal_400.json`, `fal_401.json`, `fal_403.json`, `fal_429.json`, `fal_500.json` | copied verbatim 2026-10-17 | same page (one example per status) |
+
+Not yet verified: Whether 403 is only ever a scope problem (the docs show one 403 example, "Access denied"). "Free" is inferred, not confirmed live. Category set to Media (fal is image/video inference).
+
+## SiliconFlow
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.siliconflow.com/v1/user/info`, `Authorization: Bearer <key>` | verified 2026-10-17 | https://docs.siliconflow.com/en/api-reference/userinfo/get-user-info |
+| 200 body `{code: 20000, message: "OK", status: true, data: {id, name, image, email, isAdmin, balance, status, introduction, role, chargeBalance, totalBalance}}`; amounts are decimal strings | verified 2026-10-17 | same page |
+| Currency is USD on the .com host | assumed from the host (the page does not name a currency) | same page |
+| Errors 400, 401, 404, 429, 503, 504 with a bare JSON string body (placeholder `"<string>"`) | verified 2026-10-17 | same page |
+| Call is free: account lookup, no price listed | inferred from the docs; not confirmed on a live key | same page |
+| Fixtures `siliconflow_200.json`, `siliconflow_401.json` | copied verbatim 2026-10-17 | same page (200 example with placeholder identifiers; error placeholder) |
+
+Not yet verified: The "figures differ from the console" caveat comes from the research brief; I could not verify the issue report. The note is worded as a user report. USD is inferred from the .com host, not stated on the page. The .cn host (siliconflow.cn, CNY) is not supported. "Free" is inferred, not confirmed live.
+
+## xAI
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance` | verified 2026-10-17 | https://docs.x.ai/developers/rest-api-reference/management/billing ("List prepaid credit balance and balance changes") |
+| 200 body `{changes: [...], total: {val: "<USD cents string>"}}`; the ledger is inverted (a $10 purchase is `amount.val: "-1000"`, `total.val: "-1000"`) | verified 2026-10-17 | same page (field description "Representation of USD Cents" and example) |
+| Auth: a Management key (separate from the inference API key, from Console -> Settings -> Management Keys) as `Authorization: Bearer <key>`; base URL `https://management-api.x.ai` | verified 2026-10-17 | https://docs.x.ai/developers/management-api-guide |
+| Error bodies and statuses: none documented on the billing page | verified absent 2026-10-17 | same page |
+| Call is free: management lookup, not inference, no price listed | inferred; not confirmed on a live key | same page |
+| Fixture `xai_200.json` | copied verbatim 2026-10-17 | same page (200 example) |
+
+Not yet verified: Whether a management key needs a specific ACL to read billing: the guide does not say; a 401/403 is shown as "key rejected". The team id format is not documented beyond the UUID example; the placeholder in the config field still says `team_…` (unchanged from the stub). Error shapes undocumented; generic mapping.
+
+## ElevenLabs
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.elevenlabs.io/v1/user/subscription`, key in header `xi-api-key` | Verified 2026-10-17 | https://elevenlabs.io/docs/api-reference/user/subscription/get |
+| 200 body: `tier`, `character_count`, `character_limit`, `next_character_count_reset_unix` (integer or null, seconds), `status`, `current_overage: {amount: string, currency}`, plus invoices and voice counters | Verified 2026-10-17 | same page and its `.md` rendering (https://elevenlabs.io/docs/api-reference/user/subscription/get.md) |
+| Error shapes: only 422 documented, `{detail: [{loc, msg, type}]}`; 401/403/429 have no documented body | Verified 2026-10-17 | same page |
+| Call is free: the page lists no price; the call reads the subscription record and synthesises nothing | Inferred from the page, not stated | same page |
+| Fixture `elevenlabs_200.json` copied verbatim from the page's example response; `elevenlabs_422.json` built from the documented schema (no example shown) | Verified 2026-10-17 | `.md` rendering of the page |
+
+Not yet verified: The docs do not say outright that the call is free; no pricing page mentions it. 401 body shape is undocumented; mapped by status alone. Regional servers (`api.us.elevenlabs.io`, `api.eu.residency.elevenlabs.io`, ...) exist per the page; the provider only contacts `api.elevenlabs.io`.
+
+## Deepgram
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.deepgram.com/v1/projects/{project_id}/balances`, header `Authorization: Token <key>` | Verified 2026-10-17 | https://developers.deepgram.com/reference/manage/billing/list |
+| 200 body `{balances: [{balance_id, amount (double), units ("USD"), purchase_order_id}]}` | Verified 2026-10-17 | same page and its `.md` rendering |
+| Error shapes: 400 only, legacy `{err_code, err_msg, request_id}` or modern `{category, message, details, request_id}` | Verified 2026-10-17 | same page |
+| Call is free: the page lists no price; it reads billing records and transcribes nothing | Inferred from the page, not stated | same page |
+| Fixture `deepgram_200.json` copied verbatim from the page's example; `deepgram_400.json` built from the legacy error schema (no example shown) | Verified 2026-10-17 | `.md` rendering of the page |
+
+Not yet verified: Whether the key needs a particular scope to read balances is not on the page. 401/403/429 bodies are undocumented; mapped by status alone. The project id is accepted only when it consists of `[A-Za-z0-9-]`; the page's sample id `123456-7890-1234-5678-901234` fits.
+
+## D-ID
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.d-id.com/credits`, security `basic` or `bearer`; sample sends `authorization: Basic <key>` | Verified 2026-10-17 | https://docs.d-id.com/reference/getcredits |
+| 200 body `{credits: [{owner_id, created_at, modified_at, remaining, total, expire_at, valid_from, product_id, price_id, plan_group, product_billing_interval}], remaining, total}` | Verified 2026-10-17 | same page's `.md` rendering (OpenAPI definition) |
+| Error shapes: 404 `{kind: "NotFoundError", description: "not credits found for user"}` (schema `JsonError3: {kind, description, details, internal}`) | Verified 2026-10-17 | same |
+| Call is free: the page lists no price; it reads credit pools and renders nothing | Inferred from the page, not stated | same |
+| Fixtures `did_200.json` and `did_404.json` copied verbatim from the OpenAPI examples | Verified 2026-10-17 | same |
+
+Not yet verified: 401/403/429 bodies are undocumented; mapped by status alone. The example's `expire_at` is in 2022, so a real account's dates were not checked against the format.
+
+## HeyGen
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.heygen.com/v3/users/me`, header `X-Api-Key` | Verified 2026-10-17 | https://developers.heygen.com/user-profile |
+| 200 body `{data: {username, email, first_name, last_name, billing_type, wallet, subscription, usage_based}}`; `billing_type` in `wallet`, `subscription`, `usage_based`; `wallet: {currency: "usd" or "credits", remaining_balance, auto_reload: {enabled, threshold_usd, amount_usd}}`; `subscription: {plan, credits: {premium_credits: {remaining, resets_at}, add_on_credits: {remaining}}}`; `usage_based: {spending_current_usd, spending_cap_usd}` | Verified 2026-10-17 | same page |
+| Error shapes: none documented | Verified 2026-10-17 | same page |
+| Call is free: the page lists no price and recommends the call to "check your account status or remaining quota before making API calls" | Inferred from the page, not stated | same page |
+| Fixture `heygen_200.json` copied verbatim from the page's response example (wallet account) | Verified 2026-10-17 | same page |
+
+Not yet verified: Only the wallet shape has a documented example; subscription and usage-based parsing follows the field table. No error bodies are documented; 401/403/429 are mapped by status.
+
+## Stability AI
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.stability.ai/v1/user/balance`, key in the `Authorization` header (Bearer) | Verified 2026-10-17 on the Apidog mirror; the official SPA did not render as text | https://stabilityai.apidog.io/api-6070374 and https://stabilityai.apidog.io/doc-455573 (official: https://platform.stability.ai/docs/api-reference) |
+| 200 body `{"credits": 0.6336833840314097}` (number) | Verified 2026-10-17 | https://stabilityai.apidog.io/api-6070374 |
+| Error shapes: 401 and 500 listed; body `{id, name, message}`; 429 after 150 requests per 10 seconds | Verified 2026-10-17 | https://stabilityai.apidog.io/schema-1577756, https://stabilityai.apidog.io/doc-455573 |
+| Call is free: no page lists a price; it reads the balance and generates nothing | Inferred, not stated | same |
+| Fixtures `stability_200.json` (balance example) and `stability_401.json` (401 example) copied verbatim from the mirror | Verified 2026-10-17 | same |
+
+Not yet verified: The official reference page is a single-page app; everything was read from the Apidog mirror, which is marked "Modified at over 2 years ago". The mirror says "Include this key in the Authorization header" without naming the scheme; Bearer is the convention the official docs use (not verified here).
+
+## Black Forest Labs
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.bfl.ai/v1/credits`, key in header `x-key` (required) | Verified 2026-10-17 | https://docs.bfl.ml/api-reference/get-the-users-credits |
+| 200 body `{"credits": 123}`, `credits` a required number, "User's current credit balance" | Verified 2026-10-17 | same page |
+| Error shapes: none documented | Verified 2026-10-17 | same page |
+| Call is free: the page lists no price; it reads the balance and generates nothing | Inferred, not stated | same page |
+| Fixture `bfl_200.json` copied verbatim from the page's 200 example | Verified 2026-10-17 | same page |
+
+Not yet verified: No error bodies are documented; 401/403/429 are mapped by status. Whether `credits` can be fractional in practice is not stated; the parser copes either way.
+
+## Luma
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.lumalabs.ai/dream-machine/v1/credits`, security `BearerAuth` (`Authorization: Bearer <key>`) | Verified 2026-10-17 | https://docs.lumalabs.ai/reference/getcredits (OpenAPI in its `.md` rendering) |
+| 200 schema `Credits: {credit_balance: number (float)}`, "Available credits balance in USD cents", required | Verified 2026-10-17 | same |
+| Error shape: every non-200 is the `default` response `Error: {detail: string}`, example `{"detail": "Invalid API key is provided"}` | Verified 2026-10-17 | same |
+| Call is free: the page lists no price; it reads the balance and generates nothing | Inferred, not stated | same |
+| Fixture `luma_200.json` built from the schema (no example 200 body on the page); `luma_error.json` is the schema's own example | Verified 2026-10-17 | same |
+
+Not yet verified: The page carries a banner pointing new integrations to the Luma API Platform (https://platform.lumalabs.ai/) and the Luma Agents API docs (https://docs.agents.lumalabs.ai/). Whether keys from that platform work on this Dream Machine endpoint is not stated; the card's note says it is for Dream Machine keys. No 200 example exists; the fixture is schema-shaped.
+
+## Recraft
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://external.api.recraft.ai/v1/users/me`, `Authorization: Bearer RECRAFT_API_TOKEN` | Verified 2026-10-17 | https://www.recraft.ai/docs/api-reference/endpoints ("Get user information") |
+| 200 body `{credits: 1000, email, id, name}` | Verified 2026-10-17 | same page |
+| Error shapes: none documented | Verified 2026-10-17 | same page |
+| Call is free: the endpoint table prices every call and shows "—" for `GET /users/me` | Verified 2026-10-17 | same page ("All endpoints" table) |
+| Fixture `recraft_200.json` copied verbatim from the page's response example | Verified 2026-10-17 | same page |
+
+Not yet verified: No error bodies are documented; 401/403/429 are mapped by status.
+
+## RunPod
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint: `POST https://api.runpod.io/graphql`, body `{"query":"query { myself { clientBalance currentSpendPerHr spendLimit } }"}` | Verified 2026-10-17 | https://graphql-spec.runpod.io/ ("API Endpoints", `myself` query, `User` type) |
+| Auth: `Authorization: Bearer <RUNPOD_API_KEY>` header | Verified 2026-10-17 | https://graphql-spec.runpod.io/ ("Headers"). https://docs.runpod.io/sdks/graphql/configurations documents `?api_key=` instead; the header is used. |
+| Response shape: `{data: {myself: {clientBalance: Float, currentSpendPerHr: Float, spendLimit: Int}}}`, dollars | Verified 2026-10-17 | https://graphql-spec.runpod.io/ (`User` fields and `myself` example) |
+| Error shapes: none documented. Standard GraphQL `{"errors": [{"message"}], "data": null}` on HTTP 200 is handled; auth-flavoured messages map to Unauthorized | Unverified (no vendor example) | https://graphql-spec.runpod.io/ shows no error body |
+| Free: no price stated; account read, starts no pod | Unverified (inferred) | both pages |
+| GraphQL API deprecated, retires early 2027 | Verified 2026-10-17 | https://docs.runpod.io/sdks/graphql/configurations |
+| Fixture `runpod_200.json`: documented `myself` example cut to the scalars around the three queried fields; `runpod_200_unauthorized.json` built, not copied | 2026-10-17 | https://graphql-spec.runpod.io/ |
+
+Not yet verified: No error body is documented; the Unauthorized mapping keys off message text ("unauthorized", "unauthenticated", "authentication", "invalid api key", "forbidden"). A live bad-key test would confirm the real wording. Whether a rejected key answers 401 or a 200 with `errors` is not documented; both are handled. The call's cost is inferred, not stated.
+
+## Vast.ai
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint: `GET https://console.vast.ai/api/v0/users/current` | Verified 2026-10-17 | https://docs.vast.ai/api-reference/accounts/show-user |
+| Auth: `Authorization: Bearer <token>` ("API key must be provided in the Authorization header") | Verified 2026-10-17 | same page |
+| Response shape: `{id, key_id, email, balance (number<float>, dollars), ssh_key, sid}`; only `balance` is read | Verified 2026-10-17 | same page |
+| Error shapes: 401 and 500 `{"success": false, "error": "<string>", "msg": "<string>"}`; no 429 documented | Verified 2026-10-17 | same page |
+| Free: no price stated; account read | Unverified (inferred) | same page |
+| Fixtures `vast_200.json`, `vast_401.json`, `vast_500.json` copied verbatim (schema-generated placeholders) | 2026-10-17 | same page |
+
+Not yet verified: No limit or renewal date exists in the response; the card is balance-only. The call's cost is inferred, not stated. Vast documents no 429 for this endpoint.
+
+## DigitalOcean
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint: `GET https://api.digitalocean.com/v2/customers/my/balance` | Verified 2026-10-17 | https://docs.digitalocean.com/reference/api/digitalocean/#tag/Billing/operation/balance_get |
+| Auth: `Authorization: Bearer <token>`, required scope `billing:read` | Verified 2026-10-17 | same page ("Authorizations: bearer_auth, Required scopes: billing:read") |
+| Response shape: `{account_balance, generated_at (date-time), month_to_date_balance, month_to_date_usage}`, amounts as decimal strings in dollars; positive `account_balance` is owed, negative is credit | Verified 2026-10-17 | same page (schema and 200 example) |
+| Error shapes: `{id, message, request_id?}` for 401 `unauthorized`, 404 `not_found`, 429 `too_many_requests`, 500 `server_error` | Verified 2026-10-17 | same page |
+| Free: no price stated; rate limited at 5000/hour and 250/minute via `ratelimit-*` headers | Verified rate limits 2026-10-17; price inferred | same page |
+| Period end: invoices are generated on the first of each month, so the card's period ends at the start of the next UTC month | Verified text 2026-10-17; mapping inferred | same page (Billing overview) |
+| Fixtures `digitalocean_200/401/404/429/500.json` copied verbatim | 2026-10-17 | same page |
+
+Not yet verified: The sign convention (positive = owed, negative = credit) follows the research brief and the field description "Current balance of the customer's most recent billing activity"; the docs do not spell out the sign of a credit. The period end is derived from "Invoices are generated on the first of each month", not from a field in the response. The call's cost is inferred from the absence of any pricing, not stated.
+
+## Azure Quantum
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint: `GET {endpoint}/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Quantum/workspaces/{ws}/quotas?api-version=2026-01-15-preview`, `{endpoint}` = `https://{region}.quantum.azure.com`; the user pastes the address up to the workspace name as the "Workspace address" setting | Verified 2026-10-17 | https://learn.microsoft.com/en-us/rest/api/azurequantum/dataplane/quotas/list?view=rest-azurequantum-dataplane-2026-01-15-preview |
+| Auth: `x-ms-quantum-api-key` header ("Azure Api-Key Authentication", apiKey in header); Entra OAuth2 is the alternative and is not used | Verified 2026-10-17 | same page (Security) |
+| Response shape: `{value: [{dimension, scope (Workspace/Subscription), providerId, utilization, holds, limit (floats), period (Monthly/None)}], nextLink}` | Verified 2026-10-17 | same page (PagedQuota, Quota, sample response) |
+| Error shapes: "Other Status Codes" return `Azure.Core.Foundations.ErrorResponse` `{"error": {code, message, target?, details?, innererror?}}` with header `x-ms-error-code`; no example body shown | Verified schema 2026-10-17 | same page (Definitions) |
+| Free: no price stated; listing quotas submits no job | Unverified (inferred) | same page |
+| Card: the `*hours` row with the largest limit, in seconds; remaining = limit − utilization − holds; `Monthly` ends at the start of the next UTC month ("Based on calendar year") | Verified fields 2026-10-17; mapping is ours | same page |
+| Fixture `azurequantum_200.json` copied verbatim (sample response); `azurequantum_401.json` built from the ErrorResponse schema, not copied | 2026-10-17 | same page |
+
+Not yet verified: Whether a workspace API key is accepted on the quotas operation in practice (the page lists the scheme for the operation; a live key would confirm). The exact 401/403 body wording; the Unauthorized mapping is by status. Only the first page of `value` is read; `nextLink` is ignored. Quota lists are short, but this is an assumption. The call's cost is inferred, not stated.
+
+## IBM Quantum
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Auth: "You must provide an IBM Cloud Identity and Access Management (IAM) bearer token with every call as an http header. You can generate this using your API key"; token minted by `POST https://iam.cloud.ibm.com/identity/token` (`grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=…`), expires within an hour; requests then carry `Authorization: Bearer`, `Service-CRN: <instance CRN>`, `IBM-API-Version: <YYYY-MM-DD>` | Verified 2026-10-17 | https://quantum.cloud.ibm.com/docs/en/api/qiskit-runtime-rest (Authentication) |
+| No documented way to send the API key directly to quantum.cloud.ibm.com | Verified 2026-10-17 (absence) | same page |
+| Decision: dropped. The app contacts one host per provider and cannot call iam.cloud.ibm.com; `fetch` returns `Unsupported` with that explanation | 2026-10-17 | — |
+| Endpoint `/api/v1/instances/usage` (consumed and limit seconds) | Not verified (research only; not fetched because auth blocks it) | https://quantum.cloud.ibm.com/docs/en/api/qiskit-runtime-rest |
+
+Not yet verified: Whether IBM offers any API-key-direct auth on the quantum host outside this page (the page says IAM bearer only). If a future change lets a provider contact a second host, or a token-exchange helper lands in `net.rs`, the usage endpoint and its response shape still need verification against the instances/usage page.
+
+## Ahrefs
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.ahrefs.com/v3/subscription-info/limits-and-usage?output=json`, `Authorization: Bearer <key>` | Verified 2026-10-17 | https://docs.ahrefs.com/en/api/reference/subscription-info/get-limits-and-usage ; header format on https://docs.ahrefs.com/en/api/docs/api-keys-creation-and-management |
+| 200 body `{limits_and_usage: {api_key_expiration_date, subscription, units_limit_api_key (int or null = unlimited), units_limit_workspace (int or null), units_usage_api_key, units_usage_workspace (int or null), usage_reset_date}}` | Verified 2026-10-17 (schema only; page shows no example) | same reference page |
+| Errors 400/401/403/429/500, body `{error: string}` | Verified 2026-10-17 | same reference page; 429 also at https://docs.ahrefs.com/en/api/docs/introduction ("60 requests per minute") |
+| Call is free: "Requests to this endpoint are free and do not consume any API units." | Verified 2026-10-17 | same reference page |
+| Fixtures `ahrefs_200.json`, `ahrefs_401.json`, `ahrefs_429.json`, `ahrefs_500.json` | Built from the documented schema (no vendor example exists) | module doc says so |
+
+Not yet verified: No live check; the 200 fixture is schema-built. Preference of key pair over workspace pair is the app's choice.
+
+## Moz
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `POST https://api.moz.com/jsonrpc`, header `x-moz-token: <key>`, body `{"jsonrpc":"2.0","id":..., "method":"quota.lookup","params":{"data":{"path":"api.limits.data.rows"}}}` | Verified 2026-10-17 | https://moz.com/api/docs/methods/QuotaLookupAction |
+| Response `quota: {path, account_id, allotted, used, reset, report, overage, period_start, period_reset}` (Unix seconds) | Verified 2026-10-17 (example shows bare `{quota}`; app also accepts `{result: {quota}}`) | same page |
+| Error shape | Not documented on the page; JSON-RPC 2.0 `error.{code,message}` assumed, HTTP 401/403 = bad key | — |
+| Call is free: "Quota Usage: Does not require any quota." | Verified 2026-10-17 | same page |
+| Fixture `moz_200.json` | Verbatim copy of the page's Response example | same page |
+
+Not yet verified: Minimum `id` length (the brief said 24+; the page does not state one). The app sends a 26-char fixed id. Whether live responses are wrapped in a JSON-RPC `result` envelope (parser accepts both). JSON-RPC error shape and HTTP status for a bad token.
+
+## Semrush
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET www.semrush.com/users/countapiunits.html?key=<key>` | Verified 2026-10-17 (page writes `http://`; app uses `https://`) | https://developer.semrush.com/api/v3/get-started/api-units-balance/ |
+| Response: CSV, one value, example `1,000` = remaining API units | Verified 2026-10-17 | same page |
+| Error shape for this endpoint | Not documented; page only says other APIs return `ERROR 132` / HTTP 403 when units run out | same page |
+| Call is free ("free API requests") | Verified 2026-10-17 | same page |
+| Fixture `semrush_200.json` (content `1,000`, not JSON) | Verbatim copy of the Response example | same page |
+
+Not yet verified: HTTPS on `www.semrush.com` for this path (docs show http). TODO(verify) in module. Wrong-key response text; the app treats any non-numeric body mentioning "key" as Unauthorized, else Vendor.
+
+## SE Ranking
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.seranking.com/v1/account/subscription?output=json`, header `Authorization: Token <key>` | Verified 2026-10-17 | https://seranking.com/api/data/account-system/ |
+| Response `{subscription_info: {status, start_date, expiration_date ("YYYY-MM-DD HH:MM:SS"), units_limit, units_left}}` | Verified 2026-10-17 | same page |
+| Error shape | Not documented | — |
+| Call is free: "Cost: 0 credits" | Verified 2026-10-17 | same page |
+| Fixture `seranking_200.json` | Verbatim copy of the Response example | same page |
+
+Not yet verified: Dates are zoneless; read as UTC. Error bodies and the status for a bad key.
+
+## Serpstat
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `POST https://api.serpstat.com/v4/?token=<key>`, body `{"id":"1","method":"SerpstatLimitsProcedure.getStats"}` | Verified 2026-10-17 | https://api-docs.serpstat.com/docs/serpstat-public-api/p2grcut8yurv0-get-stats |
+| Response `{id, result: {data: {max_lines, used_lines, left_lines, user_info{...}, plugin_limits{total, used, left,...}}, summary_info: {left_lines}}}` | Verified 2026-10-17 (example is internally inconsistent: left_lines > max_lines) | same page |
+| Error shape | Not documented on the page; JSON-RPC style `error.{code,message}` assumed | https://api-docs.serpstat.com/docs/serpstat-public-api/704g22jqj5lqb-errors-and-response-codes (not read) |
+| Call is free: "This method doesn't spent API credits." | Verified 2026-10-17 | same page |
+| Fixture `serpstat_200.json` | Verbatim copy of the Response Example | same page |
+
+Not yet verified: Error body shape and HTTP status for a bad token (app: 200 + `error.message` mentioning "token" = Unauthorized). The Response Codes page was not fetched.
+
+## Mangools
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.mangools.com/v3/kwfinder/limits`, header `x-access-token: <key>` (explicitly not Bearer) | Verified 2026-10-17 | https://apidocs.mangools.com/kwfinder/get-limits/ |
+| Response `resources: {<pool>: {limit, remaining, reset (s or null)}}` plus `api_quota`, `permanent_credits`, plan strings | Verified 2026-10-17 | same page |
+| Bad/missing token returns HTTP 200 "with nothing remaining in any pool rather than HTTP 401" | Verified 2026-10-17 | same page |
+| 429 returns a `text/html` "429 Too Many Requests" page | Verified 2026-10-17 | same page |
+| Cost of the call | Not stated; page describes it as for "quota checks before sending expensive requests" | same page |
+| Fixtures `mangools_200.json`, `mangools_429.json` | Verbatim copies of the 200 and 429 examples (429 stored as the HTML the page shows inside a JSON string) | same page |
+
+Not yet verified: Whether the call is free (not stated). Whether a bad token yields empty pools or pools with zero limits (app: no pool with a positive limit = Unauthorized).
+
+## DataForSEO
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.dataforseo.com/v3/appendix/user_data`, HTTP Basic `base64(login:password)` | Verified 2026-10-17 | https://docs.dataforseo.com/v3/appendix/user_data/ |
+| Response `tasks[].result[].{login, timezone, rates, money: {total, balance, limits: {day, minute}, statistics: {day, minute}}, price}` (USD) | Verified 2026-10-17 (field table; example rendered by script, not readable) | same page |
+| HTTP errors 401 Unauthorized, 402 Payment Required, 404, 500; otherwise HTTP 200 with `status_code`/`status_message` (20000 ok, 40100 unauthorized, 40200 payment required, 40202 per-minute rate limit) | Verified 2026-10-17 | https://docs.dataforseo.com/v3/appendix/errors/ |
+| Call is free: "Your account will not be charged for using this API" | Verified 2026-10-17 | user_data page |
+| Fixtures `dataforseo_200.json`, `dataforseo_200_40100.json` | Built from the documented field table and the documented 40100 message (no readable vendor example) | module doc says so |
+
+Not yet verified: Live shape of `money.limits` / `money.statistics` (table says nested per-function; parser reads plain numbers only). TODO(verify) in module.
+
+## Majestic
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET https://api.majestic.com/api/json?cmd=GetSubscriptionInfo&app_api_key=<key>` | Verified 2026-10-17 (live host from the reference guide; the command page's samples use the `developer.majestic.com` sandbox) | https://developer-support.majestic.com/api/commands/get-subscription-info.shtml ; https://developer-support.majestic.com/api/ |
+| Response: `Code`, `ErrorMessage`, `FullError`, `TotalAnalysisResUnits`, `TotalRetrievalResUnits`, `TotalIndexItemInfoResUnits`, `TotalDetailedReportsPerPeriodRemaining`, `SubscriptionIsActive`, `DataTables.Subscriptions.Data[].{Starts, Expires, ...}` plus server/index/plan identifiers | Verified 2026-10-17 | command page |
+| Errors: HTTP 200 with `Code` != "OK" and `ErrorMessage` | Verified 2026-10-17 (no specific codes listed) | command page ("Returned values") |
+| Call is free: "this command uses no resources" | Verified 2026-10-17 | command page |
+| Fixture `majestic_200.json` | Verbatim copy of the "JSON response" example | command page |
+
+Not yet verified: The exact `Code` for an invalid key (app: code or message mentioning "key"/"auth" = Unauthorized). Choice of retrieval units as the headline is the app's.
+
+## Keywords Everywhere
+
+| Fact | State | Source |
+| --- | --- | --- |
+| Endpoint `GET {{v1.server}}/account/credits`, `Authorization: Bearer <key>`, `Accept: application/json` | Verified 2026-10-17 (host template unresolved on the page; app uses `https://api.keywordseverywhere.com/v1`) | https://api.keywordseverywhere.com/docs/miscellaneous/get_credits.md |
+| Response: bare JSON array with the credit balance as its only element, sample `[95597755]` | Verified 2026-10-17 | same page |
+| Statuses: 200 success, 401 "API key is missing or is invalid" (no body shown) | Verified 2026-10-17 | same page |
+| Cost of the call | Not stated | same page |
+| Fixture `keywordseverywhere_200.json` | Verbatim copy of the Sample Success Response | same page |
+
+Not yet verified: The `{{v1.server}}` host (assumed `https://api.keywordseverywhere.com/v1`). Whether the call is free.
+
 ## Install scripts
 
 | Fact | State | Source |
@@ -158,3 +594,4 @@ All pages below were read on 2026-10-16. Crate versions and feature flags were r
 | 2026-10-16 | Release rehearsal (`release.yml`, manual run): build all targets, draft release, `SHA256SUMS.txt`, `install.sh --version` and `install.ps1 -Version` against the draft | Linux and macOS pass. Windows: see the latest run of the release workflow. |
 | 2026-10-17 | Public download path: `curl -fsSL .../installers/install.sh \| sh` with no GitHub token, after v0.1.0 was published | Pass on Ubuntu 24.04. `releases/latest` resolves to v0.1.0, the `.deb` is fetched anonymously, checked against `SHA256SUMS.txt` and installed; `install.sh --uninstall` removes it again. |
 | 2026-10-17 | Firecrawl and SerpApi polled from the macOS build with real keys | Both cards fill in. The Firecrawl credit count does not move across polls, so the usage call is free on the hosted service too. |
+| 2026-10-17 | 1.0.0: 35 providers added from their vendors' documentation, each with fixtures from the documented examples (or the smallest body matching the documented schema where no example is published, marked as such), 306 tests across the workspace, clippy clean | Pass locally and in GitHub Actions. Live keys have confirmed Firecrawl and SerpApi only; the rest are verified against documentation. |

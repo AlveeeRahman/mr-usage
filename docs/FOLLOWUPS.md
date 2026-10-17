@@ -4,7 +4,7 @@ Recorded here instead of implemented. Anything that adds persistence or a networ
 
 ## Needs a live account
 
-1. Live verification. Every provider is verified against vendor documentation. Firecrawl and SerpApi have also been run with real keys (2026-10-17, recorded in `docs/SOURCES.md`). Do the same for the other seven and record the date and the fields seen.
+1. Live verification. Every provider is verified against vendor documentation, and each 1.0.0 provider's section in `docs/SOURCES.md` lists what its docs leave unverified (Brave's headers on a rejected request, Semrush over https, the Keywords Everywhere host, DataForSEO's limits table, the exact bad-key codes of Majestic and Serpstat). Firecrawl and SerpApi have been run with real keys (2026-10-17). Do the same for the rest and record the date and the fields seen.
 2. Cost of the usage call. Firecrawl's is confirmed free on the hosted service (credits unchanged across polls on a live account). SerpApi, Context7 and Hunter document their call as free. Elicit, Tavily, OpenRouter, Apify and Runway do not say, so poll twice with no other usage and compare.
 
 ## Release and distribution
