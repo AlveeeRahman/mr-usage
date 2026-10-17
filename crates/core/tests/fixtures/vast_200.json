@@ -1,0 +1,8 @@
+{
+  "id": 123,
+  "key_id": 123,
+  "email": "<string>",
+  "balance": 123,
+  "ssh_key": "<string>",
+  "sid": "<string>"
+}

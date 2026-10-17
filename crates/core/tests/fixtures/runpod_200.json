@@ -1,0 +1,16 @@
+{
+  "data": {
+    "myself": {
+      "id": "abc123",
+      "authId": "abc123",
+      "email": "abc123",
+      "currentSpendPerHr": 987.65,
+      "spendLimit": 123,
+      "stripeSavedPaymentLast4": "abc123",
+      "minBalance": 987.65,
+      "clientBalance": 987.65,
+      "hostBalance": 123.45,
+      "stripeAccountId": "abc123"
+    }
+  }
+}

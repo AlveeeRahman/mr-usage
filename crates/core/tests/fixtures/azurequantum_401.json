@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": "Unauthorized",
+    "message": "The request is not authorized."
+  }
+}
