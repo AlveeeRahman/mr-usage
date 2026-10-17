@@ -7,11 +7,7 @@
 [![Tauri 2](https://img.shields.io/badge/Tauri-2-24C8D8.svg)](https://v2.tauri.app/)
 [![macOS, Windows, Linux](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg)](#install)
 
-**Documentation**: [alveeerahman.github.io/mr-usage](https://alveeerahman.github.io/mr-usage/) ·
-by the author of [LLM Dogfight](https://alveeerahman.github.io/llm-dogfight/),
-[Skill Vision](https://alveeerahman.github.io/skill-vision/),
-[Agent Oracle](https://alveeerahman.github.io/agent-oracle/) and
-[Research Hound](https://alveeerahman.github.io/research-hound/).
+**Documentation**: [alveeerahman.github.io/mr-usage](https://alveeerahman.github.io/mr-usage/)
 
 **mr-usage** is one window that shows how much of each paid API you have left: Firecrawl,
 SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway. Paste a key once.

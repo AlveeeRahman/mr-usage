@@ -23,7 +23,7 @@ crates/core/       providers, keystore, redaction, HTTP, poller, midnight wipe, 
 src-tauri/         the Tauri shell: command line, commands, capabilities, CSP, window, signal handling
 frontend/          the window: index.html, TypeScript with no framework, the Vite and TypeScript configs
 installers/        install.sh for macOS and Linux, install.ps1 for Windows. Each is also the uninstaller
-docs/              threat model, sources, follow-ups, the GitHub Pages site
+docs/              threat model, sources, follow-ups, the GitHub Pages site (one page per provider is generated)
 .github/           workflows, the installer smoke tests, the end-to-end test, the leak test, build helpers
 ```
 
@@ -78,6 +78,8 @@ git tag v0.2.0 && git push origin v0.2.0
 ```
 
 The release workflow builds macOS (Apple silicon and Intel), Windows and Linux, uploads everything to a draft release, appends `SHA256SUMS.txt`, and then installs that draft on a fresh runner of each OS through `installers/install.sh --version v0.2.0` and `installers/install.ps1 -Version v0.2.0`, and uninstalls it again. Review the draft on GitHub and publish it. The install scripts fetch the latest published release, so a draft is invisible to users until you publish.
+
+The tag can also be given to the workflow by hand (Actions, release, Run workflow, fill in `tag`), for a machine that cannot push tags. The draft is the same, and GitHub creates the git tag when you publish it.
 
 ### Delivery rehearsal
 

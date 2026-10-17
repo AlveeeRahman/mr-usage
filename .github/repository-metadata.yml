@@ -19,7 +19,10 @@ sitemap_url: https://alveeerahman.github.io/mr-usage/sitemap.xml
 primary_keyword: "desktop API credit monitor"
 
 title: "Mr. Usage: a desktop API credit monitor"
-description: "See how many API credits you have left at Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway, in one desktop app. Keys stay in your OS keychain. No server, no telemetry."
+description: "A desktop API credit monitor: check the remaining credits and balance of your Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway keys in one window. Keys stay in your OS keychain. No server, no telemetry."
+
+# GitHub's About box takes at most 350 characters; this is the same text, shortened.
+about: "Desktop API credit monitor: see the remaining credits and balance of your Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway keys in one window. Keys stay in your OS keychain. No server, no telemetry."
 
 version: "0.1.0"
 license_spdx: MIT OR Apache-2.0
@@ -108,6 +111,15 @@ suite:
   - name: Research Hound
     url: https://alveeerahman.github.io/research-hound/
 
+# The Pages site is published by .github/workflows/pages.yml from docs/ on every
+# push to main; its first run also enables Pages for the repository. Besides the
+# index, .github/scripts/render-provider-pages.py writes one page per provider
+# under docs/providers/ and the sitemap, so searches such as "check my
+# OpenRouter balance" have a page that answers them with the exact endpoint.
+pages:
+  workflow: .github/workflows/pages.yml
+  provider_pages: .github/scripts/render-provider-pages.py
+
 # The files that repeat the facts above. Keep them in step by hand.
 appears_in:
   - README.md (opening lines and the provider table)
@@ -115,5 +127,6 @@ appears_in:
   - src-tauri/Cargo.toml (description, homepage, keywords, categories)
   - package.json (description, homepage, keywords)
   - docs/index.html
-  - docs/sitemap.xml
+  - docs/providers/*.html (generated; edit the script)
+  - docs/sitemap.xml (generated)
   - github.com repository description, homepage and topics

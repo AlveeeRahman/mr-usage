@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mr. Usage: a desktop API credit monitor</title>
-<meta name="description" content="See how many API credits you have left at Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway, in one desktop app. Keys stay in your OS keychain. No server, no telemetry.">
+<meta name="description" content="A desktop API credit monitor: check the remaining credits and balance of your Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway keys in one window. Keys stay in your OS keychain. No server, no telemetry.">
 <link rel="canonical" href="https://alveeerahman.github.io/mr-usage/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Mr. Usage">
 <meta property="og:title" content="Mr. Usage: a desktop API credit monitor">
-<meta property="og:description" content="See how many API credits you have left at Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway, in one desktop app. Keys stay in your OS keychain. No server, no telemetry.">
+<meta property="og:description" content="A desktop API credit monitor: check the remaining credits and balance of your Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway keys in one window. Keys stay in your OS keychain. No server, no telemetry.">
 <meta property="og:url" content="https://alveeerahman.github.io/mr-usage/">
 <meta property="og:image" content="https://alveeerahman.github.io/mr-usage/assets/social-preview.png">
 <meta property="og:image:width" content="1280">
@@ -21,7 +21,7 @@
   "@context": "https://schema.org",
   "@type": "SoftwareSourceCode",
   "name": "Mr. Usage",
-  "description": "See how many API credits you have left at Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway, in one desktop app. Keys stay in your OS keychain. No server, no telemetry.",
+  "description": "A desktop API credit monitor: check the remaining credits and balance of your Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway keys in one window. Keys stay in your OS keychain. No server, no telemetry.",
   "url": "https://alveeerahman.github.io/mr-usage/",
   "codeRepository": "https://github.com/AlveeeRahman/mr-usage",
   "programmingLanguage": ["Rust", "TypeScript"],
@@ -31,13 +31,92 @@
   "keywords": "API usage monitor, API credits, Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter, Runway, Tauri, OS keychain, desktop app",
   "license": "https://github.com/AlveeeRahman/mr-usage/blob/HEAD/LICENSE-MIT",
   "version": "0.1.0",
-  "dateModified": "2026-10-16",
+  "dateModified": "2026-10-17",
   "downloadUrl": "https://github.com/AlveeeRahman/mr-usage/releases/latest",
   "author": {
     "@type": "Person",
     "name": "Alvee Rahman",
     "url": "https://github.com/AlveeeRahman"
   }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Mr. Usage",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "macOS, Windows, Linux",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "url": "https://alveeerahman.github.io/mr-usage/",
+  "downloadUrl": "https://github.com/AlveeeRahman/mr-usage/releases/latest",
+  "screenshot": "https://alveeerahman.github.io/mr-usage/assets/screenshot-dark.png",
+  "license": "https://github.com/AlveeeRahman/mr-usage/blob/HEAD/LICENSE-MIT",
+  "author": {
+    "@type": "Person",
+    "name": "Alvee Rahman",
+    "url": "https://github.com/AlveeeRahman"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I check my API credits?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Most vendors publish a usage endpoint that returns your remaining credits when called with your own key. Mr. Usage calls that endpoint for each provider you add, every 5 minutes by default, and shows the answer on a card. The endpoint for each vendor is listed on its page below."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I check my OpenRouter balance?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Add your OpenRouter key to Mr. Usage. It reads the key's own record and shows the dollars left on its credit limit, the workspace budget where the key has no limit, and this month's spend."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does checking usage cost credits?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "SerpApi, Context7 and Hunter document their usage calls as free. Firecrawl's open-source server shows its call bills nothing. Tavily lists only search, extract, map, crawl and research as billable. Elicit, OpenRouter, Apify and Runway do not say, and the card for each says so."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where are my API keys stored?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "In your operating system's credential store under the service name mr-usage: Keychain on macOS, Credential Manager on Windows, the Secret Service on Linux. The app reads a key at the moment it calls the vendor and drops it afterwards. It never writes a key to a file of its own and never sends one back to the window."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Mr. Usage free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. It is open source under MIT or Apache-2.0, has no account and no paid tier, and talks to nothing but the usage endpoint of each vendor you gave it a key for."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which operating systems does it run on?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "macOS (Apple silicon and Intel), Windows, and Linux as a .deb, .rpm or AppImage. One install command per platform is on this page."
+      }
+    }
+  ]
 }
 </script>
 <style>
@@ -50,6 +129,7 @@
   main { max-width: 46rem; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
   h1 { font-size: 2rem; line-height:1.2; margin: 0 0 .5rem; }
   h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
+  h3 { font-size: 1.05rem; margin: 1.4rem 0 .3rem; }
   p { margin: .7rem 0; }
   .sub { color: var(--sub); font-size: 1.05rem; }
   a { color: var(--accent); }
@@ -89,6 +169,7 @@
   </div>
 
   <h2>What it does</h2>
+  <p>Each provider has its own page with the exact endpoint the app reads and whether the vendor says the call is free: <a href="providers/firecrawl.html">Firecrawl</a>, <a href="providers/serpapi.html">SerpApi</a>, <a href="providers/elicit.html">Elicit</a>, <a href="providers/context7.html">Context7</a>, <a href="providers/tavily.html">Tavily</a>, <a href="providers/openrouter.html">OpenRouter</a>, <a href="providers/apify.html">Apify</a>, <a href="providers/hunter.html">Hunter</a>, <a href="providers/runway.html">Runway</a>.</p>
   <ul>
     <li>Polls each vendor's documented usage endpoint and shows remaining credits out of your plan, the renewal or period-end date, and a line of today's readings.</li>
     <li>Marks a provider <em>Low</em> under 20% and <em>Nearly out</em> under 5%, with a word next to the colour so the state never depends on colour alone.</li>
@@ -97,18 +178,18 @@
 
   <table>
     <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td>Firecrawl</td><td>Credits left out of the plan, and the end of the billing period</td></tr>
-    <tr><td>SerpApi</td><td>Searches left this month, and the renewal date</td></tr>
-    <tr><td>Elicit</td><td>Percentage of the plan left (needs a Pro plan or above)</td></tr>
-    <tr><td>Context7</td><td>Requests left this month, and extra-request cost on paid plans</td></tr>
-    <tr><td>Tavily</td><td>Credits left out of the plan, plus this key's own usage</td></tr>
-    <tr><td>OpenRouter</td><td>Dollars left on the key's credit limit</td></tr>
-    <tr><td>Apify</td><td>Dollars left of this month's spending limit</td></tr>
-    <tr><td>Hunter</td><td>Searches left, plus verifications and the credit pool</td></tr>
-    <tr><td>Runway</td><td>The organization's credit balance</td></tr>
+    <tr><td><a href="providers/firecrawl.html">Firecrawl</a></td><td>Credits left out of the plan, and the end of the billing period</td></tr>
+    <tr><td><a href="providers/serpapi.html">SerpApi</a></td><td>Searches left this month, and the renewal date</td></tr>
+    <tr><td><a href="providers/elicit.html">Elicit</a></td><td>Percentage of the plan left (needs a Pro plan or above)</td></tr>
+    <tr><td><a href="providers/context7.html">Context7</a></td><td>Requests left this month, and extra-request cost on paid plans</td></tr>
+    <tr><td><a href="providers/tavily.html">Tavily</a></td><td>Credits left out of the plan, plus this key's own usage</td></tr>
+    <tr><td><a href="providers/openrouter.html">OpenRouter</a></td><td>Dollars left on the key's credit limit</td></tr>
+    <tr><td><a href="providers/apify.html">Apify</a></td><td>Dollars left of this month's spending limit</td></tr>
+    <tr><td><a href="providers/hunter.html">Hunter</a></td><td>Searches left, plus verifications and the credit pool</td></tr>
+    <tr><td><a href="providers/runway.html">Runway</a></td><td>The organization's credit balance</td></tr>
   </table>
 
-  <h2>Install</h2>
+  <h2 id="install">Install</h2>
   <p>macOS or Linux, in a terminal:</p>
   <pre><code>curl -fsSL https://raw.githubusercontent.com/AlveeeRahman/mr-usage/main/installers/install.sh | sh</code></pre>
   <p>Windows, in PowerShell:</p>
@@ -118,6 +199,20 @@
   <h2>Where your keys live</h2>
   <p>macOS Keychain, Windows Credential Manager, or the Secret Service on Linux (GNOME Keyring, KWallet, KeePassXC), under the service name <code>mr-usage</code>. The app reads a key at the moment it calls the vendor, wraps it in a zeroizing type, and drops it. There is no server, no account, no analytics and no update check. The only network traffic is the usage call to each vendor you added a key for, over TLS 1.2 or newer to a fixed host list.</p>
   <p>The full security design is in the <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/THREAT_MODEL.md">threat model</a> and every external fact is sourced in <a href="https://github.com/AlveeeRahman/mr-usage/blob/main/docs/SOURCES.md">SOURCES.md</a>.</p>
+
+  <h2 id="questions">Questions</h2>
+  <h3>How do I check my API credits?</h3>
+  <p>Most vendors publish a usage endpoint that returns your remaining credits when called with your own key. Mr. Usage calls that endpoint for each provider you add, every 5 minutes by default, and shows the answer on a card. The endpoint for each vendor is listed on its page below.</p>
+  <h3>How do I check my OpenRouter balance?</h3>
+  <p>Add your OpenRouter key to Mr. Usage. It reads the key's own record and shows the dollars left on its credit limit, the workspace budget where the key has no limit, and this month's spend.</p>
+  <h3>Does checking usage cost credits?</h3>
+  <p>SerpApi, Context7 and Hunter document their usage calls as free. Firecrawl's open-source server shows its call bills nothing. Tavily lists only search, extract, map, crawl and research as billable. Elicit, OpenRouter, Apify and Runway do not say, and the card for each says so.</p>
+  <h3>Where are my API keys stored?</h3>
+  <p>In your operating system's credential store under the service name mr-usage: Keychain on macOS, Credential Manager on Windows, the Secret Service on Linux. The app reads a key at the moment it calls the vendor and drops it afterwards. It never writes a key to a file of its own and never sends one back to the window.</p>
+  <h3>Is Mr. Usage free?</h3>
+  <p>Yes. It is open source under MIT or Apache-2.0, has no account and no paid tier, and talks to nothing but the usage endpoint of each vendor you gave it a key for.</p>
+  <h3>Which operating systems does it run on?</h3>
+  <p>macOS (Apple silicon and Intel), Windows, and Linux as a .deb, .rpm or AppImage. One install command per platform is on this page.</p>
 
   <h2>Uninstall</h2>
   <p>Run the same command with <code>--uninstall</code> (macOS, Linux) or <code>-Uninstall</code> (Windows). It removes the keys from your credential store, then the app, then its settings.</p>

@@ -1,32 +1,44 @@
 name: release
 
-# Two ways in:
+# Three ways in:
 #
 # 1. Push a tag such as v0.1.0. Installers for macOS (Apple silicon and Intel),
 #    Linux and Windows are built and attached, with SHA-256 sums, to a DRAFT
 #    release. Then `verify-install` installs that draft on a fresh runner of
 #    each OS through the user-facing scripts (`installers/install.sh --version`,
-#    `installers/install.ps1 -Version`) and uninstalls it again. Review the draft and
-#    publish it by hand; nothing is public until you do.
+#    `installers/install.ps1 -Version`) and uninstalls it again. Review the
+#    draft and publish it by hand; nothing is public until you do.
 #
-# 2. Run the workflow by hand (workflow_dispatch) from any branch. The same
-#    pipeline runs against a throwaway draft named v0.0.0-ci.<run number>,
-#    marked pre-release, and the last job deletes that draft. This is the
-#    delivery rehearsal: it proves the build, the checksum list, the download
-#    path and the install scripts end to end without publishing anything.
+# 2. Run the workflow by hand (workflow_dispatch) with a `tag` such as v0.1.0.
+#    Same pipeline, same draft, for when a tag cannot be pushed from where you
+#    are. GitHub creates the git tag at the moment you publish the draft, so
+#    it points at the commit the draft was built from.
+#
+# 3. Run the workflow by hand with the `tag` field empty. The pipeline runs
+#    against a throwaway draft named v0.0.0-ci.<run number>, marked
+#    pre-release, and the last job deletes that draft. This is the delivery
+#    rehearsal: it proves the build, the checksum list, the download path and
+#    the install scripts end to end without publishing anything.
 #
 # Workflow shape follows https://v2.tauri.app/distribute/pipelines/github/.
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build, such as v0.1.0. Leave empty for a rehearsal that deletes its draft."
+        required: false
+        default: ""
 
 permissions:
   contents: read
 
 env:
-  # A pushed tag is the release; a manual run gets a disposable draft.
-  TAG: ${{ github.event_name == 'push' && github.ref_name || format('v0.0.0-ci.{0}', github.run_number) }}
+  # A pushed tag or a dispatched `tag` is the release; a manual run with no tag
+  # gets a disposable draft.
+  TAG: ${{ github.event_name == 'push' && github.ref_name || github.event.inputs.tag || format('v0.0.0-ci.{0}', github.run_number) }}
+  REHEARSAL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag == '' }}
 
 jobs:
   build:
@@ -50,6 +62,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Check the tag name
+        shell: bash
+        run: |
+          case "$TAG" in
+            v[0-9]*) echo "building $TAG" ;;
+            *) echo "::error::the tag must look like v0.1.0, got '$TAG'"; exit 1 ;;
+          esac
       - if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
@@ -72,7 +91,7 @@ jobs:
           releaseName: "Mr. Usage ${{ env.TAG }}"
           releaseBody: "Install with the one-line command in the README; it picks the right file and verifies it against SHA256SUMS.txt for you. Builds are not code-signed yet."
           releaseDraft: true
-          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
+          prerelease: ${{ env.REHEARSAL == 'true' }}
           uploadUpdaterJson: false
           args: ${{ matrix.args }}
 
@@ -142,9 +161,9 @@ jobs:
           if (Get-ChildItem -Path $env:LOCALAPPDATA -Filter mr-usage.exe -Recurse -Depth 2 -ErrorAction SilentlyContinue) { throw 'still installed' }
 
   # A rehearsal leaves nothing behind. (A draft has no git tag, so there is
-  # nothing else to remove.) A real tag's draft stays for review.
+  # nothing else to remove.) A real release's draft stays for review.
   cleanup-rehearsal:
-    if: always() && github.event_name == 'workflow_dispatch' && needs.build.result != 'skipped'
+    if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.tag == '' && needs.build.result != 'skipped'
     needs: [build, checksums, verify-install]
     runs-on: ubuntu-24.04
     permissions:

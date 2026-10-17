@@ -2,6 +2,42 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://alveeerahman.github.io/mr-usage/</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://alveeerahman.github.io/mr-usage/providers/firecrawl.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://alveeerahman.github.io/mr-usage/providers/serpapi.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://alveeerahman.github.io/mr-usage/providers/elicit.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://alveeerahman.github.io/mr-usage/providers/context7.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://alveeerahman.github.io/mr-usage/providers/tavily.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://alveeerahman.github.io/mr-usage/providers/openrouter.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://alveeerahman.github.io/mr-usage/providers/apify.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://alveeerahman.github.io/mr-usage/providers/hunter.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://alveeerahman.github.io/mr-usage/providers/runway.html</loc>
+    <lastmod>2026-10-17</lastmod>
   </url>
 </urlset>
