@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Check how many SerpApi searches you have left: Mr. Usage</title>
-<meta name="description" content="Mr. Usage reads SerpApi&#x27;s Account API with your key and shows the searches left this month, the renewal date and this hour&#x27;s usage against your hourly limit. Open source for macOS, Windows and Linux. Keys stay in your OS keychain.">
+<meta name="description" content="Mr. Usage reads SerpApi&#x27;s documented usage endpoint with your own key and keeps a card refreshed on its own. Main number: searches left this month, out of the plan&#x27;s monthly searches. Details: the renewal date, any extra credits, the total searches left including them, and this hour&#x27;s searches against the hourly cap. An account with no monthly plan shows its total searches left instead. Open source for macOS, Windows and Linux. Keys stay in your OS keychain.">
 <link rel="canonical" href="https://alveeerahman.github.io/mr-usage/providers/serpapi.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Mr. Usage">
 <meta property="og:title" content="Check how many SerpApi searches you have left: Mr. Usage">
-<meta property="og:description" content="Mr. Usage reads SerpApi&#x27;s Account API with your key and shows the searches left this month, the renewal date and this hour&#x27;s usage against your hourly limit. Open source for macOS, Windows and Linux. Keys stay in your OS keychain.">
+<meta property="og:description" content="Mr. Usage reads SerpApi&#x27;s documented usage endpoint with your own key and keeps a card refreshed on its own. Main number: searches left this month, out of the plan&#x27;s monthly searches. Details: the renewal date, any extra credits, the total searches left including them, and this hour&#x27;s searches against the hourly cap. An account with no monthly plan shows its total searches left instead. Open source for macOS, Windows and Linux. Keys stay in your OS keychain.">
 <meta property="og:url" content="https://alveeerahman.github.io/mr-usage/providers/serpapi.html">
 <meta property="og:image" content="https://alveeerahman.github.io/mr-usage/assets/social-preview.png">
 <meta property="og:image:width" content="1280">
@@ -115,7 +115,7 @@
 <main>
   <p class="crumbs"><a href="../">Mr. Usage</a> &rsaquo; SerpApi</p>
   <h1>Check how many SerpApi searches you have left</h1>
-  <p class="sub">Mr. Usage reads SerpApi&#x27;s Account API with your key and shows the searches left this month, the renewal date and this hour&#x27;s usage against your hourly limit.</p>
+  <p class="sub">Mr. Usage reads SerpApi&#x27;s documented usage endpoint with your own key and keeps a card refreshed on its own. Main number: searches left this month, out of the plan&#x27;s monthly searches. Details: the renewal date, any extra credits, the total searches left including them, and this hour&#x27;s searches against the hourly cap. An account with no monthly plan shows its total searches left instead.</p>
 
   <p>
     <a class="cta" href="../#install">Install Mr. Usage</a>
@@ -123,7 +123,7 @@
   </p>
 
   <h2>What the SerpApi card shows</h2>
-  <p>Searches left this month out of the plan, the renewal date, extra credits, and this hour&#x27;s searches against the hourly rate limit. A yellow "Low" badge appears under 20% left and a red "Nearly out" badge under 5%, with a line of today's readings underneath.</p>
+  <p>Main number: searches left this month, out of the plan&#x27;s monthly searches. Details: the renewal date, any extra credits, the total searches left including them, and this hour&#x27;s searches against the hourly cap. An account with no monthly plan shows its total searches left instead. A yellow "Low" badge appears under 20% left and a red "Nearly out" badge under 5%, with a line of today's readings underneath.</p>
   <p>The response echoes the key and the account email. The parser never reads those fields, and a test fails the build if a struct ever names them.</p>
 
   <h2>What Mr. Usage reads</h2>

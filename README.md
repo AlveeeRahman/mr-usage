@@ -83,94 +83,92 @@ flowchart LR
 
 1. Open Mr. Usage. The "Add provider" panel is open on first run.
 2. Pick a provider, paste its API key and press Save key. The panel shows the exact web address the app will call for that provider. The field clears as soon as the key is saved.
-3. A card appears and fills in within about 15 seconds: what is left, out of what, when the plan renews, and a line showing today's readings.
+3. A card appears and fills in within about 15 seconds: what is left, out of what, when the plan renews, and a small chart of today's readings.
 
 Repeat for each provider you use. A card gets a yellow "Low" badge under 20% left and a red "Nearly out" badge under 5%.
 
-**Search and scraping**
-
-**Search and scraping**
+Every card has the same layout. The big figure is the main number: what you have left, counting down from the plan limit when the vendor reports one. A few vendors report spend instead of a balance, and the main number is then what you have spent this period, against the cap if there is one. Press More on a card to open its details: the renewal date, spend this period, and any extra figures the vendor reports. The tables below give both for each provider.
 
 **Search and scraping**
 
 | Provider | What the card shows |
 | --- | --- |
-| Firecrawl | Credits left out of the plan, and the end of the billing period |
-| SerpApi | Searches left this month, and the renewal date |
-| Tavily | Credits left out of the plan, plus this key's own usage |
-| Apify | Dollars left of this month's spending limit |
-| Brave Search | Searches left this month of the plan's monthly quota, and when the month resets |
-| SearchApi.io | Search credits left this month of the monthly allowance, the subscription period end, searches used this month and this hour |
-| ScrapingBee | API credits left of the plan's credits, the renewal date, and current concurrency |
-| Bright Data | Account funds in dollars, this period's pending costs, and any credit or prepayment |
-| Linkup | The prepaid credit balance in dollars |
-| Crawlbase | Crawling API credits left this month on a subscription, or this month's amount due in dollars on pay as you go, with successful and failed request counts |
+| Firecrawl | Main number: credits left, out of the plan's credits. Details: the start and end of the billing period, and the overage when you have gone past zero. |
+| SerpApi | Main number: searches left this month, out of the plan's monthly searches. Details: the renewal date, any extra credits, the total searches left including them, and this hour's searches against the hourly cap. An account with no monthly plan shows its total searches left instead. |
+| Tavily | Main number: plan credits left, out of the plan's credits. Details: the plan name, how many credits this key alone has used, and pay-as-you-go usage against its limit when that is switched on. |
+| Apify | Main number: dollars left of this month's spending limit. Details: compute units and proxy SERPs used this month, each against its own limit. |
+| Brave Search | Main number: searches left this month, out of the plan's monthly quota. Details: when the month resets and the per-second rate limit. A pay-as-you-go plan has no monthly quota, and the card says so. |
+| SearchApi.io | Main number: searches left this month, out of the monthly allowance. Details: when the subscription period ends, searches used this month, and searches this hour against the hourly limit. |
+| ScrapingBee | Main number: API credits left, out of the plan's credits. Details: the renewal date, and how many requests are running right now against the concurrency limit. |
+| Bright Data | Main number: available funds in dollars. Details: usage costs pending for the next invoice (shown as spend), plus any credit and any prepayment on the account. |
+| Linkup | Main number: prepaid credit balance in dollars. Linkup reports no limit and no renewal date, so there are no details. |
+| Crawlbase | Main number: on a subscription, Crawling API credits left this month; on pay as you go, this month's bill in dollars instead. Details: successful and failed requests this month, and on a subscription the amount due this month. |
 
 **Research and data**
 
 | Provider | What the card shows |
 | --- | --- |
-| Elicit | Percentage of the plan left |
-| Context7 | Requests left this month, and extra-request cost on paid plans |
-| Hunter | Searches left, plus verifications and the credit pool where the plan has one |
+| Elicit | Main number: the percentage of the plan still unused, out of 100. Details: when the period ends, whether Elicit still allows usage, and extra-usage spend in dollars against its cap. |
+| Context7 | Main number: requests left this month, out of the plan's included requests. Details: the plan name, when usage resets, requests made this month, and on paid plans the extra requests and their cost against the spending limit. |
+| Hunter | Main number: searches left, out of the plan's searches. Details: the plan name, verifications left, and on plans with one shared credit pool the pool itself (the search count is then an estimate drawn from that pool). |
 
 **LLM inference**
 
 | Provider | What the card shows |
 | --- | --- |
-| OpenRouter | Dollars left on the key's credit limit (a key without a limit shows the workspace budget, or else the month's spend) |
-| DeepSeek | The account's remaining balance in the currency DeepSeek bills you in (yuan or dollars), with the granted and topped-up parts as extras and a flag when inference is blocked |
-| Moonshot (Kimi) | The spendable balance (cash plus vouchers) in dollars, with voucher and cash balances as extras; a negative cash balance shows as debt |
-| Vercel AI Gateway | The team's remaining AI Gateway credit in dollars, plus "Used so far" (lifetime spend, not this month's) |
-| Novita AI | The spendable balance in dollars; when the account has a credit line it is shown as the limit, with the top-up balance and any amount owed as extras |
-| SiliconFlow | The total balance in dollars, with the granted and topped-up parts as extras |
-| xAI | The team's prepaid credit balance in dollars (postpaid usage and spending limits are not shown) |
+| OpenRouter | Main number: dollars left on this key's credit limit. A key with no limit shows the workspace budget instead, and with no budget either the card shows this month's spend only. Details: when the limit resets, the budget and its reset interval, free-model requests today, and whether the account is on the free tier. |
+| DeepSeek | Main number: total balance, in the currency DeepSeek bills you in (yuan or dollars). Details: how much of it was granted by DeepSeek and how much you topped up, and a warning when the balance is too low to run inference. |
+| Moonshot (Kimi) | Main number: spendable balance in dollars, which is cash plus vouchers. Details: the voucher balance and the cash balance separately, and a warning when inference is blocked. A negative cash balance means you owe Moonshot money. |
+| Vercel AI Gateway | Main number: the team's remaining AI Gateway credit in dollars. Details: everything spent since the account opened, labelled Used so far. Vercel does not report a monthly figure. |
+| Novita AI | Main number: spendable balance in dollars. When the account has a credit line, the main number counts down from that line. Details: the topped-up balance and any amount owed. |
+| SiliconFlow | Main number: total balance in dollars. Details: how much of it was granted by SiliconFlow and how much you topped up. |
+| xAI | Main number: the team's prepaid credit balance in dollars. Details: any amount owed. Postpaid usage and spending limits are not shown. The card needs your team id as a setting. |
 
 **Speech and media**
 
 | Provider | What the card shows |
 | --- | --- |
-| Runway | The organization's credit balance |
-| fal.ai | The account's remaining credit balance in dollars |
-| ElevenLabs | Characters left out of the plan's character limit for the current billing period, with the next reset date, the plan tier, and any usage-based overage spend |
-| Deepgram | The project's outstanding prepaid balance in US dollars, adding up every balance whose units are USD |
-| D-ID | Credits remaining out of the total across the account's credit pools, with the renewal date set to when the first pool that still has credits expires |
-| HeyGen | Whichever the account uses: the prepaid wallet balance (dollars or credits), the subscription's premium credits with their reset date, or the metered spend against its cap |
-| Stability AI | The account's credit balance rounded down, with the exact fractional balance as an extra |
-| Black Forest Labs | The account's credit balance rounded down, with the exact fractional balance as an extra when it is not whole |
-| Luma | The Dream Machine credit balance in US dollars (the API reports cents) |
-| Recraft | The account's remaining Recraft credits |
+| Runway | Main number: the organization's credit balance. Runway has no plan limit to count down from. Details: the monthly spend cap when one is set. |
+| fal.ai | Main number: remaining credit balance in dollars. Details: a warning when the balance is below zero. |
+| ElevenLabs | Main number: characters left, out of the plan's character limit for this billing period. Details: when the count resets, the plan tier, the subscription status, and any usage-based overage spend. |
+| Deepgram | Main number: the project's prepaid balance in US dollars, adding up every balance on the project that is in dollars. Details: how many balances were added, and how many were skipped because they are not in dollars. The card needs your project id as a setting. |
+| D-ID | Main number: credits left, out of the total across all of the account's credit pools. The renewal date is when the first pool that still has credits expires. Details: how many pools the account has. |
+| HeyGen | Depends on how the account is billed. Prepaid wallet: the balance in dollars or credits, with auto-reload on or off. Subscription: premium credits left and when they reset, with the plan name and add-on credits. Usage-based: dollars spent against the spending cap. |
+| Stability AI | Main number: credit balance, rounded down to a whole number. Details: the exact balance with its fraction. |
+| Black Forest Labs | Main number: credit balance, rounded down to a whole number. Details: the exact balance with its fraction, when it is not a whole number. |
+| Luma | Main number: Dream Machine credit balance in US dollars. Luma reports it in cents and the card converts it. |
+| Recraft | Main number: Recraft credits left. Recraft reports no limit or renewal date. |
 
 **Compute**
 
 | Provider | What the card shows |
 | --- | --- |
-| RunPod | The prepaid RunPod balance in dollars, the current hourly burn rate, and the account spend limit when one is set |
-| Vast.ai | The account's prepaid balance in dollars; a negative balance shows as zero left with an "Owed" line |
-| DigitalOcean | Account credit left (when the balance is negative) and this month's usage in dollars, with any amount owed and the month-to-date balance as lines |
+| RunPod | Main number: prepaid balance in dollars. Details: the current spend per hour, the account spend limit when one is set, and the amount owed when the balance is negative. |
+| Vast.ai | Main number: prepaid balance in dollars. A negative balance shows as zero left, with the amount owed in the details. |
+| DigitalOcean | Main number: account credit in dollars, when the account has credit. Spend this period is this month's usage. Details: any amount owed, the month-to-date balance, and the time DigitalOcean produced these figures. |
 
 **Quantum**
 
 | Provider | What the card shows |
 | --- | --- |
-| Azure Quantum | The largest free job-hours quota of the workspace in seconds, what is used and held against it, when it resets, and the other quota rows (FPGA hours, concurrent jobs) as lines |
-| IBM Quantum | Nothing yet; the card explains that IBM Quantum needs an IAM token exchange on a second host |
+| Azure Quantum | Main number: free job hours left in the workspace's largest hours quota, shown as hours and minutes, out of that quota. Details: which quota is being counted, hours on hold for queued jobs, when the month resets, and every other quota row (for example FPGA hours or concurrent jobs) as used against its limit. The card needs your workspace address as a setting. |
+| IBM Quantum | No reading yet. The card explains that IBM Quantum needs a token exchange with a second host, which the app does not do. |
 
 **SEO and marketing**
 
 | Provider | What the card shows |
 | --- | --- |
-| Ahrefs | API units left of the key's monthly limit, or of the workspace pool when the key has no limit of its own, and the day the count resets |
-| Moz | Rows left of the month's Data API quota, and when the period resets |
-| Semrush | Standard API units left on the balance; Semrush reports no limit or renewal date |
-| SE Ranking | Data API units left of the subscription total, with the subscription expiry as the renewal date |
-| Serpstat | API credits (result lines) left of the plan's maximum; Serpstat reports no renewal date |
-| Mangools | SERP lookups left of the pool's limit and when it resets, with the other pools listed below |
-| DataForSEO | Account balance in dollars, with total deposits, today's spend and the daily and per-minute spending limits below |
-| Majestic | Retrieval units left on the balance, with analysis and index-item units below; the earliest subscription expiry is the renewal date |
-| Keywords Everywhere | Prepaid credits left on the balance; the vendor reports no limit or renewal date |
+| Ahrefs | Main number: API units left, out of this key's monthly limit. A key with no limit of its own counts against the workspace pool instead. Details: the reset date, workspace usage, units used by this key, and the key's expiry date. |
+| Moz | Main number: Data API rows left this month, out of the rows allotted. Details: when the period started and when it resets, and whether overage is enabled. |
+| Semrush | Main number: Standard API units left. Semrush reports no limit and no renewal date, so there is no meter and no details. |
+| SE Ranking | Main number: Data API units left, out of the subscription total. The renewal date is the subscription's expiry. Details: the subscription status and its start date. |
+| Serpstat | Main number: API credits left, out of the plan's maximum. Serpstat counts one credit per result line, so a 100-row report costs 100 credits. Details: credits used this period, and extension credits left. Serpstat reports no renewal date. |
+| Mangools | Mangools gives every tool its own allowance, called a pool: SERP lookups, related keywords, trends, backlink rows, and so on. Main number: SERP lookups left, out of that pool's limit, with the pool's reset time as the renewal date. Details: each other named pool as left out of limit, and a count of any pools the Mangools docs do not name. |
+| DataForSEO | Main number: account balance in dollars. Details: how much you have deposited in total, how much you spent today, and the daily and per-minute spending limits. Paste your API login and password as one key in the form login:password. |
+| Majestic | Main number: retrieval units left, the units spent whenever backlinks are returned. The renewal date is the earliest subscription expiry. Details: analysis units, index item units, detailed reports left, how many subscriptions the account has, and whether one is active. |
+| Keywords Everywhere | Main number: prepaid credits left. Credits do not reset, so there is no limit and no renewal date. |
 
-Each card is refreshed every 5 minutes, and Settings lets you pick anything from 1 minute to 24 hours. Changing the interval takes effect from the last poll, so dropping from an hour to a minute does not wait an hour. Every one of these calls reads your account's own usage page. SerpApi, Context7 and Hunter document the call as free, Firecrawl's open-source server shows it bills nothing (and a live account confirmed it), and none of the other vendors list it as a billable call.
+Each card is refreshed every 5 minutes. Settings lets you pick anything from 1 minute to 24 hours, and the new interval is measured from the last refresh, so dropping from an hour to a minute refreshes within a minute. Every one of these calls reads your account's own usage page and costs nothing: SerpApi, Context7 and Hunter document the call as free, Firecrawl's open-source server shows it bills nothing (a live account confirmed it), and none of the other vendors list it as a billable call.
 
 ## What it keeps, and where
 

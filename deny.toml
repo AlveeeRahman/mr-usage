@@ -23,6 +23,14 @@ ignore = [
   { id = "RUSTSEC-2024-0370", reason = "build-time only, via Tauri's GTK3 stack; no upgrade available" },
   # glib 0.18 `VariantStrIter` unsoundness, same GTK3 stack. Mr. Usage never calls GVariant APIs.
   { id = "RUSTSEC-2024-0429", reason = "glib 0.18 via Tauri's GTK3 stack; GVariant APIs unused; no upgrade available" },
+  # zbus 6.0.0 (2026-10-16) folded zbus_names, zvariant and zvariant_derive into itself and the
+  # standalone crates were marked unmaintained. They reach Mr. Usage only through keyring's Linux
+  # Secret Service store (keyring 4.2.0 -> zbus-secret-service-keyring-store 1.0.1 ->
+  # secret-service 5.2.0 -> zbus 5), and no release of those crates uses zbus 6 yet. Unmaintained,
+  # not vulnerable. Remove when secret-service moves to zbus 6; tracked in docs/FOLLOWUPS.md.
+  { id = "RUSTSEC-2026-0370", reason = "zvariant via secret-service 5 / zbus 5; no release on zbus 6 yet" },
+  { id = "RUSTSEC-2026-0371", reason = "zbus_names via secret-service 5 / zbus 5; no release on zbus 6 yet" },
+  { id = "RUSTSEC-2026-0372", reason = "zvariant_derive via secret-service 5 / zbus 5; no release on zbus 6 yet" },
 ]
 
 [licenses]
