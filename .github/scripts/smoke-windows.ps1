@@ -69,8 +69,10 @@ foreach ($how in 'close', 'taskkill', 'close') {
     if ($proc.MainWindowHandle -ne 0) { $ok = $true; break }
   }
   if (-not $ok) { Fail "[$how] window did not appear (exited: $($proc.HasExited))"; if (-not $proc.HasExited) { $proc.Kill() }; continue }
-  Start-Sleep 2
-  if ((Get-Helpers).Count -ge 1) { Pass "[$how] started: window up, WebView2 helpers running" } else { Fail "[$how] no WebView2 helpers" }
+  # The first start after an install creates the WebView2 user-data folder,
+  # which can take several seconds before the helper processes appear.
+  for ($i = 0; $i -lt 30 -and (Get-Helpers).Count -lt 1; $i++) { Start-Sleep -Milliseconds 500 }
+  if ((Get-Helpers).Count -ge 1) { Pass "[$how] started: window up, WebView2 helpers running" } else { Fail "[$how] no WebView2 helpers 15 s after the window appeared" }
 
   $sw = [Diagnostics.Stopwatch]::StartNew()
   if ($how -eq 'close') { [void]$proc.CloseMainWindow() } else { & taskkill.exe /PID $proc.Id | Out-Null }
