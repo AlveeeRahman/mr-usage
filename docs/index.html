@@ -205,195 +205,78 @@
   <section id="providers">
     <h2>Providers</h2>
     <p class="narrow">Each provider has its own page with the exact endpoint the app reads and whether the vendor says the call is free.</p>
-    <h3>Search and scraping</h3>
-    <h3>Search and scraping</h3>
+    <p class="narrow">Every card has the same layout. The big figure is the main number: what you have left, counting down from the plan limit when the vendor reports one. A few vendors report spend instead of a balance, and the main number is then what you have spent this period, against the cap if there is one. Press More on a card to open its details: the renewal date, spend this period, and any extra figures the vendor reports. The tables below give both for each provider.</p>
     <h3>Search and scraping</h3>
     <table>
     <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/firecrawl.html">Firecrawl</a></td><td>Credits left out of the plan, and the end of the billing period</td></tr>
-    <tr><td><a href="providers/serpapi.html">SerpApi</a></td><td>Searches left this month, and the renewal date</td></tr>
-    <tr><td><a href="providers/tavily.html">Tavily</a></td><td>Credits left out of the plan, plus this key's own usage</td></tr>
-    <tr><td><a href="providers/apify.html">Apify</a></td><td>Dollars left of this month's spending limit</td></tr>
-    <tr><td><a href="providers/brave.html">Brave Search</a></td><td>Searches left this month of the plan's monthly quota, and when the month resets</td></tr>
-    <tr><td><a href="providers/searchapi.html">SearchApi.io</a></td><td>Search credits left this month of the monthly allowance, the subscription period end, searches used this month and this hour</td></tr>
-    <tr><td><a href="providers/scrapingbee.html">ScrapingBee</a></td><td>API credits left of the plan's credits, the renewal date, and current concurrency</td></tr>
-    <tr><td><a href="providers/brightdata.html">Bright Data</a></td><td>Account funds in dollars, this period's pending costs, and any credit or prepayment</td></tr>
-    <tr><td><a href="providers/linkup.html">Linkup</a></td><td>The prepaid credit balance in dollars</td></tr>
-    <tr><td><a href="providers/crawlbase.html">Crawlbase</a></td><td>Crawling API credits left this month on a subscription, or this month's amount due in dollars on pay as you go, with successful and failed request counts</td></tr>
+    <tr><td><a href="providers/firecrawl.html">Firecrawl</a></td><td>Main number: credits left, out of the plan&#x27;s credits. Details: the start and end of the billing period, and the overage when you have gone past zero.</td></tr>
+    <tr><td><a href="providers/serpapi.html">SerpApi</a></td><td>Main number: searches left this month, out of the plan&#x27;s monthly searches. Details: the renewal date, any extra credits, the total searches left including them, and this hour&#x27;s searches against the hourly cap. An account with no monthly plan shows its total searches left instead.</td></tr>
+    <tr><td><a href="providers/tavily.html">Tavily</a></td><td>Main number: plan credits left, out of the plan&#x27;s credits. Details: the plan name, how many credits this key alone has used, and pay-as-you-go usage against its limit when that is switched on.</td></tr>
+    <tr><td><a href="providers/apify.html">Apify</a></td><td>Main number: dollars left of this month&#x27;s spending limit. Details: compute units and proxy SERPs used this month, each against its own limit.</td></tr>
+    <tr><td><a href="providers/brave.html">Brave Search</a></td><td>Main number: searches left this month, out of the plan&#x27;s monthly quota. Details: when the month resets and the per-second rate limit. A pay-as-you-go plan has no monthly quota, and the card says so.</td></tr>
+    <tr><td><a href="providers/searchapi.html">SearchApi.io</a></td><td>Main number: searches left this month, out of the monthly allowance. Details: when the subscription period ends, searches used this month, and searches this hour against the hourly limit.</td></tr>
+    <tr><td><a href="providers/scrapingbee.html">ScrapingBee</a></td><td>Main number: API credits left, out of the plan&#x27;s credits. Details: the renewal date, and how many requests are running right now against the concurrency limit.</td></tr>
+    <tr><td><a href="providers/brightdata.html">Bright Data</a></td><td>Main number: available funds in dollars. Details: usage costs pending for the next invoice (shown as spend), plus any credit and any prepayment on the account.</td></tr>
+    <tr><td><a href="providers/linkup.html">Linkup</a></td><td>Main number: prepaid credit balance in dollars. Linkup reports no limit and no renewal date, so there are no details.</td></tr>
+    <tr><td><a href="providers/crawlbase.html">Crawlbase</a></td><td>Main number: on a subscription, Crawling API credits left this month; on pay as you go, this month&#x27;s bill in dollars instead. Details: successful and failed requests this month, and on a subscription the amount due this month.</td></tr>
     </table>
     <h3>Research and data</h3>
     <table>
     <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/elicit.html">Elicit</a></td><td>Percentage of the plan left</td></tr>
-    <tr><td><a href="providers/context7.html">Context7</a></td><td>Requests left this month, and extra-request cost on paid plans</td></tr>
-    <tr><td><a href="providers/hunter.html">Hunter</a></td><td>Searches left, plus verifications and the credit pool where the plan has one</td></tr>
+    <tr><td><a href="providers/elicit.html">Elicit</a></td><td>Main number: the percentage of the plan still unused, out of 100. Details: when the period ends, whether Elicit still allows usage, and extra-usage spend in dollars against its cap.</td></tr>
+    <tr><td><a href="providers/context7.html">Context7</a></td><td>Main number: requests left this month, out of the plan&#x27;s included requests. Details: the plan name, when usage resets, requests made this month, and on paid plans the extra requests and their cost against the spending limit.</td></tr>
+    <tr><td><a href="providers/hunter.html">Hunter</a></td><td>Main number: searches left, out of the plan&#x27;s searches. Details: the plan name, verifications left, and on plans with one shared credit pool the pool itself (the search count is then an estimate drawn from that pool).</td></tr>
     </table>
     <h3>LLM inference</h3>
     <table>
     <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/openrouter.html">OpenRouter</a></td><td>Dollars left on the key's credit limit (a key without a limit shows the workspace budget, or else the month's spend)</td></tr>
-    <tr><td><a href="providers/deepseek.html">DeepSeek</a></td><td>The account's remaining balance in the currency DeepSeek bills you in (yuan or dollars), with the granted and topped-up parts as extras and a flag when inference is blocked</td></tr>
-    <tr><td><a href="providers/moonshot.html">Moonshot (Kimi)</a></td><td>The spendable balance (cash plus vouchers) in dollars, with voucher and cash balances as extras; a negative cash balance shows as debt</td></tr>
-    <tr><td><a href="providers/vercelgateway.html">Vercel AI Gateway</a></td><td>The team's remaining AI Gateway credit in dollars, plus "Used so far" (lifetime spend, not this month's)</td></tr>
-    <tr><td><a href="providers/novita.html">Novita AI</a></td><td>The spendable balance in dollars; when the account has a credit line it is shown as the limit, with the top-up balance and any amount owed as extras</td></tr>
-    <tr><td><a href="providers/siliconflow.html">SiliconFlow</a></td><td>The total balance in dollars, with the granted and topped-up parts as extras</td></tr>
-    <tr><td><a href="providers/xai.html">xAI</a></td><td>The team's prepaid credit balance in dollars (postpaid usage and spending limits are not shown)</td></tr>
+    <tr><td><a href="providers/openrouter.html">OpenRouter</a></td><td>Main number: dollars left on this key&#x27;s credit limit. A key with no limit shows the workspace budget instead, and with no budget either the card shows this month&#x27;s spend only. Details: when the limit resets, the budget and its reset interval, free-model requests today, and whether the account is on the free tier.</td></tr>
+    <tr><td><a href="providers/deepseek.html">DeepSeek</a></td><td>Main number: total balance, in the currency DeepSeek bills you in (yuan or dollars). Details: how much of it was granted by DeepSeek and how much you topped up, and a warning when the balance is too low to run inference.</td></tr>
+    <tr><td><a href="providers/moonshot.html">Moonshot (Kimi)</a></td><td>Main number: spendable balance in dollars, which is cash plus vouchers. Details: the voucher balance and the cash balance separately, and a warning when inference is blocked. A negative cash balance means you owe Moonshot money.</td></tr>
+    <tr><td><a href="providers/vercelgateway.html">Vercel AI Gateway</a></td><td>Main number: the team&#x27;s remaining AI Gateway credit in dollars. Details: everything spent since the account opened, labelled Used so far. Vercel does not report a monthly figure.</td></tr>
+    <tr><td><a href="providers/novita.html">Novita AI</a></td><td>Main number: spendable balance in dollars. When the account has a credit line, the main number counts down from that line. Details: the topped-up balance and any amount owed.</td></tr>
+    <tr><td><a href="providers/siliconflow.html">SiliconFlow</a></td><td>Main number: total balance in dollars. Details: how much of it was granted by SiliconFlow and how much you topped up.</td></tr>
+    <tr><td><a href="providers/xai.html">xAI</a></td><td>Main number: the team&#x27;s prepaid credit balance in dollars. Details: any amount owed. Postpaid usage and spending limits are not shown. The card needs your team id as a setting.</td></tr>
     </table>
     <h3>Speech and media</h3>
     <table>
     <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/runway.html">Runway</a></td><td>The organization's credit balance</td></tr>
-    <tr><td><a href="providers/fal.html">fal.ai</a></td><td>The account's remaining credit balance in dollars</td></tr>
-    <tr><td><a href="providers/elevenlabs.html">ElevenLabs</a></td><td>Characters left out of the plan's character limit for the current billing period, with the next reset date, the plan tier, and any usage-based overage spend</td></tr>
-    <tr><td><a href="providers/deepgram.html">Deepgram</a></td><td>The project's outstanding prepaid balance in US dollars, adding up every balance whose units are USD</td></tr>
-    <tr><td><a href="providers/did.html">D-ID</a></td><td>Credits remaining out of the total across the account's credit pools, with the renewal date set to when the first pool that still has credits expires</td></tr>
-    <tr><td><a href="providers/heygen.html">HeyGen</a></td><td>Whichever the account uses: the prepaid wallet balance (dollars or credits), the subscription's premium credits with their reset date, or the metered spend against its cap</td></tr>
-    <tr><td><a href="providers/stability.html">Stability AI</a></td><td>The account's credit balance rounded down, with the exact fractional balance as an extra</td></tr>
-    <tr><td><a href="providers/bfl.html">Black Forest Labs</a></td><td>The account's credit balance rounded down, with the exact fractional balance as an extra when it is not whole</td></tr>
-    <tr><td><a href="providers/luma.html">Luma</a></td><td>The Dream Machine credit balance in US dollars (the API reports cents)</td></tr>
-    <tr><td><a href="providers/recraft.html">Recraft</a></td><td>The account's remaining Recraft credits</td></tr>
+    <tr><td><a href="providers/runway.html">Runway</a></td><td>Main number: the organization&#x27;s credit balance. Runway has no plan limit to count down from. Details: the monthly spend cap when one is set.</td></tr>
+    <tr><td><a href="providers/fal.html">fal.ai</a></td><td>Main number: remaining credit balance in dollars. Details: a warning when the balance is below zero.</td></tr>
+    <tr><td><a href="providers/elevenlabs.html">ElevenLabs</a></td><td>Main number: characters left, out of the plan&#x27;s character limit for this billing period. Details: when the count resets, the plan tier, the subscription status, and any usage-based overage spend.</td></tr>
+    <tr><td><a href="providers/deepgram.html">Deepgram</a></td><td>Main number: the project&#x27;s prepaid balance in US dollars, adding up every balance on the project that is in dollars. Details: how many balances were added, and how many were skipped because they are not in dollars. The card needs your project id as a setting.</td></tr>
+    <tr><td><a href="providers/did.html">D-ID</a></td><td>Main number: credits left, out of the total across all of the account&#x27;s credit pools. The renewal date is when the first pool that still has credits expires. Details: how many pools the account has.</td></tr>
+    <tr><td><a href="providers/heygen.html">HeyGen</a></td><td>Depends on how the account is billed. Prepaid wallet: the balance in dollars or credits, with auto-reload on or off. Subscription: premium credits left and when they reset, with the plan name and add-on credits. Usage-based: dollars spent against the spending cap.</td></tr>
+    <tr><td><a href="providers/stability.html">Stability AI</a></td><td>Main number: credit balance, rounded down to a whole number. Details: the exact balance with its fraction.</td></tr>
+    <tr><td><a href="providers/bfl.html">Black Forest Labs</a></td><td>Main number: credit balance, rounded down to a whole number. Details: the exact balance with its fraction, when it is not a whole number.</td></tr>
+    <tr><td><a href="providers/luma.html">Luma</a></td><td>Main number: Dream Machine credit balance in US dollars. Luma reports it in cents and the card converts it.</td></tr>
+    <tr><td><a href="providers/recraft.html">Recraft</a></td><td>Main number: Recraft credits left. Recraft reports no limit or renewal date.</td></tr>
     </table>
     <h3>Compute</h3>
     <table>
     <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/runpod.html">RunPod</a></td><td>The prepaid RunPod balance in dollars, the current hourly burn rate, and the account spend limit when one is set</td></tr>
-    <tr><td><a href="providers/vast.html">Vast.ai</a></td><td>The account's prepaid balance in dollars; a negative balance shows as zero left with an "Owed" line</td></tr>
-    <tr><td><a href="providers/digitalocean.html">DigitalOcean</a></td><td>Account credit left (when the balance is negative) and this month's usage in dollars, with any amount owed and the month-to-date balance as lines</td></tr>
+    <tr><td><a href="providers/runpod.html">RunPod</a></td><td>Main number: prepaid balance in dollars. Details: the current spend per hour, the account spend limit when one is set, and the amount owed when the balance is negative.</td></tr>
+    <tr><td><a href="providers/vast.html">Vast.ai</a></td><td>Main number: prepaid balance in dollars. A negative balance shows as zero left, with the amount owed in the details.</td></tr>
+    <tr><td><a href="providers/digitalocean.html">DigitalOcean</a></td><td>Main number: account credit in dollars, when the account has credit. Spend this period is this month&#x27;s usage. Details: any amount owed, the month-to-date balance, and the time DigitalOcean produced these figures.</td></tr>
     </table>
     <h3>Quantum</h3>
     <table>
     <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/azurequantum.html">Azure Quantum</a></td><td>The largest free job-hours quota of the workspace in seconds, what is used and held against it, when it resets, and the other quota rows (FPGA hours, concurrent jobs) as lines</td></tr>
-    <tr><td><a href="providers/ibmquantum.html">IBM Quantum</a></td><td>Nothing yet; the card explains that IBM Quantum needs an IAM token exchange on a second host</td></tr>
+    <tr><td><a href="providers/azurequantum.html">Azure Quantum</a></td><td>Main number: free job hours left in the workspace&#x27;s largest hours quota, shown as hours and minutes, out of that quota. Details: which quota is being counted, hours on hold for queued jobs, when the month resets, and every other quota row (for example FPGA hours or concurrent jobs) as used against its limit. The card needs your workspace address as a setting.</td></tr>
+    <tr><td><a href="providers/ibmquantum.html">IBM Quantum</a></td><td>No reading yet. The card explains that IBM Quantum needs a token exchange with a second host, which the app does not do.</td></tr>
     </table>
     <h3>SEO and marketing</h3>
     <table>
     <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/ahrefs.html">Ahrefs</a></td><td>API units left of the key's monthly limit, or of the workspace pool when the key has no limit of its own, and the day the count resets</td></tr>
-    <tr><td><a href="providers/moz.html">Moz</a></td><td>Rows left of the month's Data API quota, and when the period resets</td></tr>
-    <tr><td><a href="providers/semrush.html">Semrush</a></td><td>Standard API units left on the balance; Semrush reports no limit or renewal date</td></tr>
-    <tr><td><a href="providers/seranking.html">SE Ranking</a></td><td>Data API units left of the subscription total, with the subscription expiry as the renewal date</td></tr>
-    <tr><td><a href="providers/serpstat.html">Serpstat</a></td><td>API credits (result lines) left of the plan's maximum; Serpstat reports no renewal date</td></tr>
-    <tr><td><a href="providers/mangools.html">Mangools</a></td><td>SERP lookups left of the pool's limit and when it resets, with the other pools listed below</td></tr>
-    <tr><td><a href="providers/dataforseo.html">DataForSEO</a></td><td>Account balance in dollars, with total deposits, today's spend and the daily and per-minute spending limits below</td></tr>
-    <tr><td><a href="providers/majestic.html">Majestic</a></td><td>Retrieval units left on the balance, with analysis and index-item units below; the earliest subscription expiry is the renewal date</td></tr>
-    <tr><td><a href="providers/keywordseverywhere.html">Keywords Everywhere</a></td><td>Prepaid credits left on the balance; the vendor reports no limit or renewal date</td></tr>
-    </table>
-    <h3>Research and data</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/elicit.html">Elicit</a></td><td>Percentage of the plan left</td></tr>
-    <tr><td><a href="providers/context7.html">Context7</a></td><td>Requests left this month, and extra-request cost on paid plans</td></tr>
-    <tr><td><a href="providers/hunter.html">Hunter</a></td><td>Searches left, plus verifications and the credit pool where the plan has one</td></tr>
-    </table>
-    <h3>LLM inference</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/openrouter.html">OpenRouter</a></td><td>Dollars left on the key's credit limit (a key without a limit shows the workspace budget, or else the month's spend)</td></tr>
-    <tr><td><a href="providers/deepseek.html">DeepSeek</a></td><td>The account's remaining balance in the currency DeepSeek bills you in (yuan or dollars), with the granted and topped-up parts as extras and a flag when inference is blocked</td></tr>
-    <tr><td><a href="providers/moonshot.html">Moonshot (Kimi)</a></td><td>The spendable balance (cash plus vouchers) in dollars, with voucher and cash balances as extras; a negative cash balance shows as debt</td></tr>
-    <tr><td><a href="providers/vercelgateway.html">Vercel AI Gateway</a></td><td>The team's remaining AI Gateway credit in dollars, plus "Used so far" (lifetime spend, not this month's)</td></tr>
-    <tr><td><a href="providers/novita.html">Novita AI</a></td><td>The spendable balance in dollars; when the account has a credit line it is shown as the limit, with the top-up balance and any amount owed as extras</td></tr>
-    <tr><td><a href="providers/siliconflow.html">SiliconFlow</a></td><td>The total balance in dollars, with the granted and topped-up parts as extras</td></tr>
-    <tr><td><a href="providers/xai.html">xAI</a></td><td>The team's prepaid credit balance in dollars (postpaid usage and spending limits are not shown)</td></tr>
-    </table>
-    <h3>Speech and media</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/runway.html">Runway</a></td><td>The organization's credit balance</td></tr>
-    <tr><td><a href="providers/fal.html">fal.ai</a></td><td>The account's remaining credit balance in dollars</td></tr>
-    <tr><td><a href="providers/elevenlabs.html">ElevenLabs</a></td><td>Characters left out of the plan's character limit for the current billing period, with the next reset date, the plan tier, and any usage-based overage spend</td></tr>
-    <tr><td><a href="providers/deepgram.html">Deepgram</a></td><td>The project's outstanding prepaid balance in US dollars, adding up every balance whose units are USD</td></tr>
-    <tr><td><a href="providers/did.html">D-ID</a></td><td>Credits remaining out of the total across the account's credit pools, with the renewal date set to when the first pool that still has credits expires</td></tr>
-    <tr><td><a href="providers/heygen.html">HeyGen</a></td><td>Whichever the account uses: the prepaid wallet balance (dollars or credits), the subscription's premium credits with their reset date, or the metered spend against its cap</td></tr>
-    <tr><td><a href="providers/stability.html">Stability AI</a></td><td>The account's credit balance rounded down, with the exact fractional balance as an extra</td></tr>
-    <tr><td><a href="providers/bfl.html">Black Forest Labs</a></td><td>The account's credit balance rounded down, with the exact fractional balance as an extra when it is not whole</td></tr>
-    <tr><td><a href="providers/luma.html">Luma</a></td><td>The Dream Machine credit balance in US dollars (the API reports cents)</td></tr>
-    <tr><td><a href="providers/recraft.html">Recraft</a></td><td>The account's remaining Recraft credits</td></tr>
-    </table>
-    <h3>Compute</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/runpod.html">RunPod</a></td><td>The prepaid RunPod balance in dollars, the current hourly burn rate, and the account spend limit when one is set</td></tr>
-    <tr><td><a href="providers/vast.html">Vast.ai</a></td><td>The account's prepaid balance in dollars; a negative balance shows as zero left with an "Owed" line</td></tr>
-    <tr><td><a href="providers/digitalocean.html">DigitalOcean</a></td><td>Account credit left (when the balance is negative) and this month's usage in dollars, with any amount owed and the month-to-date balance as lines</td></tr>
-    </table>
-    <h3>Quantum</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/azurequantum.html">Azure Quantum</a></td><td>The largest free job-hours quota of the workspace in seconds, what is used and held against it, when it resets, and the other quota rows (FPGA hours, concurrent jobs) as lines</td></tr>
-    <tr><td><a href="providers/ibmquantum.html">IBM Quantum</a></td><td>Nothing yet; the card explains that IBM Quantum needs an IAM token exchange on a second host</td></tr>
-    </table>
-    <h3>SEO and marketing</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/ahrefs.html">Ahrefs</a></td><td></td></tr>
-    <tr><td><a href="providers/moz.html">Moz</a></td><td></td></tr>
-    <tr><td><a href="providers/semrush.html">Semrush</a></td><td></td></tr>
-    <tr><td><a href="providers/seranking.html">SE Ranking</a></td><td></td></tr>
-    <tr><td><a href="providers/serpstat.html">Serpstat</a></td><td></td></tr>
-    <tr><td><a href="providers/mangools.html">Mangools</a></td><td></td></tr>
-    <tr><td><a href="providers/dataforseo.html">DataForSEO</a></td><td></td></tr>
-    <tr><td><a href="providers/majestic.html">Majestic</a></td><td></td></tr>
-    <tr><td><a href="providers/keywordseverywhere.html">Keywords Everywhere</a></td><td></td></tr>
-    </table>
-    <h3>Research and data</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/elicit.html">Elicit</a></td><td>Percentage of the plan left</td></tr>
-    <tr><td><a href="providers/context7.html">Context7</a></td><td>Requests left this month, and extra-request cost on paid plans</td></tr>
-    <tr><td><a href="providers/hunter.html">Hunter</a></td><td>Searches left, plus verifications and the credit pool where the plan has one</td></tr>
-    </table>
-    <h3>LLM inference</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/openrouter.html">OpenRouter</a></td><td>Dollars left on the key's credit limit (a key without a limit shows the workspace budget, or else the month's spend)</td></tr>
-    <tr><td><a href="providers/deepseek.html">DeepSeek</a></td><td>the account's remaining balance in the currency DeepSeek bills you in (yuan or dollars), with the granted and topped-up parts as extras and a flag when inference is blocked</td></tr>
-    <tr><td><a href="providers/moonshot.html">Moonshot (Kimi)</a></td><td>the spendable balance (cash plus vouchers) in dollars, with voucher and cash balances as extras; a negative cash balance shows as debt</td></tr>
-    <tr><td><a href="providers/vercelgateway.html">Vercel AI Gateway</a></td><td>the team's remaining AI Gateway credit in dollars, plus "Used so far" (lifetime spend, not this month's)</td></tr>
-    <tr><td><a href="providers/novita.html">Novita AI</a></td><td>the spendable balance in dollars; when the account has a credit line it is shown as the limit, with the top-up balance and any amount owed as extras</td></tr>
-    <tr><td><a href="providers/siliconflow.html">SiliconFlow</a></td><td>the total balance in dollars, with the granted and topped-up parts as extras</td></tr>
-    <tr><td><a href="providers/xai.html">xAI</a></td><td>the team's prepaid credit balance in dollars (postpaid usage and spending limits are not shown)</td></tr>
-    </table>
-    <h3>Speech and media</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/runway.html">Runway</a></td><td>The organization's credit balance</td></tr>
-    <tr><td><a href="providers/fal.html">fal.ai</a></td><td>the account's remaining credit balance in dollars</td></tr>
-    <tr><td><a href="providers/elevenlabs.html">ElevenLabs</a></td><td>characters left out of the plan's character limit for the current billing period, with the next reset date, the plan tier, and any usage-based overage spend</td></tr>
-    <tr><td><a href="providers/deepgram.html">Deepgram</a></td><td>the project's outstanding prepaid balance in US dollars, adding up every balance whose units are USD</td></tr>
-    <tr><td><a href="providers/did.html">D-ID</a></td><td>credits remaining out of the total across the account's credit pools, with the renewal date set to when the first pool that still has credits expires</td></tr>
-    <tr><td><a href="providers/heygen.html">HeyGen</a></td><td>whichever the account uses: the prepaid wallet balance (dollars or credits), the subscription's premium credits with their reset date, or the metered spend against its cap</td></tr>
-    <tr><td><a href="providers/stability.html">Stability AI</a></td><td>the account's credit balance rounded down, with the exact fractional balance as an extra</td></tr>
-    <tr><td><a href="providers/bfl.html">Black Forest Labs</a></td><td>the account's credit balance rounded down, with the exact fractional balance as an extra when it is not whole</td></tr>
-    <tr><td><a href="providers/luma.html">Luma</a></td><td>the Dream Machine credit balance in US dollars (the API reports cents)</td></tr>
-    <tr><td><a href="providers/recraft.html">Recraft</a></td><td>the account's remaining Recraft credits</td></tr>
-    </table>
-    <h3>Compute</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/runpod.html">RunPod</a></td><td>the prepaid RunPod balance in dollars, the current hourly burn rate, and the account spend limit when one is set</td></tr>
-    <tr><td><a href="providers/vast.html">Vast.ai</a></td><td>the account's prepaid balance in dollars; a negative balance shows as zero left with an "Owed" line</td></tr>
-    <tr><td><a href="providers/digitalocean.html">DigitalOcean</a></td><td>account credit left (when the balance is negative) and this month's usage in dollars, with any amount owed and the month-to-date balance as lines</td></tr>
-    </table>
-    <h3>Quantum</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/azurequantum.html">Azure Quantum</a></td><td>the largest free job-hours quota of the workspace in seconds, what is used and held against it, when it resets, and the other quota rows (FPGA hours, concurrent jobs) as lines</td></tr>
-    <tr><td><a href="providers/ibmquantum.html">IBM Quantum</a></td><td>nothing yet; the card explains that IBM Quantum needs an IAM token exchange on a second host</td></tr>
-    </table>
-    <h3>SEO and marketing</h3>
-    <table>
-    <tr><th>Provider</th><th>What the card shows</th></tr>
-    <tr><td><a href="providers/ahrefs.html">Ahrefs</a></td><td></td></tr>
-    <tr><td><a href="providers/moz.html">Moz</a></td><td></td></tr>
-    <tr><td><a href="providers/semrush.html">Semrush</a></td><td></td></tr>
-    <tr><td><a href="providers/seranking.html">SE Ranking</a></td><td></td></tr>
-    <tr><td><a href="providers/serpstat.html">Serpstat</a></td><td></td></tr>
-    <tr><td><a href="providers/mangools.html">Mangools</a></td><td></td></tr>
-    <tr><td><a href="providers/dataforseo.html">DataForSEO</a></td><td></td></tr>
-    <tr><td><a href="providers/majestic.html">Majestic</a></td><td></td></tr>
-    <tr><td><a href="providers/keywordseverywhere.html">Keywords Everywhere</a></td><td></td></tr>
+    <tr><td><a href="providers/ahrefs.html">Ahrefs</a></td><td>Main number: API units left, out of this key&#x27;s monthly limit. A key with no limit of its own counts against the workspace pool instead. Details: the reset date, workspace usage, units used by this key, and the key&#x27;s expiry date.</td></tr>
+    <tr><td><a href="providers/moz.html">Moz</a></td><td>Main number: Data API rows left this month, out of the rows allotted. Details: when the period started and when it resets, and whether overage is enabled.</td></tr>
+    <tr><td><a href="providers/semrush.html">Semrush</a></td><td>Main number: Standard API units left. Semrush reports no limit and no renewal date, so there is no meter and no details.</td></tr>
+    <tr><td><a href="providers/seranking.html">SE Ranking</a></td><td>Main number: Data API units left, out of the subscription total. The renewal date is the subscription&#x27;s expiry. Details: the subscription status and its start date.</td></tr>
+    <tr><td><a href="providers/serpstat.html">Serpstat</a></td><td>Main number: API credits left, out of the plan&#x27;s maximum. Serpstat counts one credit per result line, so a 100-row report costs 100 credits. Details: credits used this period, and extension credits left. Serpstat reports no renewal date.</td></tr>
+    <tr><td><a href="providers/mangools.html">Mangools</a></td><td>Mangools gives every tool its own allowance, called a pool: SERP lookups, related keywords, trends, backlink rows, and so on. Main number: SERP lookups left, out of that pool&#x27;s limit, with the pool&#x27;s reset time as the renewal date. Details: each other named pool as left out of limit, and a count of any pools the Mangools docs do not name.</td></tr>
+    <tr><td><a href="providers/dataforseo.html">DataForSEO</a></td><td>Main number: account balance in dollars. Details: how much you have deposited in total, how much you spent today, and the daily and per-minute spending limits. Paste your API login and password as one key in the form login:password.</td></tr>
+    <tr><td><a href="providers/majestic.html">Majestic</a></td><td>Main number: retrieval units left, the units spent whenever backlinks are returned. The renewal date is the earliest subscription expiry. Details: analysis units, index item units, detailed reports left, how many subscriptions the account has, and whether one is active.</td></tr>
+    <tr><td><a href="providers/keywordseverywhere.html">Keywords Everywhere</a></td><td>Main number: prepaid credits left. Credits do not reset, so there is no limit and no renewal date.</td></tr>
     </table>
   </section>
 
