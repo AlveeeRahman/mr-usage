@@ -134,8 +134,10 @@ cycle() {
   else
     [ "$code" = "0" ] && pass "[$how] exited with code 0 in ${elapsed}s" || fail "[$how] exit code $code"
   fi
-  sleep 1
-  [ "$(helpers)" = "0" ] && pass "[$how] no WebKit helpers left" || fail "[$how] $(helpers) WebKit helper(s) left running"
+  # The helpers notice the UI process is gone through their IPC socket and
+  # exit on their own; on a busy runner that can take more than a second.
+  for _ in $(seq 1 100); do [ "$(helpers)" = "0" ] && break; sleep 0.1; done
+  [ "$(helpers)" = "0" ] && pass "[$how] no WebKit helpers left" || fail "[$how] $(helpers) WebKit helper(s) left running 10 s after exit"
   [ "$(leftover_webview)" = "0" ] && pass "[$how] webview folder removed" || fail "[$how] webview folder left behind"
   if [ "$MODE" = fuse ]; then
     grep -q "/.mount_$(basename "$BIN" | cut -c1-6)" /proc/mounts && fail "[$how] AppImage FUSE mount still present" || pass "[$how] AppImage FUSE mount gone"
