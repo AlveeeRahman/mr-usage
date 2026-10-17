@@ -162,6 +162,12 @@ This removes the keys from your credential store, then the app, then its setting
 | `docs/` | Threat model, sources for every vendor fact, follow-ups, and the GitHub Pages site |
 | `.github/` | Workflows, installer smoke tests, the end-to-end test, the leak test |
 
+## Map of the project
+
+[![Map of Mr. Usage: providers, keys and secrets, network, poller, window, command line, distribution, checks, layout](docs/assets/mindmap.png)](https://mindmap-claude.keenethics-labs.com/share/iee0fkwu)
+
+The [interactive map](https://mindmap-claude.keenethics-labs.com/share/iee0fkwu) folds and unfolds each branch. The source is `docs/assets/mindmap.md`.
+
 ## More
 
 - How the app protects keys, and what it cannot protect you from: [SECURITY.md](SECURITY.md) and [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
