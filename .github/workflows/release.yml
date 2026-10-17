@@ -175,11 +175,17 @@ jobs:
           uploadUpdaterJson: false
           args: ${{ matrix.args }}
 
+  # One job owns everything that proves what a release is: the SHA-256 list,
+  # build provenance for every installer (GitHub artifact attestations, SLSA
+  # provenance tied to this run), and a Sigstore signature of the list, made
+  # with this workflow's OIDC identity rather than a key anyone could copy.
   checksums:
     needs: [prepare, build]
     runs-on: ubuntu-24.04
     permissions:
-      contents: write
+      contents: write # upload assets
+      id-token: write # Sigstore keyless signing and attestations
+      attestations: write
     env:
       RELEASE_ID: ${{ needs.prepare.outputs.release_id }}
     steps:
@@ -189,18 +195,32 @@ jobs:
         run: |
           mkdir assets && cd assets
           gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?per_page=100" --jq '.[] | "\(.id) \(.name)"' | while read -r id name; do
-            if [ "$name" = "SHA256SUMS.txt" ]; then
-              gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$id"
-            else
-              echo "downloading $name"
-              gh api -H "Accept: application/octet-stream" "repos/$GITHUB_REPOSITORY/releases/assets/$id" > "$name"
-            fi
+            case "$name" in
+              SHA256SUMS.txt|SHA256SUMS.txt.sigstore.json)
+                gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$id" ;;
+              *)
+                echo "downloading $name"
+                gh api -H "Accept: application/octet-stream" "repos/$GITHUB_REPOSITORY/releases/assets/$id" > "$name" ;;
+            esac
           done
           ls -l
           [ "$(ls | wc -l)" -ge 9 ] || { echo "::error::expected at least 9 installers, found $(ls | wc -l)"; exit 1; }
           sha256sum -- * | tee SHA256SUMS.txt
           gh api -X POST -H "Content-Type: text/plain" --input SHA256SUMS.txt \
             "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=SHA256SUMS.txt" --jq '"uploaded \(.name)"'
+      - name: Attest build provenance for every installer and the checksum list
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: assets/*
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Sign SHA256SUMS.txt with Sigstore and attach the bundle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd assets
+          cosign sign-blob --yes --bundle SHA256SUMS.txt.sigstore.json SHA256SUMS.txt
+          gh api -X POST -H "Content-Type: application/json" --input SHA256SUMS.txt.sigstore.json \
+            "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=SHA256SUMS.txt.sigstore.json" --jq '"uploaded \(.name)"'
 
   # The path a user takes, on a machine that has never seen the app. The
   # scripts read the draft through the repository token (a draft is invisible

@@ -18,6 +18,28 @@ Please report privately through GitHub: open the repository's Security tab and c
 
 The full design, including the copies of a key the app cannot zeroize because they live in libraries it does not own, is in [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 
+## Verifying a download
+
+Every release carries `SHA256SUMS.txt`, a Sigstore signature of that list (`SHA256SUMS.txt.sigstore.json`, made with the release workflow's own OIDC identity, so there is no signing key to leak), and a GitHub build-provenance attestation for each installer. The install scripts check the SHA-256 for you. To check the rest by hand:
+
+```sh
+# The signature: the list was produced by this repository's release or sign-release workflow.
+cosign verify-blob --bundle SHA256SUMS.txt.sigstore.json \
+  --certificate-identity-regexp '^https://github\.com/AlveeeRahman/mr-usage/\.github/workflows/(release|sign-release)\.yml@refs/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  SHA256SUMS.txt
+sha256sum -c --ignore-missing SHA256SUMS.txt
+
+# The provenance: this installer was built by the release workflow in this repository.
+gh attestation verify Mr.Usage_1.0.0_x64.dmg --repo AlveeeRahman/mr-usage
+```
+
+Releases published before v1.0.1 were signed afterwards with the `sign-release` workflow and carry the signature but no provenance.
+
+## Known advisories
+
+`cargo audit` runs with every advisory as an error. The ones it is told to ignore are listed with their reasons in [.cargo/audit.toml](.cargo/audit.toml) and tracked in [docs/FOLLOWUPS.md](docs/FOLLOWUPS.md); at the time of writing both come from the GTK 3 bindings Tauri uses on Linux and are not reachable from this app's code. The [OpenSSF Scorecard report](https://scorecard.dev/viewer/?uri=github.com/AlveeeRahman/mr-usage) lists the same two under Vulnerabilities, with the rest of its findings. Code scanning (CodeQL and Scorecard) and Dependabot alerts are on the repository's [Security tab](https://github.com/AlveeeRahman/mr-usage/security), and Dependabot opens a grouped pull request each Monday for Cargo, npm and Actions updates ([.github/dependabot.yml](.github/dependabot.yml)).
+
 ## What is checked on every change
 
 | Gate | Command |
@@ -30,5 +52,6 @@ The full design, including the copies of a key the app cannot zeroize because th
 | End-to-end | `.github/e2e/run-linux.sh` drives the real app through WebDriver |
 | Licenses, bans, advisories | `cargo deny check`, `cargo audit -D warnings`, `npm audit --audit-level=low` |
 | Installers | `.github/scripts/smoke-{linux,macos}.sh`, `.github/scripts/smoke-windows.ps1`: install, start, stop three ways, uninstall, then `installers/install.sh` or `installers/install.ps1` against the same packages |
+| Repository practices | [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/AlveeeRahman/mr-usage) on every push to `main` and weekly; CodeQL on every push and pull request |
 
-GitHub Actions are pinned to commit SHAs and lockfiles are committed.
+GitHub Actions are pinned to commit SHAs and lockfiles are committed. `main` takes only pull requests whose CI and installer checks passed; force pushes and deletion are blocked by a repository ruleset.

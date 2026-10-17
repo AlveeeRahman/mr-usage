@@ -1,0 +1,42 @@
+name: sign-release
+
+# Signs the SHA256SUMS.txt of an already published release with Sigstore
+# (keyless, through this workflow's OIDC identity) and attaches the bundle.
+# The release workflow does this itself for new releases; this one exists for
+# releases that were published before signing was added. Verification steps
+# are in SECURITY.md.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Published release tag to sign, such as v1.0.0"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  sign:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # upload the signature bundle
+      id-token: write # Sigstore keyless signing
+    env:
+      TAG: ${{ github.event.inputs.tag }}
+    steps:
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Sign SHA256SUMS.txt and attach the bundle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_id="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.id')"
+          gh api "repos/$GITHUB_REPOSITORY/releases/$release_id/assets?per_page=100" --jq '.[] | "\(.id) \(.name)"' | while read -r id name; do
+            case "$name" in
+              SHA256SUMS.txt) gh api -H "Accept: application/octet-stream" "repos/$GITHUB_REPOSITORY/releases/assets/$id" > SHA256SUMS.txt ;;
+              SHA256SUMS.txt.sigstore.json) gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$id" ;;
+            esac
+          done
+          [ -s SHA256SUMS.txt ] || { echo "::error::release $TAG has no SHA256SUMS.txt"; exit 1; }
+          cosign sign-blob --yes --bundle SHA256SUMS.txt.sigstore.json SHA256SUMS.txt
+          gh api -X POST -H "Content-Type: application/json" --input SHA256SUMS.txt.sigstore.json \
+            "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$release_id/assets?name=SHA256SUMS.txt.sigstore.json" --jq '"uploaded \(.name)"'

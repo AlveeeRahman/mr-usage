@@ -60,7 +60,7 @@ Download from [Releases](https://github.com/AlveeeRahman/mr-usage/releases/lates
 | Fedora, RHEL | `....x86_64.rpm` |
 | Other Linux | `..._amd64.AppImage` (needs FUSE) |
 
-The builds are not yet signed with an Apple or Microsoft certificate, so each system asks once:
+Each release's checksum list is signed with Sigstore and every installer has GitHub build provenance; [SECURITY.md](SECURITY.md) shows how to verify both. The builds are not yet signed with an Apple or Microsoft certificate, so each system asks once:
 
 - macOS says it cannot verify the developer. Open System Settings, click Privacy & Security, scroll down and click Open Anyway, as Apple describes in [Safely open apps on your Mac](https://support.apple.com/en-us/102445).
 - Windows shows a SmartScreen notice. Click "More info", then "Run anyway".

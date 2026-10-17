@@ -1,0 +1,34 @@
+# Weekly dependency updates, one grouped pull request per ecosystem, so the
+# CI, smoke and supply-chain checks run on every bump before it reaches main.
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      rust:
+        patterns: ["*"]
+    ignore:
+      # gtk-rs 0.18 is what Tauri 2 ships for its Linux webview; a bump to
+      # 0.20 cannot resolve, so Dependabot's attempts only fail. The two
+      # advisories this leaves are justified in .cargo/audit.toml.
+      - dependency-name: glib
+      - dependency-name: proc-macro-error
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      javascript:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns: ["*"]
