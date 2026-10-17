@@ -159,15 +159,15 @@ Repeat for each provider you use. A card gets a yellow "Low" badge under 20% lef
 
 | Provider | What the card shows |
 | --- | --- |
-| Ahrefs | API units left of this key's monthly limit (or of the workspace pool when the key has no limit), resetting on `usage_reset_date` |
-| Moz | Rows left of the production Data API quota (`api.limits.data.rows`), renewing at `period_reset` |
-| Semrush | Standard API units remaining (balance; no limit or renewal date) |
-| SE Ranking | Data API units left of the subscription's total, with the subscription expiry as the renewal date |
-| Serpstat | API credits (result lines) left of the plan's maximum; no renewal date is reported |
-| Mangools | SERP lookups left of the `serps` pool's limit, resetting in `reset` seconds; the other pools are listed below |
+| Ahrefs | API units left of the key's monthly limit, or of the workspace pool when the key has no limit of its own, and the day the count resets |
+| Moz | Rows left of the month's Data API quota, and when the period resets |
+| Semrush | Standard API units left on the balance; Semrush reports no limit or renewal date |
+| SE Ranking | Data API units left of the subscription total, with the subscription expiry as the renewal date |
+| Serpstat | API credits (result lines) left of the plan's maximum; Serpstat reports no renewal date |
+| Mangools | SERP lookups left of the pool's limit and when it resets, with the other pools listed below |
 | DataForSEO | Account balance in dollars, with total deposits, today's spend and the daily and per-minute spending limits below |
-| Majestic | Retrieval units remaining (balance), with analysis and index-item units below; the renewal date is the earliest subscription expiry |
-| Keywords Everywhere | Prepaid credits remaining (balance; no limit or renewal date) |
+| Majestic | Retrieval units left on the balance, with analysis and index-item units below; the earliest subscription expiry is the renewal date |
+| Keywords Everywhere | Prepaid credits left on the balance; the vendor reports no limit or renewal date |
 
 Each card is refreshed every 5 minutes, and Settings lets you pick anything from 1 minute to 24 hours. Changing the interval takes effect from the last poll, so dropping from an hour to a minute does not wait an hour. Every one of these calls reads your account's own usage page. SerpApi, Context7 and Hunter document the call as free, Firecrawl's open-source server shows it bills nothing (and a live account confirmed it), and none of the other vendors list it as a billable call.
 
