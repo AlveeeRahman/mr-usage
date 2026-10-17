@@ -250,6 +250,8 @@ This removes the keys from your credential store, then the app, then its setting
 - How the app protects keys, and what it cannot protect you from: [SECURITY.md](SECURITY.md) and [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 - Building from source, running the tests, adding a provider: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 - Where every vendor fact in the app came from: [docs/SOURCES.md](docs/SOURCES.md).
+- Reporting a bug, sending a change, what a change has to satisfy: [CONTRIBUTING.md](CONTRIBUTING.md).
+- What changed in each release: [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
