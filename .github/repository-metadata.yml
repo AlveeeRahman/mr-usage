@@ -112,7 +112,7 @@ suite:
     url: https://alveeerahman.github.io/research-hound/
 
 # The Pages site is published by .github/workflows/pages.yml from docs/ on every
-# push to main; its first run also enables Pages for the repository. Besides the
+# push to main, once Settings > Pages has Source set to "GitHub Actions". Besides the
 # index, .github/scripts/render-provider-pages.py writes one page per provider
 # under docs/providers/ and the sitemap, so searches such as "check my
 # OpenRouter balance" have a page that answers them with the exact endpoint.
