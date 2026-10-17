@@ -119,10 +119,7 @@ PROVIDERS = [
 # fmt: on
 
 STYLE = """
-  :root { --ink:#0b0b0b; --sub:#52514e; --line:#e3e2de; --accent:#256abf; --bg:#fcfcfb; --code:#f0efec; }
-  @media (prefers-color-scheme: dark) {
-    :root { --ink:#f0efec; --sub:#c3c2b7; --line:#383835; --accent:#86b6ef; --bg:#1a1a19; --code:#232321; }
-  }
+  :root { color-scheme: dark; --ink:#f0efec; --sub:#c3c2b7; --line:#383835; --accent:#86b6ef; --bg:#1a1a19; --code:#232321; }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.65 system-ui, -apple-system, "Segoe UI", "Cantarell", "Noto Sans", sans-serif; }
   main { max-width: 46rem; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
