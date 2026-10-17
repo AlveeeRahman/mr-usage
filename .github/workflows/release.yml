@@ -2,12 +2,13 @@ name: release
 
 # Three ways in:
 #
-# 1. Push a tag such as v0.1.0. Installers for macOS (Apple silicon and Intel),
-#    Linux and Windows are built and attached, with SHA-256 sums, to a DRAFT
-#    release. Then `verify-install` installs that draft on a fresh runner of
-#    each OS through the user-facing scripts (`installers/install.sh --version`,
-#    `installers/install.ps1 -Version`) and uninstalls it again. Review the
-#    draft and publish it by hand; nothing is public until you do.
+# 1. Push a tag such as v0.1.0. One DRAFT release is created for it, then
+#    installers for macOS (Apple silicon and Intel), Linux and Windows are
+#    built and attached, with SHA-256 sums. Then `verify-install` installs that
+#    draft on a fresh runner of each OS through the user-facing scripts
+#    (`installers/install.sh --version`, `installers/install.ps1 -Version`) and
+#    uninstalls it again. Review the draft and publish it by hand; nothing is
+#    public until you do.
 #
 # 2. Run the workflow by hand (workflow_dispatch) with a `tag` such as v0.1.0.
 #    Same pipeline, same draft, for when a tag cannot be pushed from where you
@@ -16,13 +17,20 @@ name: release
 #    last job publishes the draft itself, but only after every installer has
 #    been built, checksummed and test-installed on a fresh runner of each OS.
 #    A stale draft for the same tag is removed first; a published release with
-#    that tag stops the run.
+#    that tag stops the run, unless `replace` is ticked, which removes the
+#    published release and its git tag and rebuilds the tag from this commit.
 #
 # 3. Run the workflow by hand with the `tag` field empty. The pipeline runs
 #    against a throwaway draft named v0.0.0-ci.<run number>, marked
 #    pre-release, and the last job deletes that draft. This is the delivery
 #    rehearsal: it proves the build, the checksum list, the download path and
 #    the install scripts end to end without publishing anything.
+#
+# The draft is created once, in `prepare`, and the builders are given its id.
+# Letting each builder find-or-create the draft itself is a race: four jobs
+# that start within seconds of each other can each create their own release
+# for the same tag (tauri-apps/tauri-action#914), and the assets end up split
+# between them.
 #
 # Workflow shape follows https://v2.tauri.app/distribute/pipelines/github/.
 on:
@@ -39,24 +47,39 @@ on:
         type: boolean
         required: false
         default: false
+      replace:
+        description: "Remove an already published release with this tag, and the git tag, and rebuild it from this commit. Only for repairing a broken release."
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
+
+# One run per tag at a time, and never cancel a build that is uploading.
+concurrency:
+  group: release-${{ github.event_name == 'push' && github.ref_name || github.event.inputs.tag || github.run_id }}
+  cancel-in-progress: false
 
 env:
   # A pushed tag or a dispatched `tag` is the release; a manual run with no tag
   # gets a disposable draft.
   TAG: ${{ github.event_name == 'push' && github.ref_name || github.event.inputs.tag || format('v0.0.0-ci.{0}', github.run_number) }}
   REHEARSAL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag == '' }}
+  REPLACE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.replace == 'true' }}
 
 jobs:
-  # Check the tag and clear a stale draft for it, so the builders create one
-  # fresh draft that targets this very commit.
+  # Check the tag, clear stale releases for it, and create the one draft that
+  # every builder uploads into. Its id is the job's output. A tag push whose
+  # release is already published has nothing to do and ends the run quietly,
+  # with an empty id.
   prepare:
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+    outputs:
+      release_id: ${{ steps.draft.outputs.release_id }}
     steps:
       - name: Check the tag name
         run: |
@@ -64,22 +87,51 @@ jobs:
             v[0-9]*) echo "building $TAG" ;;
             *) echo "::error::the tag must look like v0.1.0, got '$TAG'"; exit 1 ;;
           esac
-      - name: Remove a stale draft with this tag; refuse a published one
+      - name: Clear stale releases with this tag
+        id: clear
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.tag_name == \"$TAG\") | \"\(.id) \(.draft)\"" | while read -r id draft; do
+          published=""
+          existing="$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.tag_name == \"$TAG\") | \"\(.id) \(.draft)\"")"
+          while read -r id draft; do
+            [ -n "$id" ] || continue
             if [ "$draft" = "true" ]; then
               echo "deleting stale draft release $id for $TAG"
               gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+            elif [ "$REPLACE" = "true" ]; then
+              echo "::warning::replacing published release $id for $TAG; the git tag will be moved to $GITHUB_SHA"
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/tags/$TAG" || echo "no git tag $TAG to remove"
             else
-              echo "::error::$TAG is already published (release $id); bump the version instead of rebuilding it"
+              published="$id"
+            fi
+          done <<< "$existing"
+          if [ -n "$published" ]; then
+            if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+              echo "::notice::$TAG is already published (release $published); nothing to build"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "::error::$TAG is already published (release $published); bump the version, or tick 'replace' to rebuild it"
               exit 1
             fi
-          done
+          fi
+      - name: Create the draft release
+        id: draft
+        if: steps.clear.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          id="$(gh api -X POST "repos/$GITHUB_REPOSITORY/releases" \
+            -f "tag_name=$TAG" -f "name=Mr. Usage $TAG" -f "target_commitish=$GITHUB_SHA" \
+            -f "body=Install with the one-line command in the README; it picks the right file and verifies it against SHA256SUMS.txt for you. Builds are not code-signed yet." \
+            -F draft=true -F "prerelease=$REHEARSAL" --jq '.id')"
+          echo "draft release $id for $TAG"
+          echo "release_id=$id" >> "$GITHUB_OUTPUT"
 
   build:
     needs: prepare
+    if: needs.prepare.outputs.release_id != ''
     permissions:
       contents: write
     strategy:
@@ -113,33 +165,42 @@ jobs:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - run: npm ci
+      # With `releaseId` set, the action only builds and uploads; it neither
+      # looks for nor creates a release.
       - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ env.TAG }}
-          releaseName: "Mr. Usage ${{ env.TAG }}"
-          releaseBody: "Install with the one-line command in the README; it picks the right file and verifies it against SHA256SUMS.txt for you. Builds are not code-signed yet."
-          releaseDraft: true
-          prerelease: ${{ env.REHEARSAL == 'true' }}
+          releaseId: ${{ needs.prepare.outputs.release_id }}
           uploadUpdaterJson: false
           args: ${{ matrix.args }}
 
   checksums:
-    needs: build
+    needs: [prepare, build]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+    env:
+      RELEASE_ID: ${{ needs.prepare.outputs.release_id }}
     steps:
       - name: Publish SHA-256 sums for every release asset
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir assets && cd assets
-          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*'
-          rm -f SHA256SUMS.txt
+          gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?per_page=100" --jq '.[] | "\(.id) \(.name)"' | while read -r id name; do
+            if [ "$name" = "SHA256SUMS.txt" ]; then
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$id"
+            else
+              echo "downloading $name"
+              gh api -H "Accept: application/octet-stream" "repos/$GITHUB_REPOSITORY/releases/assets/$id" > "$name"
+            fi
+          done
+          ls -l
+          [ "$(ls | wc -l)" -ge 9 ] || { echo "::error::expected at least 9 installers, found $(ls | wc -l)"; exit 1; }
           sha256sum -- * | tee SHA256SUMS.txt
-          gh release upload "$TAG" SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber
+          gh api -X POST -H "Content-Type: text/plain" --input SHA256SUMS.txt \
+            "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=SHA256SUMS.txt" --jq '"uploaded \(.name)"'
 
   # The path a user takes, on a machine that has never seen the app. The
   # scripts read the draft through the repository token (a draft is invisible
@@ -195,17 +256,17 @@ jobs:
   # pointed at this run's commit, so the tag GitHub creates matches the build.
   publish:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' && github.event.inputs.publish == 'true'
-    needs: verify-install
+    needs: [prepare, verify-install]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+    env:
+      RELEASE_ID: ${{ needs.prepare.outputs.release_id }}
     steps:
       - env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          id="$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.tag_name == \"$TAG\" and .draft) | .id" | head -n 1)"
-          [ -n "$id" ] || { echo "::error::no draft release for $TAG"; exit 1; }
-          gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$id" \
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" \
             -F draft=false -f make_latest=true -f "target_commitish=$GITHUB_SHA" \
             --jq '"published \(.tag_name): \(.html_url)"'
 
@@ -213,11 +274,11 @@ jobs:
   # nothing else to remove.) A real release's draft stays for review.
   cleanup-rehearsal:
     if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.tag == '' && needs.build.result != 'skipped'
-    needs: [build, checksums, verify-install]
+    needs: [prepare, build, checksums, verify-install]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
       - env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes || echo "no draft to delete"
+        run: gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/${{ needs.prepare.outputs.release_id }}" || echo "no draft to delete"
