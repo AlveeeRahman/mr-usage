@@ -162,6 +162,10 @@ This removes the keys from your credential store, then the app, then its setting
 | `docs/` | Threat model, sources for every vendor fact, follow-ups, and the GitHub Pages site |
 | `.github/` | Workflows, installer smoke tests, the end-to-end test, the leak test |
 
+## Map of the project
+
+![Map of Mr. Usage: keys, network, command line, distribution, and what is checked on every push](docs/assets/project-map.png)
+
 ## More
 
 - How the app protects keys, and what it cannot protect you from: [SECURITY.md](SECURITY.md) and [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
