@@ -62,10 +62,6 @@ All of this runs on every push through the workflows in `.github/workflows/`. A 
 
 The binary answers `--help`, `--version` and `--forget-keys` before it initialises logging, hardening or the webview, and refuses anything else with exit status 2 and a usage line on stderr. The grammar lives in `src-tauri/src/cli.rs`. `src-tauri/tests/cli.rs` runs the built binary and checks streams and exit status for every path that does not open a window. `--forget-keys` is kept out of that test on purpose: on a developer's machine it would delete real keys. The install scripts and the release workflow exercise it.
 
-## The project map
-
-`docs/assets/mindmap.png` is rendered from `docs/assets/mindmap.md` with [markmap](https://markmap.js.org/): `npx markmap-cli --offline --no-open -o map.html docs/assets/mindmap.md`, then a screenshot of the page at double resolution, trimmed to the drawing. Edit the markdown, re-render, and replace the image. The README links the image to the same map on the mind-map service.
-
 ## Adding a provider
 
 1. Find the vendor's documented usage endpoint. If there is none, stop: the app does not scrape dashboards or call private APIs. Record the URL, method, auth scheme, response fields and whether the vendor says the call is free in `docs/SOURCES.md`, with the date.
