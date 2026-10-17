@@ -80,9 +80,22 @@ fn scrub_urls(text: &str) -> String {
     while let Some(start) = find_url_start(rest) {
         out.push_str(&rest[..start]);
         let candidate = &rest[start..];
-        let end = candidate
+        let mut end = candidate
             .find(|c: char| c.is_whitespace() || matches!(c, '"' | '\'' | '<' | '>' | '`' | ')' | ']' | '}' | ','))
             .unwrap_or(candidate.len());
+        // A URL inside another URL's path or query ("https://a/go?to=https://b/x")
+        // is scrubbed on its own. Left inside the outer URL's path, its userinfo
+        // and query would come through untouched.
+        if let Some(inner) = find_url_start(&candidate[1..end]) {
+            end = inner + 1;
+        }
+        // A URL this function already scrubbed ends in "?[redacted]", and ']'
+        // is a terminator. Take that bracket with the URL, or a second pass
+        // would rewrite the query and leave the bracket behind, growing the
+        // text by one character per pass instead of leaving it alone.
+        if candidate[..end].ends_with("?[redacted") && candidate[end..].starts_with(']') {
+            end += 1;
+        }
         out.push_str(&redact_url(&candidate[..end]));
         rest = &candidate[end..];
     }
@@ -377,6 +390,27 @@ mod tests {
     fn ordinary_text_survives() {
         let text = "Could not find credit usage information";
         assert_eq!(scrub(text), text);
+    }
+
+    #[test]
+    fn scrub_is_idempotent_on_a_scrubbed_url() {
+        // Found by the `redact` fuzz target: the placeholder's closing bracket
+        // is also a URL terminator, so the second pass used to append a ']'.
+        let once = scrub("see https://api.example.com/v1/usage?key=abc for details");
+        assert_eq!(once, "see https://api.example.com/v1/usage?[redacted] for details");
+        assert_eq!(scrub(&once), once);
+        let bare = scrub("https://h/p?q");
+        assert_eq!(scrub(&bare), bare);
+    }
+
+    #[test]
+    fn nested_url_is_scrubbed_on_its_own() {
+        // Found by the `redact` fuzz target: the inner URL used to ride along
+        // inside the outer one's path, keeping its userinfo and query.
+        let once = scrub("bearer http://u@a/x?r=http://p:w@b/y?k=v");
+        assert!(!once.contains("u@") && !once.contains("p:w@") && !once.contains("k=v"), "{once}");
+        assert_eq!(once, "[redacted] [redacted]://a/x?[redacted]http://b/y?[redacted]");
+        assert_eq!(scrub(&once), once);
     }
 
     #[test]
