@@ -222,11 +222,12 @@ This removes the keys from your credential store, then the app, then its setting
 | Gate | What runs |
 | --- | --- |
 | Lints | `cargo fmt --check` and `cargo clippy -D warnings`, with `unwrap`, `expect`, `panic!` and print macros denied outside tests |
-| Tests on three operating systems | 306 tests: provider parsers against the vendors' own documented responses, log redaction, settings, an allocator that scans every freed block for the key, a source audit, and the binary's command line |
+| Tests on three operating systems | 308 tests: provider parsers against the vendors' own documented responses, log redaction, settings, an allocator that scans every freed block for the key, a source audit, and the binary's command line |
 | Minimum Rust version | The core crate on Rust 1.90 with the locked dependency graph |
 | Real keystore | Round trip and a core-dump leak scan against GNOME Keyring |
 | End to end | The real Linux build driven through WebDriver: save a key, see it land in the Secret Service, watch the first poll |
 | Supply chain | `cargo deny`, `cargo audit`, `npm audit`, lockfiles committed, actions pinned to commit SHAs |
+| Fuzzing | Every provider parser, the error-body reader and the redaction rules under libFuzzer and AddressSanitizer for a minute each |
 | Installers | Build the `.deb`, `.rpm`, AppImage, `.dmg`, NSIS and MSI packages, then install, start, stop three ways and uninstall each |
 
 ## Layout

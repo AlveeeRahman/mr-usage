@@ -167,3 +167,33 @@ jobs:
       - run: cargo install --locked cargo-audit --version 0.22.2
       # -D warnings: any advisory not listed in .cargo/audit.toml fails the build.
       - run: cargo audit -D warnings
+      # The fuzz crate keeps its own lockfile (it is excluded from the workspace).
+      - run: cargo audit -D warnings --file fuzz/Cargo.lock
+
+  # Every provider parser, the error-body reader and the redaction rules
+  # against random input, under AddressSanitizer. Short runs on every push;
+  # `cargo fuzz run <target>` keeps going for as long as you like locally.
+  fuzz:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: nightly
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: fuzz
+      - run: cargo install --locked cargo-fuzz --version 0.13.2
+      - run: cargo fuzz build
+      - run: |
+          for target in $(cargo fuzz list); do
+            cargo fuzz run "$target" -- -max_total_time=60 -timeout=10
+          done
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: fuzz-artifacts
+          path: fuzz/artifacts
+          if-no-files-found: ignore

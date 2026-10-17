@@ -1,6 +1,9 @@
 [workspace]
 resolver = "3"
 members = ["crates/core", "src-tauri"]
+# The fuzz crate needs nightly and libFuzzer, so it keeps its own lockfile and
+# is built only by `cargo fuzz` (docs/DEVELOPMENT.md).
+exclude = ["fuzz"]
 
 [workspace.package]
 version = "1.0.0"

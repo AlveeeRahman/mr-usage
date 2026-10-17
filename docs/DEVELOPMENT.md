@@ -38,6 +38,15 @@ cargo deny check && cargo audit -D warnings
 npm run typecheck && npm audit --audit-level=low
 ```
 
+Fuzzing, with nightly Rust and [cargo-fuzz](https://rust-fuzz.github.io/book/cargo-fuzz.html) (`cargo install cargo-fuzz`). The targets live in `fuzz/fuzz_targets/` and are built from the core crate's `fuzzing` feature, which the app never enables. CI runs each one for a minute on every push; locally a run keeps going until you stop it or it finds a crash, which it writes to `fuzz/artifacts/`:
+
+```sh
+cargo +nightly fuzz list
+cargo +nightly fuzz run provider_parse     # every provider parser, any status and body
+cargo +nightly fuzz run redact             # scrubbing is idempotent and never exceeds its budget
+cargo +nightly fuzz run error_message      # the shared error-body reader
+```
+
 Linux only, with an unlocked Secret Service running:
 
 ```sh

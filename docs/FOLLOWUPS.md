@@ -47,6 +47,10 @@ Recorded here instead of implemented. Anything that adds persistence or a networ
 26. Smoke-test blind spots. In `smoke-linux.sh` the AppImage "uninstall" check deletes the file and then checks that it is gone. `helpers()` counts every WebKit process on the machine. The "wrote nothing" check scans `$HOME` only. `smoke-windows.ps1` does not check the NSIS installer's or uninstaller's exit code. `run-linux.sh` does not notice when `tauri-driver` fails to bind port 4444.
 27. Release build hygiene. The release build restores caches written by `main` and does not `need` the test, audit or deny jobs. Consider a cache-free release build gated on them.
 
+## Repository practices
+
+28. Scorecard findings that need a second person or time, not code. Code-Review scores the last thirty commits for an approval by someone other than the author, and Branch-Protection's second tier wants at least one required reviewer; with one maintainer, both stay open until a second maintainer joins (requiring an approval today would block every merge). Maintained scores zero for any repository under ninety days old, whatever its activity. CII-Best-Practices needs the project registered at bestpractices.dev; the passing criteria are met by what is already here (licence, SECURITY.md, CI, tests, lints, HTTPS delivery, signed checksums), so registering and answering the questionnaire is the whole task. The Dependabot alert for `RUSTSEC-2024-0429` is the glib unsoundness in item 16 and can be dismissed as tolerable risk with that reason, since Dependabot's own bump cannot resolve.
+
 ## Providers considered and not added
 
-28. Exa: usage is only in the Team Management API, which needs a service key and a key id and is enabled per team. ElevenLabs: `GET /v1/user/subscription` is documented but the page has no example response to use as a fixture. Bright Data, Zyte, Browser Use, You.com, Higgsfield: no documented endpoint returns the account's remaining balance.
+29. Exa: usage is only in the Team Management API, which needs a service key and a key id and is enabled per team. ElevenLabs: `GET /v1/user/subscription` is documented but the page has no example response to use as a fixture. Bright Data, Zyte, Browser Use, You.com, Higgsfield: no documented endpoint returns the account's remaining balance.

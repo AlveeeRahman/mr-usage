@@ -38,7 +38,7 @@ Releases published before v1.0.1 were signed afterwards with the `sign-release` 
 
 ## Known advisories
 
-`cargo audit` runs with every advisory as an error. The ones it is told to ignore are listed with their reasons in [.cargo/audit.toml](.cargo/audit.toml) and tracked in [docs/FOLLOWUPS.md](docs/FOLLOWUPS.md); at the time of writing both come from the GTK 3 bindings Tauri uses on Linux and are not reachable from this app's code. The [OpenSSF Scorecard report](https://scorecard.dev/viewer/?uri=github.com/AlveeeRahman/mr-usage) lists the same two under Vulnerabilities, with the rest of its findings. Code scanning (CodeQL and Scorecard) and Dependabot alerts are on the repository's [Security tab](https://github.com/AlveeeRahman/mr-usage/security), and Dependabot opens a grouped pull request each Monday for Cargo, npm and Actions updates ([.github/dependabot.yml](.github/dependabot.yml)).
+`cargo audit` runs with every advisory as an error. The ones it is told to ignore are listed with their reasons in [.cargo/audit.toml](.cargo/audit.toml) and tracked in [docs/FOLLOWUPS.md](docs/FOLLOWUPS.md); at the time of writing two come from the GTK 3 bindings Tauri uses on Linux and three from the zbus 5 crates behind the Linux keyring store, and none is reachable from this app's code. [osv-scanner.toml](osv-scanner.toml) carries the same list with the same reasons, so the [OpenSSF Scorecard report](https://scorecard.dev/viewer/?uri=github.com/AlveeeRahman/mr-usage) does not count them under Vulnerabilities; every other finding there stands. Code scanning (CodeQL and Scorecard) and Dependabot alerts are on the repository's [Security tab](https://github.com/AlveeeRahman/mr-usage/security), and Dependabot opens a grouped pull request each Monday for Cargo, npm and Actions updates ([.github/dependabot.yml](.github/dependabot.yml)).
 
 ## What is checked on every change
 
@@ -51,6 +51,7 @@ Releases published before v1.0.1 were signed afterwards with the `sign-release` 
 | Real keystore and leak tests | `cargo test -p mr-usage-core -- --ignored` and `.github/scripts/leak-test-linux.sh` against GNOME Keyring |
 | End-to-end | `.github/e2e/run-linux.sh` drives the real app through WebDriver |
 | Licenses, bans, advisories | `cargo deny check`, `cargo audit -D warnings`, `npm audit --audit-level=low` |
+| Fuzzing | `cargo +nightly fuzz run` on every provider parser, the error-body reader and the redaction rules, a minute each under AddressSanitizer |
 | Installers | `.github/scripts/smoke-{linux,macos}.sh`, `.github/scripts/smoke-windows.ps1`: install, start, stop three ways, uninstall, then `installers/install.sh` or `installers/install.ps1` against the same packages |
 | Repository practices | [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/AlveeeRahman/mr-usage) on every push to `main` and weekly; CodeQL on every push and pull request |
 

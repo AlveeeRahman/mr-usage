@@ -1,0 +1,26 @@
+# Advisories that OSV-Scanner (and the OpenSSF Scorecard "Vulnerabilities"
+# check, which runs it over Cargo.lock) should not count against this
+# repository. Each entry mirrors an ignore in deny.toml and .cargo/audit.toml,
+# where the dependency path is spelled out. Aliases of an id (its GHSA
+# number) are ignored with it. Remove an entry when the follow-up it names in
+# docs/FOLLOWUPS.md is done.
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0429"
+reason = "glib 0.18 VariantStrIter unsoundness, via Tauri 2's GTK3 stack; the app never calls GVariant APIs; no upgrade until Tauri leaves GTK3 (FOLLOWUPS 16)"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0370"
+reason = "proc-macro-error unmaintained; compile-time only, via glib-macros and gtk3-macros in Tauri 2's GTK3 stack; no upgrade available (FOLLOWUPS 16)"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0370"
+reason = "zvariant unmaintained, folded into zbus 6; reached only through keyring's Linux Secret Service store, which has no release on zbus 6 yet (FOLLOWUPS 17)"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0371"
+reason = "zbus_names unmaintained, folded into zbus 6; same path as RUSTSEC-2026-0370 (FOLLOWUPS 17)"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0372"
+reason = "zvariant_derive unmaintained, folded into zbus 6; same path as RUSTSEC-2026-0370 (FOLLOWUPS 17)"
