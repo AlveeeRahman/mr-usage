@@ -29,23 +29,24 @@ Recorded here instead of implemented. Anything that adds persistence or a networ
 ## Dependencies
 
 16. GTK3 advisories. `RUSTSEC-2024-0370` (proc-macro-error unmaintained) and `RUSTSEC-2024-0429` (glib `VariantStrIter` unsound) come from gtk-rs 0.18 through Tauri 2's Linux webview and are ignored in `deny.toml` and `.cargo/audit.toml` with reasons. Remove the ignores when Tauri moves to GTK4 or gtk-rs publishes fixes.
-17. `target-lexicon` license exception. "Apache-2.0 WITH LLVM-exception" for a build-time-only crate. Watch whether it ever becomes a runtime dependency.
-18. cargo-deny-action image. The pinned action builds a Dockerfile that downloads the cargo-deny binary with `curl` and no checksum and runs `apk update` unpinned. Consider `cargo install --locked` as is done for cargo-audit.
+17. zbus 5 advisories. `RUSTSEC-2026-0370`, `RUSTSEC-2026-0371` and `RUSTSEC-2026-0372` (zvariant, zbus_names and zvariant_derive unmaintained, folded into zbus 6.0.0 on 2026-10-16) come from keyring 4.2.0's Linux Secret Service store, which builds on secret-service 5 and zbus 5. They are ignored in `deny.toml` and `.cargo/audit.toml` with reasons. Remove the ignores and bump keyring when secret-service and zbus-secret-service-keyring-store publish releases on zbus 6.
+18. `target-lexicon` license exception. "Apache-2.0 WITH LLVM-exception" for a build-time-only crate. Watch whether it ever becomes a runtime dependency.
+19. cargo-deny-action image. The pinned action builds a Dockerfile that downloads the cargo-deny binary with `curl` and no checksum and runs `apk update` unpinned. Consider `cargo install --locked` as is done for cargo-audit.
 
 ## Behaviour
 
-19. History cap. `HISTORY_CAP` is 288 samples, one day at 5-minute polling. At the 1-minute interval the sparkline covers under five hours. Size the buffer from the interval or change the wording.
-20. Money formatting. OpenRouter and Apify show dollars (`Unit::Usd`, whole cents inside the app). Check the card layout with a six-figure cent value.
-21. Context7 on pay-as-you-go. `includedInPlan` is 0, so the card shows "No remaining count on this plan" with the month's request count and extra cost in the facts list.
-22. Low-balance notification. A desktop notification under 20%. Needs the notification plugin and a capability for it. Off by default.
-23. Per-provider poll interval. There is one global interval with a per-provider floor.
-24. History beyond today. Out of scope by design: history is wiped at midnight.
+20. History cap. `HISTORY_CAP` is 288 samples, one day at 5-minute polling. At the 1-minute interval the sparkline covers under five hours. Size the buffer from the interval or change the wording.
+21. Money formatting. OpenRouter and Apify show dollars (`Unit::Usd`, whole cents inside the app). Check the card layout with a six-figure cent value.
+22. Context7 on pay-as-you-go. `includedInPlan` is 0, so the card shows "No remaining count on this plan" with the month's request count and extra cost in the facts list.
+23. Low-balance notification. A desktop notification under 20%. Needs the notification plugin and a capability for it. Off by default.
+24. Per-provider poll interval. There is one global interval with a per-provider floor.
+25. History beyond today. Out of scope by design: history is wiped at midnight.
 
 ## Tests
 
-25. Smoke-test blind spots. In `smoke-linux.sh` the AppImage "uninstall" check deletes the file and then checks that it is gone. `helpers()` counts every WebKit process on the machine. The "wrote nothing" check scans `$HOME` only. `smoke-windows.ps1` does not check the NSIS installer's or uninstaller's exit code. `run-linux.sh` does not notice when `tauri-driver` fails to bind port 4444.
-26. Release build hygiene. The release build restores caches written by `main` and does not `need` the test, audit or deny jobs. Consider a cache-free release build gated on them.
+26. Smoke-test blind spots. In `smoke-linux.sh` the AppImage "uninstall" check deletes the file and then checks that it is gone. `helpers()` counts every WebKit process on the machine. The "wrote nothing" check scans `$HOME` only. `smoke-windows.ps1` does not check the NSIS installer's or uninstaller's exit code. `run-linux.sh` does not notice when `tauri-driver` fails to bind port 4444.
+27. Release build hygiene. The release build restores caches written by `main` and does not `need` the test, audit or deny jobs. Consider a cache-free release build gated on them.
 
 ## Providers considered and not added
 
-27. Exa: usage is only in the Team Management API, which needs a service key and a key id and is enabled per team. ElevenLabs: `GET /v1/user/subscription` is documented but the page has no example response to use as a fixture. Bright Data, Zyte, Browser Use, You.com, Higgsfield: no documented endpoint returns the account's remaining balance.
+28. Exa: usage is only in the Team Management API, which needs a service key and a key id and is enabled per team. ElevenLabs: `GET /v1/user/subscription` is documented but the page has no example response to use as a fixture. Bright Data, Zyte, Browser Use, You.com, Higgsfield: no documented endpoint returns the account's remaining balance.
