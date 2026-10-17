@@ -81,6 +81,8 @@ The release workflow builds macOS (Apple silicon and Intel), Windows and Linux, 
 
 The tag can also be given to the workflow by hand (Actions, release, Run workflow, fill in `tag`), for a machine that cannot push tags. The draft is the same, and GitHub creates the git tag when you publish it.
 
+Do not push a change to any file under `.github/workflows/` to `main` while a release build is running. GitHub refuses to let the workflow token create a release whose target commit is behind a workflow change on the default branch (it answers "Resource not accessible by integration" at the "Creating one" step), so every builder fails after a full build. Re-run the workflow once `main` is quiet.
+
 ### Delivery rehearsal
 
 Run the same workflow by hand (Actions → release → Run workflow, or `gh workflow run release.yml --ref main`). It builds a throwaway draft named `v0.0.0-ci.<run number>`, runs the checksum and install jobs against it, and deletes the draft at the end. Nothing is published and no git tag is created. Use it after changing the bundler config, the install scripts or the release workflow itself. It costs four build runners, two of them macOS.
