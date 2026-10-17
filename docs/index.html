@@ -8,6 +8,8 @@
 <title>Mr. Usage: a desktop API credit monitor</title>
 <meta name="description" content="A desktop API credit monitor: check the remaining credits and balance of your Firecrawl, SerpApi, Elicit, Context7, Tavily, OpenRouter, Apify, Hunter and Runway keys in one window. Keys stay in your OS keychain. No server, no telemetry.">
 <link rel="canonical" href="https://alveeerahman.github.io/mr-usage/">
+<link rel="icon" type="image/png" sizes="1024x1024" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Mr. Usage">
 <meta property="og:title" content="Mr. Usage: a desktop API credit monitor">
@@ -129,7 +131,8 @@
   a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
   .wrap { max-width: 72rem; margin: 0 auto; padding: 0 1.25rem; }
   nav { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding: 1rem 0; border-bottom:1px solid var(--line); }
-  nav .brand { font-weight:700; color:var(--ink); font-size:1.05rem; }
+  nav .brand { display:flex; align-items:center; gap:.55rem; font-weight:700; color:var(--ink); font-size:1.05rem; }
+  nav .brand .mark { width:26px; height:26px; border-radius:7px; }
   nav .links { display:flex; gap:1.25rem; font-size:.95rem; }
   .hero { padding: 4.5rem 0 2.5rem; text-align:center; }
   .hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); line-height:1.1; letter-spacing:-0.02em; margin:0 0 1rem; }
@@ -164,7 +167,7 @@
 <body>
 <div class="wrap">
   <nav>
-    <a class="brand" href="./">Mr. Usage</a>
+    <a class="brand" href="./"><img class="mark" src="assets/icon.png" alt="" width="26" height="26">Mr. Usage</a>
     <div class="links">
       <a href="#install">Install</a>
       <a href="#providers">Providers</a>

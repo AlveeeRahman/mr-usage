@@ -1,3 +1,7 @@
+<p align="center">
+  <a href="https://alveeerahman.github.io/mr-usage/"><img src="docs/assets/icon.png" alt="Mr. Usage" width="128" height="128"></a>
+</p>
+
 # Mr. Usage: a desktop API credit monitor
 
 [![CI](https://github.com/AlveeeRahman/mr-usage/actions/workflows/ci.yml/badge.svg)](https://github.com/AlveeeRahman/mr-usage/actions/workflows/ci.yml)
